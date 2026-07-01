@@ -1,0 +1,531 @@
+{
+  "profile_version": 1,
+  "doc": [
+    "Denon/Marantz telnet control protocol grammar.",
+    "",
+    "This data file is the ONLY place that contains fixed wire tokens (such as",
+    "PSBAS for bass or the enum values OFF/LOW/MID/HI/AUTO). It exists because a",
+    "receiver does not publish its own wire vocabulary: it describes controls by",
+    "functional names (ToneControl, DynamicCompression, ...) and by display names,",
+    "ranges, steps and option labels, but never says 'bass is sent as PSBAS'. That",
+    "linkage is the Denon protocol itself and is identical across all Denon and",
+    "Marantz models.",
+    "",
+    "Everything device specific (which controls actually exist, their display",
+    "names, numeric ranges, option labels, the channel list, the source list and",
+    "renames, visibility) is discovered at runtime from the receiver and is NEVER",
+    "stored here. The engine builds an entity for a control only when the receiver",
+    "advertises the matching capability AND this profile knows how to speak to it.",
+    "",
+    "For enum controls, 'values' lists the wire tokens in the canonical protocol",
+    "order. The engine pairs them, by position, with the ordered display labels the",
+    "receiver publishes. When the counts differ it falls back to the wire tokens as",
+    "labels so a mismatch can never cause a wrong command to be sent."
+  ],
+  "sound_mode_genre_commands": {
+    "doc": "How to switch the receiver to a sound mode genre group. Keyed by the genre code the receiver uses (from OPSMLALL/SSSMG); the value is the MS command token. Verified live: MOVIE/MUSIC/GAME work; the Pure group needs 'PURE DIRECT' (plain 'PURE' does not). This is fixed protocol grammar; the codes and display names still come from the device.",
+    "MOV": "MOVIE",
+    "MUS": "MUSIC",
+    "GAM": "GAME",
+    "PUR": "PURE DIRECT"
+  },
+  "grammar": {
+    "line_terminator": "\r",
+    "list_terminator": "END",
+    "no_signal_token": "NON",
+    "volume_reference": 80.0,
+    "level_reference": 50.0,
+    "volume_max_fallback": 98.0
+  },
+  "speakers": {
+    "doc": [
+      "Maps the receiver's speaker group codes (from the SSSPC introspection) to",
+      "channel codes, so only speakers that are actually configured get channel",
+      "entities. Which groups are present is discovered from SSSPC; this map is",
+      "just the fixed protocol grammar linking a group to its channels. A group",
+      "is treated as absent when any of its SSSPC lines carries the absent token."
+    ],
+    "absent_token": "NON",
+    "double_token": "2SP",
+    "groups": {
+      "FRO": ["FL", "FR"],
+      "CEN": ["C"],
+      "SUA": ["SL", "SR"],
+      "SUD": ["SDL", "SDR"],
+      "FRH": ["FHL", "FHR"],
+      "FRD": ["FDL", "FDR"],
+      "TFR": ["TFL", "TFR"],
+      "TPM": ["TML", "TMR"],
+      "TPR": ["TRL", "TRR"],
+      "RHE": ["RHL", "RHR"],
+      "BKD": ["BDL", "BDR"]
+    },
+    "count_groups": {
+      "SWF": {"single": ["SW"], "double": ["SW", "SW2"]},
+      "SBK": {"single": ["SB"], "double": ["SBL", "SBR"]}
+    }
+  },
+  "zones": {
+    "doc": [
+      "How zones are addressed on the wire. The NUMBER and names of zones are",
+      "discovered from the receiver (DeviceZones); only the addressing grammar is",
+      "fixed here. The main zone uses the core controls (ZM/MV/MU/SI). Every",
+      "additional zone N uses the prefix 'Z<N>' (Z2, Z3, ...), which is overloaded",
+      "for power, volume, mute and source; the parser disambiguates by content."
+    ],
+    "main_zone_id": "main",
+    "additional_prefix": "Z",
+    "power_on": "ON",
+    "power_off": "OFF",
+    "mute_token": "MU",
+    "mute_on": "ON",
+    "mute_off": "OFF",
+    "status_lite_main": "/goform/formMainZone_MainZoneXmlStatusLite.xml",
+    "status_lite_additional": "/goform/formZone{index}_Zone{index}XmlStatusLite.xml"
+  },
+  "introspection": {
+    "source_names": {
+      "query": "SSFUN ?",
+      "prefix": "SSFUN",
+      "doc": "One line per input: 'SSFUN<CODE> <display name>'. Provides the SI source code and the (possibly renamed) display name."
+    },
+    "source_visibility": {
+      "query": "SSSOD ?",
+      "prefix": "SSSOD",
+      "visible_token": "USE",
+      "hidden_token": "DEL",
+      "doc": "One line per input: 'SSSOD<CODE> USE|DEL'. Marks which sources the user kept visible."
+    },
+    "channel_levels": {
+      "query": "SSLEV ?",
+      "prefix": "SSLEV",
+      "doc": "One line per configured channel: 'SSLEV<CODE> <level>' terminated by 'SSLEV END'. Reveals which channels are actually configured."
+    },
+    "speaker_config": {
+      "query": "SSSPC ?",
+      "prefix": "SSSPC",
+      "doc": "One line per speaker group with its size/presence setting."
+    },
+    "sound_mode_group": {
+      "query": "SSSMG ?",
+      "prefix": "SSSMG",
+      "doc": "Reports the receiver's current sound mode genre group directly (MOV/MUS/GAM/PUR)."
+    },
+    "quick_select_names": {
+      "query": "SSQSNZMA ?",
+      "prefix": "SSQSNZMA",
+      "doc": "Main zone quick select preset names, one per line ('SSQSNZMAQS<n> <name>'), terminated by 'SSQSNZMA END'."
+    },
+    "quick_select": {
+      "query": "MSQUICK ?",
+      "prefix": "MSQUICK",
+      "doc": "Currently recalled main zone quick select preset number (0 = none/modified)."
+    },
+    "sound_mode_list": {
+      "query": "OPSMLALL ?",
+      "prefix": "OPSMLALL",
+      "doc": "OPSMLALL lists every available sound mode across all genres (Movie/Music/Game/Pure), one per line, terminated by 'OPSMLALL END'. Used for the full flat set and the per genre groups."
+    },
+    "current_sound_modes": {
+      "query": "OPSML ?",
+      "prefix": "OPSML",
+      "doc": "OPSML lists the modes actually selectable in the CURRENT context/group, terminated by 'OPSML END'. Context aware: includes modes OPSMLALL omits (such as Auto) and marks the selected mode. Drives the sound mode select for the active group."
+    }
+  },
+  "readonly": {
+    "input_signal": {
+      "kind": "passthrough",
+      "name": "Input Signal",
+      "query": "SSINFAISSIG ?",
+      "prefix": "SSINFAISSIG",
+      "doc": "Raw input signal type code."
+    },
+    "sample_rate": {
+      "kind": "sample_rate",
+      "name": "Sample Rate",
+      "query": "SSINFAISFSV ?",
+      "prefix": "SSINFAISFSV",
+      "doc": "Sample rate token such as '48K'. 'NON' means no active signal."
+    },
+    "audio_format": {
+      "kind": "passthrough",
+      "name": "Audio Format",
+      "query": "SSINFAISFOR ?",
+      "prefix": "SSINFAISFOR",
+      "doc": "Channel layout such as '2/0/.0'."
+    },
+    "decoder": {
+      "kind": "trimmed",
+      "name": "Decoder",
+      "query": "SYSDA ?",
+      "prefix": "SYSDA ",
+      "doc": "Active decoder/audio format, for example 'PCM' (space padded)."
+    },
+    "mode_info": {
+      "kind": "trimmed",
+      "name": "Mode Info",
+      "query": "SYSMI ?",
+      "prefix": "SYSMI ",
+      "doc": "Informational mode string, for example 'Stereo' (space padded)."
+    }
+  },
+  "controls": {
+    "system_power": {
+      "scope": "core",
+      "kind": "power",
+      "query": "PW?",
+      "prefix": "PW",
+      "on": "ON",
+      "off": "STANDBY",
+      "doc": "System standby power. Distinct from the main zone power."
+    },
+    "main_power": {
+      "scope": "core",
+      "zone": "main",
+      "kind": "onoff",
+      "query": "ZM?",
+      "prefix": "ZM",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Main zone power."
+    },
+    "main_volume": {
+      "scope": "core",
+      "zone": "main",
+      "kind": "volume",
+      "query": "MV?",
+      "prefix": "MV",
+      "max_prefix": "MVMAX",
+      "up": "MVUP",
+      "down": "MVDOWN",
+      "doc": "Master volume. Two/three digit half step scale, 80 == 0 dB reference."
+    },
+    "main_mute": {
+      "scope": "core",
+      "zone": "main",
+      "kind": "onoff",
+      "query": "MU?",
+      "prefix": "MU",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Main zone mute."
+    },
+    "main_source": {
+      "scope": "core",
+      "zone": "main",
+      "kind": "token",
+      "query": "SI?",
+      "prefix": "SI",
+      "doc": "Main zone input source. Codes and names are discovered via SSFUN/SSSOD."
+    },
+    "sound_mode": {
+      "scope": "core",
+      "kind": "token",
+      "query": "MS?",
+      "prefix": "MS",
+      "doc": "Surround / sound mode. Selectable values are learned from what the receiver reports."
+    },
+    "video_select": {
+      "scope": "core",
+      "kind": "token",
+      "query": "SV?",
+      "prefix": "SV",
+      "doc": "Video select source ('SVOFF' when disabled)."
+    },
+    "bass": {
+      "scope": "feature",
+      "feature": "Bass",
+      "kind": "level",
+      "query": "PSBAS ?",
+      "prefix": "PSBAS ",
+      "doc": "Tone control bass. Half step level, 50 == 0 dB."
+    },
+    "treble": {
+      "scope": "feature",
+      "feature": "Treble",
+      "kind": "level",
+      "query": "PSTRE ?",
+      "prefix": "PSTRE ",
+      "doc": "Tone control treble. Half step level, 50 == 0 dB."
+    },
+    "tone_control": {
+      "scope": "feature",
+      "feature": "ToneControl",
+      "kind": "onoff",
+      "query": "PSTONE CTRL ?",
+      "prefix": "PSTONE CTRL ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Tone control enable."
+    },
+    "dynamic_compression": {
+      "scope": "feature",
+      "feature": "DynamicCompression",
+      "kind": "enum",
+      "query": "PSDRC ?",
+      "prefix": "PSDRC ",
+      "values": ["OFF", "LOW", "MID", "HI", "AUTO"],
+      "doc": "Dynamic range compression."
+    },
+    "lfe": {
+      "scope": "feature",
+      "feature": "LFE",
+      "kind": "signed_int",
+      "query": "PSLFE ?",
+      "prefix": "PSLFE ",
+      "min": -10,
+      "max": 0,
+      "step": 1,
+      "doc": "LFE level, 0 down to -10 dB. The receiver does not publish this range (its LFE block is empty), so the protocol defined range is given here as a fallback."
+    },
+    "dynamic_eq": {
+      "scope": "feature",
+      "feature": "DynamicEq",
+      "kind": "onoff",
+      "query": "PSDYNEQ ?",
+      "prefix": "PSDYNEQ ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Calibration Dynamic EQ."
+    },
+    "dynamic_volume": {
+      "scope": "feature",
+      "feature": "DynamicVolume",
+      "kind": "enum",
+      "query": "PSDYNVOL ?",
+      "prefix": "PSDYNVOL ",
+      "values": ["OFF", "LIT", "MED", "HEV"],
+      "doc": "Calibration Dynamic Volume."
+    },
+    "reference_level_offset": {
+      "scope": "feature",
+      "feature": "RefLevOffset",
+      "kind": "enum",
+      "query": "PSREFLEV ?",
+      "prefix": "PSREFLEV ",
+      "values": ["0", "5", "10", "15"],
+      "doc": "Calibration reference level offset in dB."
+    },
+    "loudness_management": {
+      "scope": "feature",
+      "feature": "Loudness",
+      "kind": "onoff",
+      "query": "PSLOM ?",
+      "prefix": "PSLOM ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Loudness management."
+    },
+    "cinema_eq": {
+      "scope": "feature",
+      "feature": "CinemaEq",
+      "kind": "onoff",
+      "query": "PSCINEMA EQ. ?",
+      "prefix": "PSCINEMA EQ.",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Cinema EQ. Note the embedded '.' in the wire token."
+    },
+    "multeq": {
+      "scope": "feature",
+      "feature": "MultEq",
+      "kind": "enum",
+      "query": "PSMULTEQ: ?",
+      "prefix": "PSMULTEQ:",
+      "values": ["AUDYSSEY", "BYP.LR", "FLAT", "MANUAL", "OFF"],
+      "doc": "Calibration MultEQ room correction mode."
+    },
+    "restorer": {
+      "scope": "feature",
+      "feature": "Restorer",
+      "kind": "enum",
+      "query": "PSRSTR ?",
+      "prefix": "PSRSTR ",
+      "values": ["HI", "MED", "LOW", "OFF"],
+      "doc": "Restorer (compressed audio restoration)."
+    },
+    "subwoofer_switch": {
+      "scope": "feature",
+      "feature": "SubwooferLevel",
+      "kind": "onoff",
+      "query": "PSSWR ?",
+      "prefix": "PSSWR ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Subwoofer level adjustment enable."
+    },
+    "subwoofer_level": {
+      "scope": "feature",
+      "feature": "SubwooferLevel",
+      "kind": "level",
+      "query": "PSSWL ?",
+      "prefix": "PSSWL ",
+      "doc": "Subwoofer level, half step, 50 == 0 dB. The dB range is discovered from the receiver's SubwooferLevel block."
+    },
+    "sleep_timer": {
+      "scope": "feature",
+      "feature": "SleepTimer",
+      "kind": "minutes",
+      "query": "SLP ?",
+      "prefix": "SLP",
+      "off": "OFF",
+      "min": 0,
+      "max": 120,
+      "step": 5,
+      "doc": "Sleep timer in minutes ('OFF' when disabled). The receiver does not publish a range (its SleepTimer block is empty), so the protocol defined range is given here as a fallback."
+    },
+    "eco_mode": {
+      "scope": "feature",
+      "feature": "ECO",
+      "kind": "enum",
+      "query": "ECO?",
+      "prefix": "ECO",
+      "values": ["ON", "AUTO", "OFF"],
+      "doc": "ECO power mode."
+    },
+    "speaker_virtualizer": {
+      "scope": "feature",
+      "feature": "SpeakerVirtualizer",
+      "kind": "onoff",
+      "query": "PSSPV ?",
+      "prefix": "PSSPV ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Speaker Virtualizer (Dolby/DTS virtual height/surround)."
+    },
+    "center_spread": {
+      "scope": "feature",
+      "feature": "CenterSpread",
+      "kind": "onoff",
+      "query": "PSCES ?",
+      "prefix": "PSCES ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Center Spread (Dolby Surround upmixer)."
+    },
+    "dts_neural_x": {
+      "scope": "feature",
+      "feature": "DTSNeuralX",
+      "kind": "onoff",
+      "query": "PSNEURAL ?",
+      "prefix": "PSNEURAL ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "DTS Neural:X upmixer. Verified live (PSNEURAL ON/OFF). Only applies to compatible content."
+    },
+    "tcp_client_lfc": {
+      "scope": "feature",
+      "feature": "AudysseyLfc",
+      "kind": "onoff",
+      "query": "PSLFC ?",
+      "prefix": "PSLFC ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Calibration Low Frequency Containment. Verified live (PSLFC ON/OFF)."
+    },
+    "effect_level": {
+      "scope": "feature",
+      "feature": "EffectLevel",
+      "kind": "integer",
+      "query": "PSEFF ?",
+      "prefix": "PSEFF ",
+      "width": 2,
+      "min": 0,
+      "max": 15,
+      "step": 1,
+      "doc": "DSP effect level (matrix/DSP sound modes). Verified live (PSEFF). The receiver publishes only step/default, so 0-15 is the protocol fallback range. Only applies in DSP modes."
+    },
+    "containment_amount": {
+      "scope": "feature",
+      "feature": "ContainmentAmount",
+      "kind": "integer",
+      "query": "PSCNTAMT ?",
+      "prefix": "PSCNTAMT ",
+      "width": 2,
+      "min": 0,
+      "max": 7,
+      "step": 1,
+      "doc": "Calibration LFC containment amount. Verified live (PSCNTAMT). The receiver publishes only step/default, so 0-7 is the protocol fallback range. Applies when Calibration LFC is on."
+    },
+    "audio_delay": {
+      "scope": "feature",
+      "feature": "AudioDelay",
+      "kind": "integer",
+      "query": "PSDELAY ?",
+      "prefix": "PSDELAY ",
+      "width": 3,
+      "unit": "ms",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "doc": "Audio delay in milliseconds. The receiver does not publish a range, so the protocol range (0-200 ms) is used as a fallback."
+    },
+    "dialog_control": {
+      "scope": "feature",
+      "feature": "DialogControl",
+      "kind": "integer",
+      "query": "PSDIC ?",
+      "prefix": "PSDIC ",
+      "width": 2,
+      "min": 0,
+      "max": 6,
+      "step": 1,
+      "doc": "Dialog Control level 0-6. The receiver publishes only the step and default, so the 0-6 range is the protocol fallback."
+    },
+    "dimmer": {
+      "scope": "feature",
+      "feature": "FrontDisplay",
+      "kind": "enum",
+      "query": "DIM ?",
+      "prefix": "DIM ",
+      "values": ["BRI", "DIM", "DRK", "OFF"],
+      "doc": "Front panel display brightness (Bright/Dim/Dark/Off)."
+    },
+    "video_mode": {
+      "scope": "feature",
+      "feature": "VideoMode",
+      "kind": "enum",
+      "query": "VSVPM ?",
+      "prefix": "VSVPM",
+      "values": ["AUTO", "GAME", "MOVI"],
+      "doc": "Video processing mode. Wire values verified live (AUTO/GAME/MOVI); labels come from Deviceinfo. Only changeable with an active video signal."
+    },
+    "hdmi_video_output": {
+      "scope": "feature",
+      "feature": "HdmiVideoOut",
+      "kind": "enum",
+      "query": "VSMONI ?",
+      "prefix": "VSMONI",
+      "values": ["AUTO", "1", "2"],
+      "doc": "HDMI monitor output selection. Wire values verified live (AUTO/1/2)."
+    },
+    "aspect_ratio": {
+      "scope": "feature",
+      "feature": "AspectRatio",
+      "kind": "enum",
+      "query": "VSASP ?",
+      "prefix": "VSASP",
+      "values": ["FUL", "NRM"],
+      "doc": "Video aspect ratio. Wire values verified live (FUL=16:9, NRM=4:3)."
+    },
+    "input_mode": {
+      "scope": "feature",
+      "feature": "InputMode",
+      "kind": "enum",
+      "query": "SD?",
+      "prefix": "SD",
+      "values": ["NO", "AUTO", "HDMI", "DIGITAL", "ANALOG", "7.1IN", "ARC", "EARC"],
+      "doc": "Audio input mode for the current source (how audio is received). This is the eARC/ARC selector for the TV Audio source. EARC verified live (the source stayed locked to the active eARC signal, so the other values could not be cycle-verified); the rest are the documented Denon SD tokens. Order matches the Deviceinfo Input Mode list."
+    },
+    "channel_level": {
+      "scope": "feature",
+      "feature": "ChannelLevel",
+      "kind": "channel_set",
+      "list_query": "SSLEV ?",
+      "list_prefix": "SSLEV",
+      "read_query": "CV?",
+      "set_prefix": "CV",
+      "doc": "Per channel volume trim. Configured channels, their names and their dB ranges are all discovered from the receiver; live trims are read/written via CV<code>."
+    }
+  }
+}

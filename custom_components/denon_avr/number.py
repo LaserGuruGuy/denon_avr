@@ -1,0 +1,135 @@
+"""Number platform for the Denon AVR integration.
+
+Creates adjustable number entities for the level style controls the receiver
+advertises (bass, treble, subwoofer level, LFE), the sleep timer, and one per
+configured channel volume trim. Ranges come from the receiver where it publishes
+them; only where it does not (LFE, sleep timer) does the profile supply a
+protocol defined range.
+"""
+
+from __future__ import annotations
+
+from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.const import UnitOfSoundPressure, UnitOfTime
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+from .avr.profile import ControlSpec
+from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
+from .entity import DenonAvrEntity
+from .helpers import control_name
+
+# The control kinds that map to a number entity.
+_NUMBER_KINDS = {"level", "signed_int", "minutes", "integer"}
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: DenonAvrConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Create the adjustable number entities discovered for this receiver."""
+
+    coordinator = entry.runtime_data
+    device = coordinator.device
+    discovery = device.discovery
+    entities: list[NumberEntity] = []
+
+    for spec in device.profile.controls.values():
+        if spec.kind not in _NUMBER_KINDS:
+            continue
+        if spec.scope == "feature" and not discovery.supports(spec.feature or ""):
+            continue
+        entities.append(DenonAvrNumber(coordinator, spec))
+
+    # One trim per known channel. Channels that the receiver reports as
+    # configured (from SSSPC) are enabled; the rest are registered but disabled
+    # by default so they stay out of the way yet can be enabled from the UI.
+    configured = discovery.configured_channels
+    codes = [c.code for c in discovery.channels] or sorted(
+        coordinator.data.channel_levels
+    )
+    for code in codes:
+        enabled = (not configured) or code in configured
+        entities.append(DenonAvrChannelTrim(coordinator, code, enabled))
+
+    async_add_entities(entities)
+
+
+class DenonAvrNumber(DenonAvrEntity, NumberEntity):
+    """A number entity backed by a profile level, signed_int or minutes control."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_mode = NumberMode.SLIDER
+
+    def __init__(self, coordinator: DenonAvrCoordinator, spec: ControlSpec) -> None:
+        super().__init__(coordinator, f"number_{spec.id}")
+        self._spec = spec
+        self._attr_name = control_name(coordinator.device.discovery, spec)
+
+        if spec.kind == "minutes":
+            self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
+        elif spec.kind == "integer":
+            # A plain integer control uses whatever unit the profile gives (or
+            # none), for example milliseconds for the audio delay.
+            self._attr_native_unit_of_measurement = spec.get("unit")
+        else:
+            self._attr_native_unit_of_measurement = UnitOfSoundPressure.DECIBEL
+
+        low, high, step = _resolve_bounds(coordinator.device, spec)
+        if low is not None:
+            self._attr_native_min_value = low
+        if high is not None:
+            self._attr_native_max_value = high
+        if step is not None:
+            self._attr_native_step = step
+
+    @property
+    def native_value(self) -> float | None:
+        value = self.coordinator.data.values.get(self._spec.id)
+        return float(value) if value is not None else None
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.coordinator.device.async_set_control(self._spec.id, value)
+
+
+class DenonAvrChannelTrim(DenonAvrEntity, NumberEntity):
+    """A number entity for one channel's volume trim in dB."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_mode = NumberMode.SLIDER
+    _attr_native_unit_of_measurement = UnitOfSoundPressure.DECIBEL
+
+    def __init__(
+        self, coordinator: DenonAvrCoordinator, code: str, enabled: bool
+    ) -> None:
+        super().__init__(coordinator, f"number_channel_trim_{code}")
+        self._code = code
+        # Channels the receiver has not configured are registered but disabled by
+        # default; the user can still enable them from the UI.
+        self._attr_entity_registry_enabled_default = enabled
+        discovery = coordinator.device.discovery
+        self._attr_name = f"{discovery.channel_name(code)} Trim"
+        meta = discovery.numeric_meta.get(code)
+        if meta:
+            self._attr_native_min_value = meta["min"]
+            self._attr_native_max_value = meta["max"]
+            self._attr_native_step = meta["step"]
+
+    @property
+    def native_value(self) -> float | None:
+        return self.coordinator.data.channel_trims.get(self._code)
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.coordinator.device.async_set_channel_trim(self._code, value)
+
+
+def _resolve_bounds(device, spec: ControlSpec):
+    """Return (min, max, step), preferring the receiver published range."""
+
+    meta = device.discovery.numeric_meta.get(spec.feature or "")
+    if meta:
+        return meta["min"], meta["max"], meta["step"]
+    # Fall back to the profile's protocol defined range (LFE, sleep timer).
+    return spec.get("min"), spec.get("max"), spec.get("step")
