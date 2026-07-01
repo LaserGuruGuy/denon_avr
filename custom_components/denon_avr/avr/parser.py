@@ -238,9 +238,11 @@ class TelnetParser:
     def __init__(self, profile: ProtocolProfile, discovery: Discovery) -> None:
         self._profile = profile
         self._discovery = discovery
-        # Accumulator for the current OPSML (current context) response; swapped
-        # into discovery.current_sound_modes when the 'OPSML END' line arrives.
+        # Accumulators for the OPSML (current context) and OPSMLALL (all groups)
+        # responses; each is swapped into discovery when its 'END' line arrives,
+        # so the published lists are always a clean, complete single response.
         self._opsml_pending: list[str] = []
+        self._opsmlall_pending: list[str] = []
         # Precompute the generic feature and read only matchers, longest prefix
         # first so that specific tokens win over shorter ones.
         self._feature_matchers = sorted(
@@ -384,7 +386,12 @@ class TelnetParser:
         """
 
         remainder = remainder.strip()
-        if not remainder or remainder.startswith(self._profile.list_terminator):
+        if remainder.startswith(self._profile.list_terminator):
+            # End of the list: publish the accumulated set (receiver order).
+            self._discovery.all_sound_modes = list(self._opsmlall_pending)
+            self._opsmlall_pending = []
+            return True
+        if not remainder:
             return False
         genre = remainder[:3]
         match = re.match(r"^(\d+)(.*)$", remainder[3:])
@@ -393,7 +400,8 @@ class TelnetParser:
         name = match.group(2).strip()
         if not name:
             return False
-        self._discovery.sound_modes.add(name)
+        if name not in self._opsmlall_pending:
+            self._opsmlall_pending.append(name)
         modes = self._discovery.sound_mode_groups.setdefault(genre, [])
         if name not in modes:
             modes.append(name)
@@ -421,13 +429,17 @@ class TelnetParser:
         if not name:
             return False
         self._opsml_pending.append(name)
-        self._discovery.sound_modes.add(name)
         # The trailing digit is the "currently selected" flag; this is the mode
-        # the user selected (e.g. Auto), which can differ from the resolved MS mode.
+        # the user selected, which can differ from the resolved MS mode.
         if digits and digits[-1] == "1":
             state.values["sound_mode_display"] = name
+            # Do NOT learn a wire token for "Auto": it is a meta mode whose wire
+            # is always "AUTO", but MS reports the RESOLVED mode (e.g. Stereo).
+            # Learning here would map Auto -> the resolved token and break its
+            # selection. Concrete modes (Direct, Dolby Audio-…) report their own
+            # token, so learning stays correct for them.
             wire = state.values.get("sound_mode")
-            if isinstance(wire, str):
+            if isinstance(wire, str) and name.strip().lower() != "auto":
                 self._discovery.sound_mode_wire[name] = wire
         return True
 

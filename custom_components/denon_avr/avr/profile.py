@@ -84,6 +84,11 @@ class ProtocolProfile:
             for code, value in raw.get("sound_mode_genre_commands", {}).items()
             if code != "doc"
         }
+        self.sound_mode_wire_overrides: dict[str, str] = {
+            name: value
+            for name, value in raw.get("sound_mode_wire_overrides", {}).items()
+            if name != "doc"
+        }
         self.introspection: dict[str, dict[str, Any]] = raw.get("introspection", {})
         self.readonly: dict[str, dict[str, Any]] = raw.get("readonly", {})
         self.controls: dict[str, ControlSpec] = {

@@ -56,6 +56,11 @@ class DenonAvrDevice:
         self._update_callback: Callable[[], None] | None = None
         self._update_handle: asyncio.TimerHandle | None = None
         self._available = False
+        # Adaptive sound mode wire learning. Off by default for predictability;
+        # the coordinator sets this from the config entry option. When off, wire
+        # tokens are resolved deterministically (profile override, then the
+        # upper cased display name).
+        self.learning_enabled = False
         # Deviceinfo derived source list, used only if telnet introspection
         # yields no sources (see async_discover / async_await_ready).
         self._fallback_sources: list = []
@@ -475,16 +480,51 @@ class DenonAvrDevice:
         spec = self._profile.control("sound_mode")
         if spec is None:
             return
-        wire = self._discovery.sound_mode_wire.get(name, name.upper())
-        await self._send(f"{spec.prefix}{wire}")
+        await self._send(f"{spec.prefix}{self._resolve_sound_mode_wire(name)}")
         await self._refresh_current_sound_modes()
 
+    def _resolve_sound_mode_wire(self, name: str) -> str:
+        """Resolve the MS wire token for a sound mode display name.
+
+        Order: an adaptively learned token (only when learning is enabled), then
+        the deterministic profile override, then the upper cased display name.
+        """
+
+        if self.learning_enabled:
+            learned = self._discovery.sound_mode_wire.get(name)
+            if learned:
+                return learned
+        override = self._profile.sound_mode_wire_overrides.get(name)
+        if override:
+            return override
+        return name.upper()
+
     async def _refresh_current_sound_modes(self) -> None:
-        """Re-query the current-context mode list after a mode/group change."""
+        """Re-query the current-context mode list after a mode/group change.
+
+        The receiver pushes OPSMLALL (not OPSML) on a change, so the OPSML list
+        must be pulled. A query sent immediately can race the receiver still
+        switching, so a second delayed query is scheduled to catch the settled
+        context. Both are best effort.
+        """
 
         query = self._profile.introspection.get("current_sound_modes", {}).get("query")
-        if query:
-            await self._send(query)
+        if not query:
+            return
+        await self._send(query)
+        self._schedule_delayed_query(query, 0.8)
+
+    def _schedule_delayed_query(self, query: str, delay: float) -> None:
+        """Fire and forget a telnet query after a short delay."""
+
+        async def _later() -> None:
+            try:
+                await asyncio.sleep(delay)
+                await self._send(query)
+            except asyncio.CancelledError:
+                pass
+
+        asyncio.ensure_future(_later())
 
     async def async_select_quick_select(self, number: int) -> None:
         """Recall a main zone quick select preset by its number."""

@@ -38,7 +38,8 @@ async def async_get_config_entry_diagnostics(
         "feature_names": discovery.feature_names,
         "option_labels": discovery.option_labels,
         "numeric_meta": discovery.numeric_meta,
-        "sound_modes": sorted(discovery.sound_modes),
+        "all_sound_modes": discovery.all_sound_modes,
+        "current_sound_modes": discovery.current_sound_modes,
         "state": {
             "system_power": state.system_power,
             "zones": {zone_id: asdict(zone) for zone_id, zone in state.zones.items()},

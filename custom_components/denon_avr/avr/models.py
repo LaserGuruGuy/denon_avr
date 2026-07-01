@@ -91,7 +91,11 @@ class Discovery:
     # list. The wire token used to select a mode is not the same as its display
     # name for every mode, so it is learned by correlation and stored here
     # (display name -> MS wire token).
-    sound_modes: set[str] = field(default_factory=set)
+    # All modes the receiver currently offers across every genre group (from
+    # OPSMLALL), rebuilt per response in the receiver's own order. This is the
+    # flat "all modes" list for the media player. Note it is signal dependent:
+    # the receiver only lists modes applicable to the current audio signal.
+    all_sound_modes: list[str] = field(default_factory=list)
     sound_mode_wire: dict[str, str] = field(default_factory=dict)
     # Sound modes grouped by the receiver's genre code (from OPSMLALL), and the
     # display name per genre (correlated with the Deviceinfo genre list). This

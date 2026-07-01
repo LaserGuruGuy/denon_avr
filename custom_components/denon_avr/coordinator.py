@@ -17,7 +17,12 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .avr import AvrState, DenonAvrDevice
-from .const import DOMAIN, RECONCILE_INTERVAL
+from .const import (
+    CONF_SOUND_MODE_LEARNING,
+    DEFAULT_SOUND_MODE_LEARNING,
+    DOMAIN,
+    RECONCILE_INTERVAL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +43,9 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
         )
         session = async_get_clientsession(hass)
         self.device = DenonAvrDevice(session, host)
+        self.device.learning_enabled = entry.options.get(
+            CONF_SOUND_MODE_LEARNING, DEFAULT_SOUND_MODE_LEARNING
+        )
         self.device.register_update_callback(self._handle_device_update)
 
     async def async_setup(self) -> None:

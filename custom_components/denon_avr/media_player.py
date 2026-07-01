@@ -110,13 +110,19 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
     def sound_mode_list(self) -> list[str] | None:
         if not self._zone.is_main:
             return None
-        # The full list of available modes is discovered from the receiver. Make
-        # sure the currently active mode is always part of the list.
-        modes = set(self._device.discovery.sound_modes)
+        # All modes the receiver currently offers across groups (OPSMLALL), in
+        # the receiver's own order, plus any current-context extras (e.g. Auto)
+        # and the active mode. Not sorted, to keep a sensible order. The set is
+        # signal dependent: the receiver only lists modes valid for the signal.
+        discovery = self._device.discovery
+        modes = list(discovery.all_sound_modes)
+        for mode in discovery.current_sound_modes:
+            if mode not in modes:
+                modes.append(mode)
         current = self.sound_mode
-        if current:
-            modes.add(current)
-        return sorted(modes) if modes else None
+        if current and current not in modes:
+            modes.append(current)
+        return modes or None
 
     # Commands -------------------------------------------------------------
 

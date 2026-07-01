@@ -1,23 +1,25 @@
-# Brand icon / logo (for publishing)
+# Brand images
 
-The icon shown in the "add integration" dialog and on the integration/device
-pages is served centrally from the home-assistant/brands repository, keyed by
-the manifest `domain` (here: `denon_avr`). It cannot be shipped locally in this
-custom_components folder.
+Since Home Assistant 2026.2 (the brands proxy API), a custom integration can
+ship its own brand images locally, and they take priority over the central
+brands CDN. No pull request to home-assistant/brands is needed.
 
-To make the icon match the official Denon integration when publishing, submit a
-pull request to https://github.com/home-assistant/brands with a custom
-integration entry:
+The images live in `custom_components/denon_avr/brand/`:
 
 ```
-custom_integrations/denon_avr/icon.png       # 256x256 px, PNG, trimmed, transparent
-custom_integrations/denon_avr/icon@2x.png    # 512x512 px
-custom_integrations/denon_avr/logo.png       # optional, max height 240 px
-custom_integrations/denon_avr/logo@2x.png    # optional
+brand/icon.png            brand/icon@2x.png
+brand/logo.png            brand/logo@2x.png
+brand/dark_icon.png       brand/dark_icon@2x.png
+brand/dark_logo.png       brand/dark_logo@2x.png
 ```
 
-Use the Denon brand artwork so it matches the official `denonavr` integration
-(whose brand lives at custom/core `denonavr/`). Follow the brands repository
-image requirements (square icons, transparent background, exact sizes).
+They were taken from the official Denon (`denonavr`) brand on the Home Assistant
+brands CDN (https://brands.home-assistant.io/denonavr/) so the icon matches the
+built-in Denon integration.
 
-Until this PR is merged, Home Assistant shows the generic integration icon.
+## Trademark notice
+
+The Denon name and logo are trademarks of their respective owner. These brand
+images are included only to identify the compatible hardware, following Home
+Assistant's brand-image mechanism. They are NOT covered by this project's MIT
+license and remain the property of the trademark owner.

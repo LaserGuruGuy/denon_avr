@@ -22,6 +22,11 @@
     "receiver publishes. When the counts differ it falls back to the wire tokens as",
     "labels so a mismatch can never cause a wrong command to be sent."
   ],
+  "sound_mode_wire_overrides": {
+    "doc": "Deterministic display-name -> MS wire token map for modes whose wire token differs from the upper-cased display name. These tokens were observed live from the receiver (it reports them via MS). For every other mode the upper-cased display name is used. This is the robust base; adaptive learning (optional) can add more at runtime.",
+    "Multi Ch Stereo": "MCH STEREO",
+    "Dolby Audio - Dolby Surround": "DOLBY AUDIO-DSUR"
+  },
   "sound_mode_genre_commands": {
     "doc": "How to switch the receiver to a sound mode genre group. Keyed by the genre code the receiver uses (from OPSMLALL/SSSMG); the value is the MS command token. Verified live: MOVIE/MUSIC/GAME work; the Pure group needs 'PURE DIRECT' (plain 'PURE' does not). This is fixed protocol grammar; the codes and display names still come from the device.",
     "MOV": "MOVIE",
