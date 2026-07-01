@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from urllib.parse import urlparse
 
 import voluptuous as vol
 
@@ -21,6 +22,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
 
 from .avr import DenonAvrDevice
 from .avr.profile import load_profile
@@ -48,6 +50,20 @@ class DenonAvrConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return DenonAvrOptionsFlow()
 
+    def __init__(self) -> None:
+        self._host: str | None = None
+        self._name: str = "Denon AVR"
+
+    async def _async_identify(self, host: str) -> tuple[str | None, str]:
+        """Fetch the receiver's MAC and model name. Raises ConnectionError."""
+
+        session = async_get_clientsession(self.hass)
+        # Warm the profile cache off the loop before constructing the device.
+        await self.hass.async_add_executor_job(load_profile)
+        device = DenonAvrDevice(session, host)
+        identity = await device.async_fetch_identity()
+        return identity.mac_address, identity.model_name or "Denon AVR"
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -56,28 +72,57 @@ class DenonAvrConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             host = user_input[CONF_HOST].strip()
-            session = async_get_clientsession(self.hass)
-            # Warm the profile cache off the loop before constructing the device.
-            await self.hass.async_add_executor_job(load_profile)
-            device = DenonAvrDevice(session, host)
             try:
-                discovery = await device.async_discover()
+                mac, name = await self._async_identify(host)
             except ConnectionError:
                 errors["base"] = "cannot_connect"
             else:
-                mac = discovery.device.mac_address
                 if mac:
                     await self.async_set_unique_id(mac)
                     self._abort_if_unique_id_configured(updates={CONF_HOST: host})
                 else:
-                    # Fall back to the host when the receiver reports no MAC.
                     self._async_abort_entries_match({CONF_HOST: host})
-
-                title = discovery.device.model_name or "Denon AVR"
-                return self.async_create_entry(title=title, data={CONF_HOST: host})
+                return self.async_create_entry(title=name, data={CONF_HOST: host})
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_SCHEMA, errors=errors
+        )
+
+    async def async_step_ssdp(
+        self, discovery_info: SsdpServiceInfo
+    ) -> ConfigFlowResult:
+        """Handle a receiver discovered over SSDP."""
+
+        host = urlparse(discovery_info.ssdp_location or "").hostname
+        if not host:
+            return self.async_abort(reason="cannot_connect")
+        try:
+            mac, name = await self._async_identify(host)
+        except ConnectionError:
+            return self.async_abort(reason="cannot_connect")
+        if mac:
+            await self.async_set_unique_id(mac)
+            self._abort_if_unique_id_configured(updates={CONF_HOST: host})
+        else:
+            self._async_abort_entries_match({CONF_HOST: host})
+        self._host = host
+        self._name = name
+        # Show the friendly name in the discovered-device card and confirm step.
+        self.context["title_placeholders"] = {"name": name}
+        return await self.async_step_ssdp_confirm()
+
+    async def async_step_ssdp_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Confirm adding an SSDP discovered receiver."""
+
+        if user_input is not None:
+            return self.async_create_entry(
+                title=self._name, data={CONF_HOST: self._host}
+            )
+        return self.async_show_form(
+            step_id="ssdp_confirm",
+            description_placeholders={"name": self._name},
         )
 
 

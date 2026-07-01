@@ -143,28 +143,32 @@
       "name": "Input Signal",
       "query": "SSINFAISSIG ?",
       "prefix": "SSINFAISSIG",
-      "doc": "Raw input signal type code."
+      "doc": "Raw input signal type code.",
+      "triggers_sound_mode_refresh": true
     },
     "sample_rate": {
       "kind": "sample_rate",
       "name": "Sample Rate",
       "query": "SSINFAISFSV ?",
       "prefix": "SSINFAISFSV",
-      "doc": "Sample rate token such as '48K'. 'NON' means no active signal."
+      "doc": "Sample rate token such as '48K'. 'NON' means no active signal.",
+      "triggers_sound_mode_refresh": true
     },
     "audio_format": {
       "kind": "passthrough",
       "name": "Audio Format",
       "query": "SSINFAISFOR ?",
       "prefix": "SSINFAISFOR",
-      "doc": "Channel layout such as '2/0/.0'."
+      "doc": "Channel layout such as '2/0/.0'.",
+      "triggers_sound_mode_refresh": true
     },
     "decoder": {
       "kind": "trimmed",
       "name": "Decoder",
       "query": "SYSDA ?",
       "prefix": "SYSDA ",
-      "doc": "Active decoder/audio format, for example 'PCM' (space padded)."
+      "doc": "Active decoder/audio format, for example 'PCM' (space padded).",
+      "triggers_sound_mode_refresh": true
     },
     "mode_info": {
       "kind": "trimmed",

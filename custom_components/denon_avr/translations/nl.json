@@ -1,5 +1,6 @@
 {
   "config": {
+    "flow_title": "{name}",
     "step": {
       "user": {
         "title": "Denon AVR",
@@ -7,6 +8,10 @@
         "data": {
           "host": "IP-adres"
         }
+      },
+      "ssdp_confirm": {
+        "title": "Denon AVR",
+        "description": "Wil je de gevonden receiver {name} toevoegen?"
       }
     },
     "error": {

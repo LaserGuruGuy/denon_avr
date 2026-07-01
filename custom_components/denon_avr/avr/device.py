@@ -55,6 +55,16 @@ class DenonAvrDevice:
 
         self._update_callback: Callable[[], None] | None = None
         self._update_handle: asyncio.TimerHandle | None = None
+        # Strong references to fire and forget tasks (delayed queries, OPSML
+        # refreshes). Without these, asyncio only keeps a weak reference and the
+        # task can be garbage collected before it runs.
+        self._pending_tasks: set[asyncio.Task] = set()
+        # Line prefixes that signal an audio format change (decoder, input
+        # signal, sample rate, audio format). The sound mode lists are signal
+        # dependent, so these trigger a coalesced re-query. Coalescing avoids a
+        # query storm when the receiver pushes several of them at once.
+        self._refresh_trigger_prefixes = self._profile.sound_mode_refresh_prefixes
+        self._mode_refresh_scheduled = False
         self._available = False
         # Adaptive sound mode wire learning. Off by default for predictability;
         # the coordinator sets this from the config entry option. When off, wire
@@ -121,6 +131,19 @@ class DenonAvrDevice:
         self._update_callback = callback
 
     # Lifecycle ------------------------------------------------------------
+
+    async def async_fetch_identity(self):
+        """Fetch just the device identity (model name, MAC) over HTTP.
+
+        Used by the config flow (including SSDP discovery) to validate the
+        receiver and obtain the unique id without the heavier telnet probe that
+        full discovery performs. Raises ConnectionError when unreachable.
+        """
+
+        xml_text = await self._http.async_get_device_info()
+        if xml_text is None:
+            raise ConnectionError(f"No Deviceinfo response from {self._host}")
+        return parse_device_info(xml_text).device
 
     async def async_discover(self) -> Discovery:
         """Fetch the Deviceinfo document and populate the discovery model.
@@ -249,6 +272,9 @@ class DenonAvrDevice:
         if self._update_handle is not None:
             self._update_handle.cancel()
             self._update_handle = None
+        for task in list(self._pending_tasks):
+            task.cancel()
+        self._pending_tasks.clear()
         await self._telnet.async_stop()
 
     async def async_poll(self) -> None:
@@ -282,6 +308,21 @@ class DenonAvrDevice:
 
         if self._parser.feed(line, self._state):
             self._schedule_update()
+        # The receiver pushes OPSMLALL (all groups) when the sound mode context
+        # changes, e.g. after a genre group switch, but never pushes OPSML (the
+        # current group's selectable modes). When an OPSMLALL push completes,
+        # re-query OPSML so the per group Sound Mode list follows the change.
+        if line.startswith("OPSMLALL"):
+            remainder = line[len("OPSMLALL") :].strip()
+            if remainder.startswith(self._profile.list_terminator):
+                self._create_task(self._query_current_sound_modes())
+        # An audio format change (new stream/decoder, even on the same source)
+        # changes which sound modes the receiver offers. Most changes are pushed
+        # by the receiver, but re-query the lists to stay in sync regardless.
+        if self._refresh_trigger_prefixes and line.startswith(
+            self._refresh_trigger_prefixes
+        ):
+            self._schedule_mode_list_refresh()
 
     def _handle_availability(self, available: bool) -> None:
         """React to the telnet link going up or down."""
@@ -499,20 +540,79 @@ class DenonAvrDevice:
             return override
         return name.upper()
 
+    def _current_sound_modes_query(self) -> str | None:
+        """The OPSML query token from the profile, or None if unavailable."""
+
+        return self._profile.introspection_query("current_sound_modes")
+
+    async def _query_current_sound_modes(self) -> None:
+        """Send a single OPSML query to refresh the current-context mode list."""
+
+        query = self._current_sound_modes_query()
+        if query:
+            await self._send(query)
+
+    async def _query_sound_mode_lists(self) -> None:
+        """Re-query both the all groups (OPSMLALL) and current (OPSML) lists."""
+
+        for query in (
+            self._profile.introspection_query("sound_mode_list"),
+            self._current_sound_modes_query(),
+        ):
+            if query:
+                await self._send(query)
+
+    def _schedule_mode_list_refresh(self) -> None:
+        """Coalesce audio format change events into one delayed list re-query.
+
+        The receiver emits several signal events (decoder, sample rate, ...) for
+        a single format change; a short debounce collapses them into one refresh
+        and lets the receiver settle on the new format before querying.
+        """
+
+        if self._mode_refresh_scheduled:
+            return
+        self._mode_refresh_scheduled = True
+
+        async def _refresh() -> None:
+            try:
+                await asyncio.sleep(1.0)
+                await self._query_sound_mode_lists()
+            except asyncio.CancelledError:
+                pass
+            finally:
+                self._mode_refresh_scheduled = False
+
+        self._create_task(_refresh())
+
     async def _refresh_current_sound_modes(self) -> None:
         """Re-query the current-context mode list after a mode/group change.
 
         The receiver pushes OPSMLALL (not OPSML) on a change, so the OPSML list
         must be pulled. A query sent immediately can race the receiver still
-        switching, so a second delayed query is scheduled to catch the settled
-        context. Both are best effort.
+        switching; the OPSMLALL push handler (see _handle_line) re-queries once
+        the switch settles, and a delayed query here is a further safety net.
+        Both are best effort.
         """
 
-        query = self._profile.introspection.get("current_sound_modes", {}).get("query")
+        query = self._current_sound_modes_query()
         if not query:
             return
         await self._send(query)
         self._schedule_delayed_query(query, 0.8)
+
+    def _create_task(self, coro) -> None:
+        """Schedule a fire and forget coroutine, keeping a strong reference.
+
+        asyncio holds only a weak reference to bare tasks, so a task started
+        without keeping its reference can be garbage collected before it runs.
+        Tracking it here (and discarding on completion) keeps it alive and lets
+        async_stop cancel anything still pending.
+        """
+
+        task = asyncio.ensure_future(coro)
+        self._pending_tasks.add(task)
+        task.add_done_callback(self._pending_tasks.discard)
 
     def _schedule_delayed_query(self, query: str, delay: float) -> None:
         """Fire and forget a telnet query after a short delay."""
@@ -524,7 +624,7 @@ class DenonAvrDevice:
             except asyncio.CancelledError:
                 pass
 
-        asyncio.ensure_future(_later())
+        self._create_task(_later())
 
     async def async_select_quick_select(self, number: int) -> None:
         """Recall a main zone quick select preset by its number."""

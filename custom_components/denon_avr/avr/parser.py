@@ -243,6 +243,10 @@ class TelnetParser:
         # so the published lists are always a clean, complete single response.
         self._opsml_pending: list[str] = []
         self._opsmlall_pending: list[str] = []
+        # Per genre group accumulator (MOV/MUS/GAM/PUR -> modes), rebuilt each
+        # OPSMLALL cycle so a signal change cannot leave a group with a mode the
+        # receiver no longer offers.
+        self._opsmlall_groups_pending: dict[str, list[str]] = {}
         # Precompute the generic feature and read only matchers, longest prefix
         # first so that specific tokens win over shorter ones.
         self._feature_matchers = sorted(
@@ -387,9 +391,12 @@ class TelnetParser:
 
         remainder = remainder.strip()
         if remainder.startswith(self._profile.list_terminator):
-            # End of the list: publish the accumulated set (receiver order).
+            # End of the list: publish the accumulated set (receiver order) and
+            # swap in the freshly rebuilt per group map so no stale modes remain.
             self._discovery.all_sound_modes = list(self._opsmlall_pending)
+            self._discovery.sound_mode_groups = self._opsmlall_groups_pending
             self._opsmlall_pending = []
+            self._opsmlall_groups_pending = {}
             return True
         if not remainder:
             return False
@@ -402,7 +409,7 @@ class TelnetParser:
             return False
         if name not in self._opsmlall_pending:
             self._opsmlall_pending.append(name)
-        modes = self._discovery.sound_mode_groups.setdefault(genre, [])
+        modes = self._opsmlall_groups_pending.setdefault(genre, [])
         if name not in modes:
             modes.append(name)
         return True

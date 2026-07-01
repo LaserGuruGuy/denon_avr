@@ -122,6 +122,27 @@ class ProtocolProfile:
     def volume_max_fallback(self) -> float:
         return float(self.grammar.get("volume_max_fallback", 98.0))
 
+    @property
+    def sound_mode_refresh_prefixes(self) -> tuple[str, ...]:
+        """Line prefixes whose arrival means the audio signal changed.
+
+        The sound mode lists are signal dependent, so when one of these events
+        arrives (decoder, input signal, sample rate, audio format) the lists
+        should be re-queried. Which events trigger this is flagged in the
+        profile's readonly section, keeping it data driven, not hard coded.
+        """
+
+        return tuple(
+            spec.get("prefix", "")
+            for spec in self.readonly.values()
+            if spec.get("triggers_sound_mode_refresh") and spec.get("prefix")
+        )
+
+    def introspection_query(self, key: str) -> str | None:
+        """Return the query string for an introspection item, or None."""
+
+        return self.introspection.get(key, {}).get("query")
+
     def control(self, control_id: str) -> ControlSpec | None:
         """Return a control spec by id, or None when unknown."""
 

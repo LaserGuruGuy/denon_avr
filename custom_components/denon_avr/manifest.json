@@ -9,5 +9,11 @@
   "issue_tracker": "https://github.com/LaserGuruGuy/denon_avr/issues",
   "loggers": ["custom_components.denon_avr"],
   "requirements": [],
-  "version": "0.2.0"
+  "ssdp": [
+    {
+      "deviceType": "urn:schemas-denon-com:device:AiosDevice:1",
+      "manufacturer": "Denon"
+    }
+  ],
+  "version": "0.3.0"
 }
