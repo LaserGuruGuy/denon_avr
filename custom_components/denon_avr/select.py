@@ -52,6 +52,13 @@ async def async_setup_entry(
         channels = profile.group_channels(group)
         enabled = (not configured) or any(c in configured for c in channels)
         entities.append(DenonAvrCrossover(coordinator, group, channels, enabled))
+    # One size select (Large/Small) per regular speaker group the receiver
+    # reports (the count groups - subwoofer, surround back - are not sizes).
+    size_groups = profile.speakers.get("groups", {})
+    for group in sorted(g for g in coordinator.data.speaker_sizes if g in size_groups):
+        channels = profile.group_channels(group)
+        enabled = (not configured) or any(c in configured for c in channels)
+        entities.append(DenonAvrSpeakerSize(coordinator, group, channels, enabled))
     async_add_entities(entities)
 
 
@@ -200,6 +207,47 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         hertz = int(option.split()[0])
         await self.coordinator.device.async_set_crossover(self._group, hertz)
+
+
+class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
+    """A select entity for one speaker group's size (Large/Small).
+
+    The size is a fixed two-value protocol enum (like the receiver's other enum
+    controls); the wire tokens and labels come from the profile. The current
+    value is read over telnet (SSSPC); groups the receiver reports as absent map
+    to no option and are disabled by default.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(
+        self,
+        coordinator: DenonAvrCoordinator,
+        group: str,
+        channels: list[str],
+        enabled: bool,
+    ) -> None:
+        super().__init__(coordinator, f"select_speaker_size_{group}")
+        self._group = group
+        self._attr_entity_registry_enabled_default = enabled
+        sizes = coordinator.device.profile.speakers.get("sizes", {}).get("options", {})
+        self._token_to_label = dict(sizes)
+        self._label_to_token = {label: token for token, label in sizes.items()}
+        self._attr_options = list(sizes.values())
+        self._attr_name = (
+            f"{group_name(coordinator.device.discovery, channels)} Speaker Size"
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        token = self.coordinator.data.speaker_sizes.get(self._group)
+        # Absent/count tokens map to no option, so no "invalid option" warning.
+        return self._token_to_label.get(token)
+
+    async def async_select_option(self, option: str) -> None:
+        token = self._label_to_token.get(option)
+        if token:
+            await self.coordinator.device.async_set_speaker_size(self._group, token)
 
 
 class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):

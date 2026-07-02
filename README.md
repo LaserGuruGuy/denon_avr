@@ -74,8 +74,9 @@ Notes:
   and the modes within the active group (context aware, includes Auto).
 - **Selects**: Dynamic Compression, Dynamic Volume, Reference Level Offset,
   MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, HDMI Monitor Out,
-  Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select, and a per speaker group
-  crossover frequency (Hz) — each only when the receiver advertises it.
+  Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select, a per speaker group
+  crossover frequency (Hz), and a per speaker group size (Large/Small) — each
+  only when the receiver advertises it.
 - **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
   Subwoofer, Speaker Virtualizer, Center Spread, DTS Neural:X, Low Frequency
   Containment (LFC).
@@ -86,9 +87,9 @@ Notes:
   mode info, sound mode, volume (dB).
 - **Binary sensor**: telnet connectivity.
 
-Per channel trims and distances, and per group crossovers, for speakers the
-receiver has **not** configured are registered but disabled by default; enable
-them from the entity settings if you need them.
+Per channel trims and distances, and per group crossovers and sizes, for
+speakers the receiver has **not** configured are registered but disabled by
+default; enable them from the entity settings if you need them.
 
 Speaker crossover frequencies are a discrete, non-uniform set, so they are
 exposed as a select rather than a stepped number. The current crossover per group

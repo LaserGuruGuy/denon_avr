@@ -206,6 +206,10 @@ class AvrState:
     # speaker group code (FRO, CEN, SUA, ...). Crossover is a group setting, not
     # a per channel one, so this is keyed by group rather than channel.
     crossovers: dict[str, int] = field(default_factory=dict)
+    # Per speaker group size token from SSSPC, keyed by group code. Regular
+    # groups report LAR/SMA (Large/Small) or the absent token; the count groups
+    # (subwoofer, surround back) report presence/count tokens instead.
+    speaker_sizes: dict[str, str] = field(default_factory=dict)
 
     def zone(self, zone_id: str) -> ZoneState:
         """Return the ZoneState for a zone id, creating it on first access."""

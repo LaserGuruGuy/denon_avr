@@ -77,6 +77,10 @@
     ],
     "absent_token": "NON",
     "double_token": "2SP",
+    "sizes": {
+      "doc": "Speaker size wire tokens for the regular (non-count) groups, exposed as a select. LAR=Large, SMA=Small; the absent_token (NON) means no speaker. The count groups (subwoofer, surround back) report presence/count tokens instead and are not size-selectable. Set via 'SSSPC<GROUP> <token>' (verified live: read -> set -> restore).",
+      "options": {"LAR": "Large", "SMA": "Small"}
+    },
     "groups": {
       "FRO": ["FL", "FR"],
       "CEN": ["C"],
@@ -140,7 +144,8 @@
     "speaker_config": {
       "query": "SSSPC ?",
       "prefix": "SSSPC",
-      "doc": "One line per speaker group with its size/presence setting."
+      "set_prefix": "SSSPC",
+      "doc": "One line per speaker group with its size/presence setting. Settable per group via 'SSSPC<GROUP> <token>' (see speakers.sizes for the size tokens)."
     },
     "crossover": {
       "query": "SSCFR ?",

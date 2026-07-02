@@ -707,6 +707,13 @@ class DenonAvrDevice:
         width = int(self._profile.crossover.get("width", 3) or 3)
         await self._send(f"{set_prefix}{group} {int(hertz):0{width}d}")
 
+    async def async_set_speaker_size(self, group: str, token: str) -> None:
+        """Set a speaker group's size (Large/Small) via the SSSPC command."""
+
+        spec = self._profile.introspection.get("speaker_config", {})
+        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSSPC"
+        await self._send(f"{set_prefix}{group} {token}")
+
     # Encoding helpers -----------------------------------------------------
 
     def _level_to_raw(self, zone_id: str, level: float) -> float:

@@ -372,7 +372,7 @@ class TelnetParser:
         if line.startswith("SSQSNZMA"):
             return self._set_quick_select_name(line[8:])
         if line.startswith("SSSPC"):
-            return self._set_speaker_config(line[5:])
+            return self._set_speaker_config(line[5:], state)
         if line.startswith("OPSMLALL"):
             return self._set_sound_mode_list(line[8:], state=state)
         if line.startswith("OPSML"):
@@ -629,7 +629,7 @@ class TelnetParser:
         self._discovery.quick_select_names[int(digits)] = name
         return True
 
-    def _set_speaker_config(self, remainder: str) -> bool:
+    def _set_speaker_config(self, remainder: str, state: AvrState) -> bool:
         remainder = remainder.strip()
         if not remainder or remainder.startswith(self._profile.list_terminator):
             return False
@@ -637,7 +637,11 @@ class TelnetParser:
         value = value.strip()
         if not group or not value:
             return False
+        # discovery.speaker_config accumulates every reported value per group (it
+        # drives the configured-channel derivation); state.speaker_sizes keeps the
+        # latest single value per group so the size selects have a live value.
         self._discovery.speaker_config.setdefault(group, set()).add(value)
+        state.speaker_sizes[group] = value
         self._recompute_configured_channels()
         return True
 
