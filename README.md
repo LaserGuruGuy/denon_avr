@@ -77,8 +77,8 @@ Notes:
   and the modes within the active group (context aware, includes Auto).
 - **Selects**: Dynamic Compression, Dynamic Volume, Reference Level Offset,
   MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, HDMI Monitor Out,
-  HDMI Audio Out (Amp/TV), Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select,
-  Subwoofer Mode
+  HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
+  (ARC/eARC/…), Quick Select, Subwoofer Mode
   (LFE / LFE+Main), a per speaker group crossover frequency (Hz), and a per
   speaker group size (Large/Small) — each only when the receiver advertises it.
 - **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
@@ -134,6 +134,10 @@ projects, but written from scratch as an independent, fully dynamic integration.
 For the official, first‑party Home Assistant integration for these receivers,
 see **Denon AVR Network Receivers**:
 <https://www.home-assistant.io/integrations/denonavr/>.
+
+With thanks to **Denon** for publicly documenting the AV Receiver control
+protocol, which made this independent, accurate implementation possible. Denon's
+official documentation is available at <https://manuals.denon.com/>.
 
 ## Trademarks and acknowledgements
 

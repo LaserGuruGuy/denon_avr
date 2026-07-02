@@ -583,6 +583,16 @@
       "labels": ["Amp", "TV"],
       "doc": "HDMI audio output routing: AMP (the receiver decodes/plays the audio) or TV (HDMI audio passed through to the TV, muting the receiver). Note the trailing space in the prefix ('VSAUDIO <value>'). Read/write verified live via an /ajax cross-check (AMP<->TV flips the receiver's HDMIAudioOut). Labels come from the device when it publishes them, otherwise these."
     },
+    "resolution_hdmi": {
+      "scope": "feature",
+      "feature": "ResolutionHdmi",
+      "kind": "enum",
+      "query": "VSSCH ?",
+      "prefix": "VSSCH",
+      "values": ["AUTO", "48P", "10I", "72P", "10P", "10P24", "4K", "4KF"],
+      "labels": ["Auto", "480p/576p", "1080i", "720p", "1080p", "1080p:24Hz", "4K", "4K (60/50)"],
+      "doc": "HDMI output resolution (scaler). Wire tokens from the Denon control protocol (VSSCH<token>); AUTO/48P/10I/72P/10P/10P24/4K verified live read/write. Only settable when Video Conversion is on and the IP scaler is on HDMI (the receiver otherwise rejects it); this is the ResolutionHDMI field the web Output Settings page gates the same way. 'VSSC' (analog) is a separate, hidden path and is not exposed."
+    },
     "input_mode": {
       "scope": "feature",
       "feature": "InputMode",
