@@ -324,14 +324,20 @@ class TelnetParser:
         if line.startswith("PW"):
             return self._set_system_power(line[2:], state)
         if line.startswith("ZM"):
-            state.zone("main").power = line[2:].strip() == "ON"
+            on = line[2:].strip() == "ON"
+            state.zone("main").power = on
+            # Mirror into values so the (optional) main-power switch reads state.
+            state.values["main_power"] = on
             return True
         if line.startswith("MVMAX"):
             return self._set_volume_max("main", line[5:], state)
         if line.startswith("MV") and not line.startswith(("MVUP", "MVDOWN")):
             return self._set_volume("main", line[2:], state)
         if line.startswith("MU"):
-            state.zone("main").muted = line[2:].strip() == "ON"
+            on = line[2:].strip() == "ON"
+            state.zone("main").muted = on
+            # Mirror into values so the (optional) main-mute switch reads state.
+            state.values["main_mute"] = on
             return True
         if line.startswith("MSQUICK"):
             # Current main zone quick select preset number (0 = none).
@@ -381,6 +387,17 @@ class TelnetParser:
             # All Zone Stereo: a core on/off with no FuncName, decoded like a feature.
             spec = self._profile.control("all_zone_stereo")
             return self._set_feature(spec, line[5:], state) if spec else False
+        if line.startswith("SSVCTZMA"):
+            # Volume settings (scale/limit/muting level) - core enums, no FuncName.
+            for sub, cid in (
+                ("DIS", "volume_scale"),
+                ("LIM", "volume_limit"),
+                ("MLV", "muting_level"),
+            ):
+                if line.startswith("SSVCTZMA" + sub):
+                    spec = self._profile.control(cid)
+                    return self._set_feature(spec, line[8 + len(sub):], state) if spec else False
+            return False
         if line.startswith("OPSMLALL"):
             return self._set_sound_mode_list(line[8:], state=state)
         if line.startswith("OPSML"):
@@ -425,6 +442,10 @@ class TelnetParser:
             return False
         # This is the active mode's wire token (for example "DOLBY AUDIO-DSUR").
         state.values["sound_mode"] = remainder
+        # All Zone Stereo is reflected as a sound mode ("ALL ZONE STEREO"), so
+        # mirror it here to give the All Zone Stereo switch a known on/off state
+        # (its own MNZST '?' query returns nothing; MS? is answered on resync).
+        state.values["all_zone_stereo"] = remainder == "ALL ZONE STEREO"
         # If we already know the current mode's display name, learn the mapping
         # from display name to wire token so selection can use the right token.
         display = state.values.get("sound_mode_display")

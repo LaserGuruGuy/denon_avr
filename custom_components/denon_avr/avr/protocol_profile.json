@@ -243,7 +243,8 @@
       "prefix": "ZM",
       "on": "ON",
       "off": "OFF",
-      "doc": "Main zone power."
+      "icon": "mdi:power",
+      "doc": "Main zone power. Also on the media player; exposed as a switch too. State comes from the ZM event (mirrored into values)."
     },
     "main_volume": {
       "scope": "core",
@@ -264,7 +265,8 @@
       "prefix": "MU",
       "on": "ON",
       "off": "OFF",
-      "doc": "Main zone mute."
+      "icon": "mdi:volume-mute",
+      "doc": "Main zone mute. Also on the media player; exposed as a switch too with a speaker/mute icon. State comes from the MU event (mirrored into values)."
     },
     "main_source": {
       "scope": "core",
@@ -418,6 +420,36 @@
       "prefix": "PSSWL ",
       "doc": "Subwoofer level, half step, 50 == 0 dB. The dB range is discovered from the receiver's SubwooferLevel block."
     },
+    "volume_scale": {
+      "scope": "core",
+      "kind": "enum",
+      "query": "SSVCTZMA ?",
+      "prefix": "SSVCTZMADIS ",
+      "values": ["REL", "ABS"],
+      "labels": ["Relative", "Absolute"],
+      "name": "Volume Scale",
+      "doc": "Master volume display scale: Relative (dB around 0, e.g. -79.5..+18.0) or Absolute (0..98). SSVCTZMADIS (verified live). Core-scoped, no FuncName, parsed explicitly."
+    },
+    "volume_limit": {
+      "scope": "core",
+      "kind": "enum",
+      "query": "SSVCTZMA ?",
+      "prefix": "SSVCTZMALIM ",
+      "values": ["OFF", "060", "070", "080"],
+      "labels": ["Off", "-20 dB", "-10 dB", "0 dB"],
+      "name": "Volume Limit",
+      "doc": "Maximum master volume limit. SSVCTZMALIM; the numeric values are the master-volume scale (060=-20 dB, 070=-10 dB, 080=0 dB). Verified live. Core-scoped, no FuncName, parsed explicitly."
+    },
+    "muting_level": {
+      "scope": "core",
+      "kind": "enum",
+      "query": "SSVCTZMA ?",
+      "prefix": "SSVCTZMAMLV ",
+      "values": ["MUT", "040"],
+      "labels": ["Full", "-40 dB"],
+      "name": "Muting Level",
+      "doc": "Attenuation applied when muted: Full or -40 dB. SSVCTZMAMLV (MUT / 040; -20 dB is not offered on this model). Verified live. Core-scoped, no FuncName, parsed explicitly."
+    },
     "all_zone_stereo": {
       "scope": "core",
       "kind": "onoff",
@@ -426,7 +458,8 @@
       "on": "ON",
       "off": "OFF",
       "name": "All Zone Stereo",
-      "doc": "All Zone Stereo: play the main zone audio in stereo across every zone. Set via 'MNZST ON|OFF' (verified live). Core-scoped (no Deviceinfo FuncName), parsed explicitly; the receiver pushes MNZST ON/OFF on change and echoes it on set, so state follows the push/echo (the '?' query may not return a value)."
+      "icon": "mdi:speaker-multiple",
+      "doc": "All Zone Stereo: play the main zone audio in stereo across every zone. Set via 'MNZST ON|OFF' (verified live). Core-scoped (no Deviceinfo FuncName), parsed explicitly. Its own 'MNZST ?' query returns nothing, so the on/off state is derived from the sound mode (MS reports 'ALL ZONE STEREO' when active, verified live) - this gives a known state (single toggle, not two buttons) from the resync MS? onwards; the MNZST echo/push updates it immediately on change."
     },
     "subwoofer_mode": {
       "scope": "core",

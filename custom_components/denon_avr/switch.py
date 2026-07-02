@@ -46,6 +46,10 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
         super().__init__(coordinator, f"switch_{spec.id}")
         self._spec = spec
         self._attr_name = control_name(coordinator.device.discovery, spec)
+        # Optional profile-provided icon (e.g. a speaker/mute icon for main mute).
+        icon = spec.get("icon")
+        if icon:
+            self._attr_icon = icon
 
     @property
     def is_on(self) -> bool | None:

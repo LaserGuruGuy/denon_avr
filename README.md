@@ -74,12 +74,12 @@ Notes:
 - **Selects**: Dynamic Compression, Dynamic Volume, Reference Level Offset,
   MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, HDMI Monitor Out,
   HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
-  (ARC/eARC/…), Quick Select, Subwoofer Mode
-  (LFE / LFE+Main), a per speaker group crossover frequency (Hz), and a per
-  speaker group size (Large/Small) — each only when the receiver advertises it.
-- **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
-  Subwoofer, Speaker Virtualizer, Center Spread, DTS Neural:X, Low Frequency
-  Containment (LFC), All Zone Stereo.
+  (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Volume Scale,
+  Volume Limit, Muting Level, a per speaker group crossover frequency (Hz), and a
+  per speaker group size (Large/Small) — each only when the receiver advertises it.
+- **Switches**: Main Power, Main Mute, Tone Control, Dynamic EQ, Loudness
+  Management, Cinema EQ, Subwoofer, Speaker Virtualizer, Center Spread,
+  DTS Neural:X, Low Frequency Containment (LFC), All Zone Stereo.
 - **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Audio Delay,
   Effect Level, Containment Amount, Sleep Timer, and per channel volume trim and
   speaker distance (m) for each configured speaker.
