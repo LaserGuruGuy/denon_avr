@@ -21,20 +21,16 @@ from collections.abc import Callable
 import aiohttp
 
 from .codec import encode_half_step
-from .const import (
-    COMMAND_SPACING,
-    CONNECT_TIMEOUT,
-    HTTP_PORT,
-    TELNET_PORT,
-    UPNP_DESCRIPTION_PATH,
-    UPNP_PORT,
-)
-from .http_client import HttpClient
 from .models import AvrState, Discovery
 from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
-from .telnet_client import TelnetClient
-from .web_control import WebControlClient
+from .transport import (
+    GoformClient,
+    TelnetClient,
+    UpnpClient,
+    WebControlClient,
+    async_probe,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,13 +48,14 @@ class DenonAvrDevice:
         self._state = AvrState()
         self._parser = TelnetParser(self._profile, self._discovery)
 
-        self._http = HttpClient(session, host, HTTP_PORT)
-        # Isolated, read-only reader for the one thing the goform/telnet channels
-        # do not expose: the selectable speaker crossover set (see web_control).
+        # Each wire protocol is a separate, isolated transport (see transport/):
+        # goform HTTP for discovery/poll, UPnP for firmware/serial, the web
+        # control /ajax read for the crossover set, and telnet for live control.
+        self._goform = GoformClient(session, host)
+        self._upnp = UpnpClient(session, host)
         self._web = WebControlClient(session, host)
         self._telnet = TelnetClient(
             host,
-            TELNET_PORT,
             on_line=self._handle_line,
             on_connected=self._resynchronise,
             on_availability=self._handle_availability,
@@ -151,7 +148,7 @@ class DenonAvrDevice:
         full discovery performs. Raises ConnectionError when unreachable.
         """
 
-        xml_text = await self._http.async_get_device_info()
+        xml_text = await self._goform.async_get_device_info()
         if xml_text is None:
             raise ConnectionError(f"No Deviceinfo response from {self._host}")
         return parse_device_info(xml_text).device
@@ -163,7 +160,7 @@ class DenonAvrDevice:
         config flow can report a clear failure.
         """
 
-        xml_text = await self._http.async_get_device_info()
+        xml_text = await self._goform.async_get_device_info()
         if xml_text is None:
             raise ConnectionError(f"No Deviceinfo response from {self._host}")
         # Tell the parser which feature blocks to read titles/labels from, using
@@ -222,9 +219,7 @@ class DenonAvrDevice:
         unset rather than guessed.
         """
 
-        xml_text = await self._http.async_get_upnp_description(
-            UPNP_PORT, UPNP_DESCRIPTION_PATH
-        )
+        xml_text = await self._upnp.async_get_description()
         if not xml_text:
             return
         device = self._discovery.device
@@ -233,51 +228,27 @@ class DenonAvrDevice:
                 setattr(device, attr, value)
 
     async def _async_probe_introspection(self) -> None:
-        """Query the introspection commands over a short lived telnet session.
+        """Populate the telnet-discovered model over a short lived connection.
 
-        This is separate from the persistent connection so discovery is
-        deterministic at setup time. It never raises; on any failure it simply
-        returns and the persistent resync fills the model slightly later.
+        Separate from the persistent connection so discovery is deterministic at
+        setup time. The raw socket handling lives in the telnet transport; this
+        just supplies the queries and feeds the replies to the parser, stopping
+        once the sources and speaker configuration have arrived.
         """
 
-        try:
-            reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(self._host, TELNET_PORT),
-                timeout=CONNECT_TIMEOUT,
-            )
-        except (OSError, asyncio.TimeoutError) as err:
-            _LOGGER.debug("Introspection probe could not connect: %s", err)
-            return
-
-        loop = asyncio.get_running_loop()
-        try:
-            for spec in self._profile.introspection.values():
-                query = spec.get("query")
-                if query:
-                    writer.write(f"{query}\r".encode("utf-8"))
-                    await writer.drain()
-                    await asyncio.sleep(COMMAND_SPACING)
-            # Read responses until the key discovery data is present or a short
-            # deadline passes.
-            deadline = loop.time() + 3.0
-            while loop.time() < deadline:
-                try:
-                    raw = await asyncio.wait_for(reader.readuntil(b"\r"), timeout=0.4)
-                except asyncio.TimeoutError:
-                    if self._discovery.configured_channels and self._discovery.sources:
-                        break
-                    continue
-                except (asyncio.IncompleteReadError, asyncio.LimitOverrunError):
-                    break
-                line = raw.decode("utf-8", errors="replace").strip("\r\n")
-                if line:
-                    self._parser.feed(line, self._state)
-        finally:
-            writer.close()
-            try:
-                await writer.wait_closed()
-            except OSError:
-                pass
+        queries = [
+            spec["query"]
+            for spec in self._profile.introspection.values()
+            if spec.get("query")
+        ]
+        await async_probe(
+            self._host,
+            queries,
+            lambda line: self._parser.feed(line, self._state),
+            lambda: bool(
+                self._discovery.configured_channels and self._discovery.sources
+            ),
+        )
 
     async def async_start(self) -> None:
         """Start the telnet transport (which triggers the first resync)."""
@@ -330,7 +301,7 @@ class DenonAvrDevice:
         main_path = self._profile.zones.get(
             "status_lite_main", "/goform/formMainZone_MainZoneXmlStatusLite.xml"
         )
-        status = await self._http.async_get_status(main_path)
+        status = await self._goform.async_get_status(main_path)
         if status is None:
             # HTTP unreachable; rely on the telnet availability signal.
             return

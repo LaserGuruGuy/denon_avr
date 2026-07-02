@@ -4,10 +4,10 @@ This is deliberately kept isolated from the goform HTTP client (port 8080) and
 the telnet control channel. It performs a single, non-disruptive read used at
 discovery: the selectable speaker crossover frequency set. Neither the goform
 document nor the telnet SSCFR channel enumerates that set (they report the
-*current* crossover, not the allowed values), and the Calibration (1256) channel
-only exposes it inside a disruptive calibration session. The receiver's own web
-Speakers page reads it from this same /ajax endpoint, so it is the cleanest
-non-disruptive source.
+*current* crossover, not the allowed values), and the calibration (1256) channel
+only exposes it inside a disruptive session. The receiver's own web Speakers page
+reads it from this same /ajax endpoint, so it is the cleanest non-disruptive
+source.
 
 All control stays on telnet; this module only ever reads.
 """
@@ -19,7 +19,7 @@ import xml.etree.ElementTree as ET
 
 import aiohttp
 
-from .const import HTTP_TIMEOUT
+from ..const import HTTP_TIMEOUT
 
 _LOGGER = logging.getLogger(__name__)
 

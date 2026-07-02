@@ -1,4 +1,4 @@
-"""HTTP transport for the Denon AVR client library.
+"""The goform HTTP transport (port 8080) for the Denon AVR client library.
 
 The goform HTTP API is used for two things only:
 
@@ -8,8 +8,9 @@ The goform HTTP API is used for two things only:
   confirm the receiver is reachable and recover core state if the telnet push
   channel is temporarily down.
 
-The heavy lifting (control and real time updates) is done over telnet; HTTP is
-the stateless safety net.
+The heavy lifting (control and real time updates) is done over telnet; this is
+the stateless safety net. This module owns its own port and discovery path; no
+other transport shares them.
 """
 
 from __future__ import annotations
@@ -19,32 +20,25 @@ import xml.etree.ElementTree as ET
 
 import aiohttp
 
-from .const import HTTP_DEVICEINFO_PATH, HTTP_TIMEOUT
+from ..const import HTTP_TIMEOUT
 
 _LOGGER = logging.getLogger(__name__)
 
+_PORT = 8080
+_DEVICEINFO_PATH = "/goform/Deviceinfo.xml"
 
-class HttpClient:
-    """Minimal async client for the goform HTTP API."""
 
-    def __init__(self, session: aiohttp.ClientSession, host: str, port: int) -> None:
+class GoformClient:
+    """Minimal async client for the goform HTTP API (port 8080)."""
+
+    def __init__(self, session: aiohttp.ClientSession, host: str) -> None:
         self._session = session
-        self._host = host
-        self._base = f"http://{host}:{port}"
+        self._base = f"http://{host}:{_PORT}"
 
     async def async_get_device_info(self) -> str | None:
         """Fetch the raw Deviceinfo XML, or None on failure."""
 
-        return await self._get_text(HTTP_DEVICEINFO_PATH)
-
-    async def async_get_upnp_description(self, port: int, path: str) -> str | None:
-        """Fetch a UPnP device description (holds firmware + serial number).
-
-        This lives on a different port than the goform API, so the URL is built
-        from the receiver host and the given UPnP port/path.
-        """
-
-        return await self._get_url(f"http://{self._host}:{port}{path}")
+        return await self._get(_DEVICEINFO_PATH)
 
     async def async_get_status(self, path: str) -> dict[str, object] | None:
         """Fetch and parse the StatusLite snapshot at the given path.
@@ -53,19 +47,15 @@ class HttpClient:
         'muted', or None when the endpoint is unavailable.
         """
 
-        text = await self._get_text(path)
+        text = await self._get(path)
         if text is None:
             return None
         return self._parse_status(text)
 
-    async def _get_text(self, path: str) -> str | None:
+    async def _get(self, path: str) -> str | None:
         """Perform a GET against the goform base and return the body text."""
 
-        return await self._get_url(f"{self._base}{path}")
-
-    async def _get_url(self, url: str) -> str | None:
-        """Perform a GET against an absolute URL, returning body text or None."""
-
+        url = f"{self._base}{path}"
         try:
             timeout = aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
             async with self._session.get(url, timeout=timeout) as response:

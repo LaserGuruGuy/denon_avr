@@ -337,7 +337,7 @@
       "prefix": "PSDYNEQ ",
       "on": "ON",
       "off": "OFF",
-      "doc": "Calibration Dynamic EQ."
+      "doc": "Dynamic EQ."
     },
     "dynamic_volume": {
       "scope": "feature",
@@ -346,7 +346,7 @@
       "query": "PSDYNVOL ?",
       "prefix": "PSDYNVOL ",
       "values": ["OFF", "LIT", "MED", "HEV"],
-      "doc": "Calibration Dynamic Volume."
+      "doc": "Dynamic Volume."
     },
     "reference_level_offset": {
       "scope": "feature",
@@ -355,7 +355,7 @@
       "query": "PSREFLEV ?",
       "prefix": "PSREFLEV ",
       "values": ["0", "5", "10", "15"],
-      "doc": "Calibration reference level offset in dB."
+      "doc": "Reference level offset in dB."
     },
     "loudness_management": {
       "scope": "feature",
@@ -384,7 +384,7 @@
       "query": "PSMULTEQ: ?",
       "prefix": "PSMULTEQ:",
       "values": ["AUDYSSEY", "BYP.LR", "FLAT", "MANUAL", "OFF"],
-      "doc": "Calibration MultEQ room correction mode."
+      "doc": "MultEQ room correction mode."
     },
     "restorer": {
       "scope": "feature",
@@ -464,7 +464,7 @@
       "off": "OFF",
       "doc": "DTS Neural:X upmixer. Verified live (PSNEURAL ON/OFF). Only applies to compatible content."
     },
-    "tcp_client_lfc": {
+    "low_frequency_containment": {
       "scope": "feature",
       "feature": "AudysseyLfc",
       "kind": "onoff",
@@ -472,7 +472,7 @@
       "prefix": "PSLFC ",
       "on": "ON",
       "off": "OFF",
-      "doc": "Calibration Low Frequency Containment. Verified live (PSLFC ON/OFF)."
+      "doc": "Low Frequency Containment. Verified live (PSLFC ON/OFF)."
     },
     "effect_level": {
       "scope": "feature",
@@ -496,7 +496,7 @@
       "min": 0,
       "max": 7,
       "step": 1,
-      "doc": "Calibration LFC containment amount. Verified live (PSCNTAMT). The receiver publishes only step/default, so 0-7 is the protocol fallback range. Applies when Calibration LFC is on."
+      "doc": "LFC containment amount. Verified live (PSCNTAMT). The receiver publishes only step/default, so 0-7 is the protocol fallback range. Applies when LFC is on."
     },
     "audio_delay": {
       "scope": "feature",

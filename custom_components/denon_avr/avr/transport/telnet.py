@@ -1,6 +1,6 @@
-"""Asynchronous telnet transport for the Denon AVR client library.
+"""Asynchronous telnet transport (port 23) for the Denon AVR client library.
 
-This class owns the raw telnet socket only. It knows nothing about the protocol
+This module owns the raw telnet socket only. It knows nothing about the protocol
 grammar; it just delivers received lines to a callback and serialises outgoing
 commands. Robustness features:
 
@@ -12,6 +12,10 @@ commands. Robustness features:
   is detected quickly.
 * On every (re)connection a callback is invoked so the owner can resynchronise
   the full state.
+
+A one-shot `async_probe` helper is also provided for deterministic discovery: it
+opens a short-lived connection, sends queries, and feeds the replies to a
+callback, entirely separate from the persistent connection above.
 """
 
 from __future__ import annotations
@@ -20,7 +24,7 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 
-from .const import (
+from ..const import (
     COMMAND_SPACING,
     CONNECT_TIMEOUT,
     KEEPALIVE_INTERVAL,
@@ -30,10 +34,66 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# The primary control channel's TCP port.
+DEFAULT_PORT = 23
 # The receiver terminates every line with a carriage return.
 _TERMINATOR = b"\r"
 # A harmless query used to keep the link alive and to detect a dead socket.
 _KEEPALIVE_COMMAND = "PW?"
+
+
+async def async_probe(
+    host: str,
+    queries: list[str],
+    on_line: Callable[[str], None],
+    is_complete: Callable[[], bool],
+    *,
+    port: int = DEFAULT_PORT,
+    deadline: float = 3.0,
+) -> None:
+    """Open a short-lived telnet connection to run discovery queries.
+
+    Sends every query, then feeds each received line to `on_line` until
+    `is_complete()` returns True or `deadline` seconds pass, then closes. This is
+    separate from the persistent connection so discovery is deterministic at
+    setup time. It never raises; on any failure it simply returns and the
+    persistent resync fills the model slightly later.
+    """
+
+    try:
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port), timeout=CONNECT_TIMEOUT
+        )
+    except (OSError, asyncio.TimeoutError) as err:
+        _LOGGER.debug("Discovery probe could not connect to %s: %s", host, err)
+        return
+
+    loop = asyncio.get_running_loop()
+    try:
+        for query in queries:
+            writer.write(query.encode("utf-8") + _TERMINATOR)
+            await writer.drain()
+            await asyncio.sleep(COMMAND_SPACING)
+        # Read responses until the key discovery data is present or the deadline.
+        end = loop.time() + deadline
+        while loop.time() < end:
+            try:
+                raw = await asyncio.wait_for(reader.readuntil(_TERMINATOR), timeout=0.4)
+            except asyncio.TimeoutError:
+                if is_complete():
+                    break
+                continue
+            except (asyncio.IncompleteReadError, asyncio.LimitOverrunError):
+                break
+            line = raw.decode("utf-8", errors="replace").strip("\r\n")
+            if line:
+                on_line(line)
+    finally:
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except OSError:
+            pass
 
 
 class TelnetClient:
@@ -42,10 +102,10 @@ class TelnetClient:
     def __init__(
         self,
         host: str,
-        port: int,
         on_line: Callable[[str], None],
         on_connected: Callable[[], Awaitable[None]] | None = None,
         on_availability: Callable[[bool], None] | None = None,
+        port: int = DEFAULT_PORT,
     ) -> None:
         self._host = host
         self._port = port

@@ -1,12 +1,12 @@
-"""Calibration MultEQ transport for the Denon AVR client library.
+"""Length-framed JSON control transport (port 1256) for the client library.
 
 This is a separate, opt-in transport from the telnet control channel. It speaks
-the Calibration MultEQ Editor protocol on TCP port 1256, which is the only way to
-read and write the manual speaker setup (amp assignment, speaker size/crossover,
-distances) and the Calibration calibration filters. The receiver has no push on
-this port and entering an Calibration session interrupts playback, so this module
-is used only for those setup operations and never for live state monitoring;
-that stays on telnet (see device.py / telnet_client.py).
+the receiver's length-framed binary/JSON protocol on TCP port 1256, which is the
+way to read and write the manual speaker setup (amp assignment, speaker
+size/crossover, distances) and the room-correction calibration filters. The
+receiver has no push on this port and entering a calibration session interrupts
+playback, so this module is used only for those setup operations and never for
+live state monitoring; that stays on telnet (see device.py / telnet.py).
 
 Wire framing (reverse engineered, big-endian on the wire):
 
@@ -30,7 +30,7 @@ from dataclasses import dataclass
 
 _LOGGER = logging.getLogger(__name__)
 
-TCP_PORT = 1256
+_PORT = 1256
 
 # Every command token is exactly this many ASCII bytes on the wire.
 COMMAND_LEN = 10
@@ -115,7 +115,7 @@ class FrameDecoder:
             return None
         packet = bytes(buf[:total_length])
         if checksum(packet[:-1]) != packet[-1]:
-            _LOGGER.debug("Calibration frame checksum mismatch; resynchronising")
+            _LOGGER.debug("TCP frame checksum mismatch; resynchronising")
             del buf[0]
             return None
         del buf[:total_length]
@@ -145,17 +145,17 @@ class FrameDecoder:
         return Message(command, ordered)
 
 
-class CalibrationClient:
-    """Minimal async client for the Calibration MultEQ transport (port 1256).
+class TcpClient:
+    """Minimal async client for the length-framed JSON transport (port 1256).
 
-    Connection and framing only; the session protocol (ENTER_AUDY … EXIT_AUDMD)
-    and the AvrInfo/AvrStatus JSON schemas are layered on top in a later step.
+    Connection and framing only; the session protocol (enter/exit) and the
+    device info/status JSON schemas are layered on top in a later step.
     """
 
     def __init__(
         self,
         host: str,
-        port: int = TCP_PORT,
+        port: int = _PORT,
         on_message: Callable[[Message], None] | None = None,
     ) -> None:
         self._host = host
@@ -179,7 +179,7 @@ class CalibrationClient:
 
     async def send(self, command: str, data: bytes = b"") -> None:
         if self._writer is None:
-            raise ConnectionError("Calibration client is not connected")
+            raise ConnectionError("TCP client is not connected")
         self._writer.write(pack(command, data))
         await self._writer.drain()
 
@@ -189,8 +189,8 @@ class CalibrationClient:
         """Send a command and return the parsed JSON of the matching response.
 
         Reading receiver info (GET_AVRINF) and speaker/amp setup (GET_AVRSTS)
-        does not need an Calibration session, so this is non disruptive; only the
-        actual calibration measurement uses ENTER_AUDY.
+        does not need a session, so this is non disruptive; only the actual
+        calibration measurement enters a session.
         """
 
         loop = asyncio.get_running_loop()
@@ -208,7 +208,7 @@ class CalibrationClient:
         try:
             return json.loads(message.data.decode("ascii", "replace"))
         except json.JSONDecodeError:
-            _LOGGER.debug("Calibration %s response was not valid JSON", command)
+            _LOGGER.debug("%s response was not valid JSON", command)
             return {}
 
     async def async_read_setup(self) -> dict:
@@ -227,7 +227,7 @@ class CalibrationClient:
         The receiver acknowledges with an echo, ACK or NACK, so this waits for
         the next inbound message rather than one keyed to `command`. Returns None
         on timeout. Writing setup (amp assignment, distances, crossover) does not
-        require an Calibration session; only the calibration measurement does.
+        require a session; only the calibration measurement does.
         """
 
         data = b""

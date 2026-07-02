@@ -53,7 +53,7 @@ ports. Nothing needs to be opened towards the internet.
 | **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
 | **10443/tcp** | HTTPS (`/ajax/*`) | Firmware settings API. Currently read once at discovery for the selectable speaker crossover set; the wider settings write API is planned | Optional (degrades gracefully) |
-| **1256/tcp** | Calibration MultEQ | Speaker/Calibration calibration write session (`ENTER_AUDY` … `SET_SETDAT`/`SET_COEFDT`/`SET_DISFIL` … `EXIT_AUDMD`) | Planned |
+| **1256/tcp** | Length‑framed JSON | Speaker setup and room‑correction calibration write session | Planned |
 
 Notes:
 
@@ -62,11 +62,9 @@ Notes:
   broadcasts events to all of them, so this integration coexists with the Denon
   app and other controllers.
 - Port **10443** is read once at discovery for the selectable crossover set (a
-  non-disruptive `get_config` read); its write API and port **1256** (Calibration
-  calibration, the approach used by
-  [Odyssee](https://github.com/LaserGuruGuy/Odyssee)) are for writing speaker
-  configuration and calibration — open them ahead of time if you want that
-  functionality once it lands.
+  non-disruptive `get_config` read); its write API and port **1256** are for
+  writing speaker configuration and room-correction calibration — open them
+  ahead of time if you want that functionality once it lands.
 
 ## What you get
 
@@ -79,7 +77,8 @@ Notes:
   Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select, and a per speaker group
   crossover frequency (Hz) — each only when the receiver advertises it.
 - **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
-  Subwoofer, Speaker Virtualizer, Center Spread, DTS Neural:X, Calibration LFC.
+  Subwoofer, Speaker Virtualizer, Center Spread, DTS Neural:X, Low Frequency
+  Containment (LFC).
 - **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Audio Delay,
   Effect Level, Containment Amount, Sleep Timer, and per channel volume trim and
   speaker distance (m) for each configured speaker.
@@ -108,8 +107,8 @@ API is unavailable or the setup is locked.
 - Speaker distances and crossovers are supported over telnet (read/write). Other
   advanced one time setup settings that the receiver exposes only through its web
   UI's `/ajax` configuration API (full speaker layout, HDMI Control/CEC, per
-  input assignment, some zone defaults) are not implemented. Calibration room
-  calibration remains a job for the receiver's own setup/MultEQ tooling.
+  input assignment, some zone defaults) are not implemented. Room correction
+  calibration remains a job for the receiver's own setup tooling.
 
 ## Tested with
 
