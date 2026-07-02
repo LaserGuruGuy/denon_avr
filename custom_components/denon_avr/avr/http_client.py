@@ -29,12 +29,22 @@ class HttpClient:
 
     def __init__(self, session: aiohttp.ClientSession, host: str, port: int) -> None:
         self._session = session
+        self._host = host
         self._base = f"http://{host}:{port}"
 
     async def async_get_device_info(self) -> str | None:
         """Fetch the raw Deviceinfo XML, or None on failure."""
 
         return await self._get_text(HTTP_DEVICEINFO_PATH)
+
+    async def async_get_upnp_description(self, port: int, path: str) -> str | None:
+        """Fetch a UPnP device description (holds firmware + serial number).
+
+        This lives on a different port than the goform API, so the URL is built
+        from the receiver host and the given UPnP port/path.
+        """
+
+        return await self._get_url(f"http://{self._host}:{port}{path}")
 
     async def async_get_status(self, path: str) -> dict[str, object] | None:
         """Fetch and parse the StatusLite snapshot at the given path.
@@ -49,9 +59,13 @@ class HttpClient:
         return self._parse_status(text)
 
     async def _get_text(self, path: str) -> str | None:
-        """Perform a GET and return the body text, or None on any error."""
+        """Perform a GET against the goform base and return the body text."""
 
-        url = f"{self._base}{path}"
+        return await self._get_url(f"{self._base}{path}")
+
+    async def _get_url(self, url: str) -> str | None:
+        """Perform a GET against an absolute URL, returning body text or None."""
+
         try:
             timeout = aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
             async with self._session.get(url, timeout=timeout) as response:

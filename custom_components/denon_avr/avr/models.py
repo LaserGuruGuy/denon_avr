@@ -30,6 +30,11 @@ class DeviceInfo:
     mac_address: str | None = None
     serial_number: str | None = None
     firmware_version: str | None = None
+    hardware_type: str | None = None
+    # HEOS/AIOS network module identifiers, surfaced in diagnostics rather than
+    # on the device card (they describe the streaming module, not the AVR).
+    network_module_version: str | None = None
+    firmware_revision: str | None = None
     zone_count: int = 1
 
 

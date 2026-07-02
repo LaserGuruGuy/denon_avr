@@ -137,6 +137,10 @@
       "doc": "OPSML lists the modes actually selectable in the CURRENT context/group, terminated by 'OPSML END'. Context aware: includes modes OPSMLALL omits (such as Auto) and marks the selected mode. Drives the sound mode select for the active group."
     }
   },
+  "receiver_generations": {
+    "doc": "Deviceinfo <Gen> code -> hardware type name, matching what the official Denon integration reports. Only verified codes are listed; unknown codes leave the hardware type unset (no guessing).",
+    "0002": "avr-x-2016"
+  },
   "readonly": {
     "input_signal": {
       "kind": "passthrough",

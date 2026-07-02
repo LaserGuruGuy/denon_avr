@@ -20,6 +20,12 @@ HTTP_PORT: Final = 8080
 # in the protocol profile because their count depends on the discovered zones.
 HTTP_DEVICEINFO_PATH: Final = "/goform/Deviceinfo.xml"
 
+# The UPnP (AIOS) device description exposes the firmware version and serial
+# number, which the goform Deviceinfo document does not carry. This is the
+# standard HEOS/AIOS description location on Denon and Marantz receivers.
+UPNP_PORT: Final = 60006
+UPNP_DESCRIPTION_PATH: Final = "/upnp/desc/aios_device/aios_device.xml"
+
 # Timing. The Denon telnet server needs a small gap between commands or it will
 # silently drop them, so outgoing commands are serialised through a queue with
 # COMMAND_SPACING seconds between each one. 0.1 s is a safe compromise between

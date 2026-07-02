@@ -91,6 +91,13 @@ class ProtocolProfile:
         }
         self.introspection: dict[str, dict[str, Any]] = raw.get("introspection", {})
         self.readonly: dict[str, dict[str, Any]] = raw.get("readonly", {})
+        # Deviceinfo generation code -> hardware type name (e.g. "avr-x-2016"),
+        # matching the naming the official Denon integration reports.
+        self.receiver_generations: dict[str, str] = {
+            code: value
+            for code, value in raw.get("receiver_generations", {}).items()
+            if code != "doc"
+        }
         self.controls: dict[str, ControlSpec] = {
             control_id: ControlSpec(control_id, data)
             for control_id, data in raw.get("controls", {}).items()

@@ -42,10 +42,45 @@ def _format_mac(raw: str | None) -> str | None:
     return ":".join(raw[i : i + 2] for i in range(0, 12, 2)).lower()
 
 
+# UPnP description local tag name -> the DeviceInfo attribute it fills. The AVR
+# firmware and serial go on the device card; the AIOS (HEOS network module)
+# version and build revision are captured for diagnostics.
+_UPNP_TAGS: dict[str, str] = {
+    "serialNumber": "serial_number",
+    "firmware_version": "firmware_version",
+    "modelNumber": "network_module_version",
+    "firmwareRevision": "firmware_revision",
+}
+
+
+def parse_upnp_description(xml_text: str) -> dict[str, str]:
+    """Extract identity/version fields from a UPnP device description.
+
+    The document is namespaced and contains several sub devices, and the Denon
+    firmware tag is in a vendor namespace, so match on the local tag name and
+    take the first non empty value per field. Returns {} on any parse error.
+    """
+
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return {}
+    result: dict[str, str] = {}
+    for element in root.iter():
+        attr = _UPNP_TAGS.get(element.tag.rsplit("}", 1)[-1])
+        if not attr or attr in result:
+            continue
+        text = (element.text or "").strip()
+        if text:
+            result[attr] = text
+    return result
+
+
 def parse_device_info(
     xml_text: str,
     feature_names: set[str] | None = None,
     enum_features: set[str] | None = None,
+    generations: dict[str, str] | None = None,
 ) -> Discovery:
     """Parse the Deviceinfo XML into a Discovery object.
 
@@ -69,6 +104,12 @@ def parse_device_info(
     device = discovery.device
     device.model_name = (root.findtext("ModelName") or "").strip() or None
     device.mac_address = _format_mac(root.findtext("MacAddress"))
+    # Derive the hardware type from the receiver's generation code using the
+    # profile's code -> name map (grammar, not hardcoded). Unmapped codes leave
+    # the hardware type unset rather than guessing.
+    gen = (root.findtext("Gen") or "").strip()
+    if gen and generations:
+        device.hardware_type = generations.get(gen)
     zones_text = root.findtext("DeviceZones")
     if zones_text and zones_text.strip().isdigit():
         device.zone_count = max(1, int(zones_text.strip()))

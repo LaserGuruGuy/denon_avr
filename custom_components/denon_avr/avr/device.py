@@ -21,10 +21,17 @@ from collections.abc import Callable
 import aiohttp
 
 from .codec import encode_half_step
-from .const import COMMAND_SPACING, CONNECT_TIMEOUT, TELNET_PORT, HTTP_PORT
+from .const import (
+    COMMAND_SPACING,
+    CONNECT_TIMEOUT,
+    HTTP_PORT,
+    TELNET_PORT,
+    UPNP_DESCRIPTION_PATH,
+    UPNP_PORT,
+)
 from .http_client import HttpClient
 from .models import AvrState, Discovery
-from .parser import TelnetParser, parse_device_info
+from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
 from .telnet_client import TelnetClient
 
@@ -165,10 +172,18 @@ class DenonAvrDevice:
             for spec in self._profile.controls.values()
             if spec.kind == "enum" and spec.feature
         }
-        discovered = parse_device_info(xml_text, feature_names, enum_features)
+        discovered = parse_device_info(
+            xml_text,
+            feature_names,
+            enum_features,
+            generations=self._profile.receiver_generations,
+        )
         # Copy discovered data into our shared discovery object so the parser and
         # entities keep referencing a single instance.
         self._discovery.device = discovered.device
+        # Enrich the device identity with the firmware version and serial number,
+        # which the goform document omits but the UPnP description carries.
+        await self._async_fetch_version_info()
         self._discovery.features = discovered.features
         self._discovery.channels = discovered.channels
         self._discovery.zones = discovered.zones
@@ -188,6 +203,24 @@ class DenonAvrDevice:
         # the persistent connection's later timing.
         await self._async_probe_introspection()
         return self._discovery
+
+    async def _async_fetch_version_info(self) -> None:
+        """Read firmware/serial and AIOS module versions from the UPnP document.
+
+        Best effort: the goform Deviceinfo document omits these, but the UPnP
+        (AIOS) description carries them. Any failure or missing field is left
+        unset rather than guessed.
+        """
+
+        xml_text = await self._http.async_get_upnp_description(
+            UPNP_PORT, UPNP_DESCRIPTION_PATH
+        )
+        if not xml_text:
+            return
+        device = self._discovery.device
+        for attr, value in parse_upnp_description(xml_text).items():
+            if getattr(device, attr, None) is None:
+                setattr(device, attr, value)
 
     async def _async_probe_introspection(self) -> None:
         """Query the introspection commands over a short lived telnet session.
