@@ -17,10 +17,9 @@ hardcoded.
   `avr/protocol_profile.json` (protocol tokens, not device configuration).
 - **Telnet first, with HTTP as a safety net.** Telnet (port 23) provides the
   full state and real time push; HTTP (port 8080) provides discovery
-  (`Deviceinfo.xml`) and a periodic reconciliation poll. Two non-disruptive reads
-  at discovery fetch what the control channels do not expose: the amp assignment
-  over the length-framed TCP channel (port 1256), and the selectable crossover
-  set over the HTTPS web config (port 10443). All control goes over telnet.
+  (`Deviceinfo.xml`) and a periodic reconciliation poll. One non-disruptive read
+  at discovery fetches the amp assignment over the length-framed TCP channel
+  (port 1256); all control goes over telnet.
 - **Stability first.** Auto reconnect with backoff, a keepalive probe, a command
   queue with inter command spacing, and clean teardown on unload.
 
@@ -53,7 +52,6 @@ ports. Nothing needs to be opened towards the internet.
 | **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`) | **Required** |
 | **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
-| **10443/tcp** | HTTPS (`/ajax/*`) | Read once at discovery for the selectable crossover set (the only channel that exposes it); the wider settings write API is not used | Optional (degrades gracefully) |
 | **1256/tcp** | Length‑framed JSON | Read once at setup for the amp assignment (a plain, non‑disruptive status read); room‑correction calibration writes are planned | Optional (degrades gracefully) |
 
 Notes:
@@ -62,8 +60,6 @@ Notes:
 - The receiver accepts **multiple concurrent telnet (23) connections** and
   broadcasts events to all of them, so this integration coexists with the Denon
   app and other controllers.
-- Port **10443** is read once at discovery for the selectable crossover set —
-  the only channel that exposes it; only that read is used, not the write API.
 - Port **1256** is read once at setup for the amp assignment (a plain,
   non-disruptive status query, no calibration session). Room-correction
   calibration writes over the same port are planned — open it ahead of time if
@@ -97,9 +93,9 @@ default; enable them from the entity settings if you need them.
 
 Speaker crossover frequencies are a discrete, non-uniform set, so they are
 exposed as a select rather than a stepped number. The current crossover per group
-is read over telnet (`SSCFR`); the selectable frequencies come from the receiver's
-own web config (the only channel that exposes them), with a verified protocol set
-as a fallback.
+is read over telnet (`SSCFR`); the selectable frequencies are the fixed Denon
+crossover grid (a protocol constant, verified live), the same as every other
+enum's values.
 
 ## Notes and limitations
 

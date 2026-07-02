@@ -184,12 +184,10 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
         discovery = coordinator.device.discovery
         crossover = coordinator.device.profile.crossover
         self._unit = crossover.get("unit", "Hz")
-        # Prefer the set read from the device (its web /ajax config — the only
-        # channel that exposes it); fall back to the profile's protocol set only
-        # when that read was unavailable.
-        self._values = discovery.crossover_values or [
-            int(v) for v in crossover.get("values", [])
-        ]
+        # The crossover grid is a fixed Denon protocol constant (same across the
+        # lineup; verified live). It is not device-variable, so it lives in the
+        # profile like every other enum's wire values - no runtime fetch needed.
+        self._values = [int(v) for v in crossover.get("values", [])]
         self._attr_options = [self._format(v) for v in self._values]
         self._attr_name = (
             f"{group_name(coordinator.device.discovery, channels)} Crossover"

@@ -54,12 +54,13 @@
         "Speaker crossover grammar. Per speaker group the wire value is the",
         "frequency in Hz, zero padded to 'width' digits (e.g. '080' = 80 Hz).",
         "The allowed frequencies are a DISCRETE, non-uniform set, so this is a",
-        "select, not a min/max/step number. The receiver reports its CURRENT",
-        "crossover per group over telnet but does not enumerate the allowed values",
-        "there, nor does the TCP status channel (verified live) - only the web",
-        "config does, so the integration reads the set from the device and uses",
-        "the list below only as a FALLBACK when that read is unavailable. The",
-        "fallback was verified live on an AVR-X3600H."
+        "select, not a min/max/step number. This is a FIXED Denon protocol",
+        "constant (the same crossover grid across the lineup), so it lives here",
+        "like every other enum's wire values - not device-variable, no runtime",
+        "fetch. The receiver reports its CURRENT crossover per group over telnet",
+        "(SSCFR) but never enumerates the allowed set on any channel; the set here",
+        "was verified live (a telnet accept-probe and the web config's",
+        "SelectableValue both agreed on it exactly)."
       ],
       "width": 3,
       "unit": "Hz",
@@ -151,7 +152,7 @@
       "prefix": "SSCFR",
       "set_prefix": "SSCFR",
       "all_group": "ALL",
-      "doc": "One line per speaker group: 'SSCFR<GROUP> <Hz>' terminated by 'SSCFR END'. 'SSCFR IDV' (the crossover mode: Individual) has no value and is ignored; 'SSCFRALL <Hz>' is the value used when all speakers share one crossover and is also ignored (per-group values are authoritative). This gives the CURRENT crossover per group; the selectable value set is read from the device's web config (grammar.crossover holds the fallback)."
+      "doc": "One line per speaker group: 'SSCFR<GROUP> <Hz>' terminated by 'SSCFR END'. 'SSCFR IDV' (the crossover mode: Individual) has no value and is ignored; 'SSCFRALL <Hz>' is the value used when all speakers share one crossover and is also ignored (per-group values are authoritative). This gives the CURRENT crossover per group; the selectable value set is the fixed protocol constant in grammar.crossover."
     },
     "sound_mode_group": {
       "query": "SSSMG ?",

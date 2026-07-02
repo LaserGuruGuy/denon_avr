@@ -29,7 +29,6 @@ from .transport import (
     TcpClient,
     TelnetClient,
     UpnpClient,
-    WebControlClient,
     async_probe,
 )
 
@@ -50,13 +49,11 @@ class DenonAvrDevice:
         self._parser = TelnetParser(self._profile, self._discovery)
 
         # Each wire protocol is a separate, isolated transport (see transport/):
-        # goform HTTP for discovery/poll, UPnP for firmware/serial, telnet for
-        # live control, and the web /ajax read for the one datum no other channel
-        # exposes (the crossover set). The length-framed TCP status channel is
-        # used only for a one-shot read at discovery (amp assignment).
+        # goform HTTP for discovery/poll, UPnP for firmware/serial, and telnet for
+        # live control. The length-framed TCP status channel is used only for a
+        # one-shot read at discovery (amp assignment).
         self._goform = GoformClient(session, host)
         self._upnp = UpnpClient(session, host)
-        self._web = WebControlClient(session, host)
         self._telnet = TelnetClient(
             host,
             on_line=self._handle_line,
@@ -200,12 +197,6 @@ class DenonAvrDevice:
         # does not expose) over the length-framed TCP status channel. Best effort
         # and non-disruptive (a plain status query, no calibration session).
         self._discovery.amp_assign = await self._async_read_amp_assign()
-        # The selectable crossover set is not exposed by telnet or the TCP status
-        # channel (verified live), so read it from the web /ajax config; fall back
-        # to the profile's protocol set only if that read is unavailable.
-        crossover_values = await self._web.async_get_crossover_values()
-        if crossover_values:
-            self._discovery.crossover_values = crossover_values
         # The authoritative source list comes from the telnet SSFUN/SSSOD
         # introspection (correct codes, names and visibility). Keep the Deviceinfo
         # source list only as a fallback for models without that introspection.

@@ -123,10 +123,6 @@ class Discovery:
     # discovery (a static setup value the telnet channel does not expose); None
     # when unavailable.
     amp_assign: str | None = None
-    # The selectable speaker crossover frequencies (Hz), read from the web /ajax
-    # config at discovery. No other channel exposes the allowed set (verified
-    # live), so this is the source; empty falls back to the profile's set.
-    crossover_values: list[int] = field(default_factory=list)
     # Master volume scale as published by the receiver's Volume block:
     # 'reference' is the absolute value that equals 0.0 dB, 'step' the increment,
     # 'absolute_max' the highest absolute value. Empty when not published.
