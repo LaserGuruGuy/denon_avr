@@ -23,6 +23,7 @@ means a single, unsegmented packet); segments may arrive out of order.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -164,6 +165,8 @@ class CalibrationClient:
         self._writer: asyncio.StreamWriter | None = None
         self._decoder = FrameDecoder()
         self._read_task: asyncio.Task | None = None
+        # Pending query waiters keyed by command, resolved by the read loop.
+        self._pending: dict[str, list[asyncio.Future]] = {}
 
     async def connect(self, timeout: float = 5.0) -> None:
         self._reader, self._writer = await asyncio.wait_for(
@@ -177,11 +180,52 @@ class CalibrationClient:
         self._writer.write(pack(command, data))
         await self._writer.drain()
 
+    async def async_query(
+        self, command: str, data: bytes = b"", timeout: float = 5.0
+    ) -> dict:
+        """Send a command and return the parsed JSON of the matching response.
+
+        Reading receiver info (GET_AVRINF) and speaker/amp setup (GET_AVRSTS)
+        does not need an Calibration session, so this is non disruptive; only the
+        actual calibration measurement uses ENTER_AUDY.
+        """
+
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future = loop.create_future()
+        self._pending.setdefault(command, []).append(future)
+        try:
+            await self.send(command, data)
+            message = await asyncio.wait_for(future, timeout)
+        finally:
+            waiters = self._pending.get(command)
+            if waiters and future in waiters:
+                waiters.remove(future)
+        if not message.data:
+            return {}
+        try:
+            return json.loads(message.data.decode("ascii", "replace"))
+        except json.JSONDecodeError:
+            _LOGGER.debug("Calibration %s response was not valid JSON", command)
+            return {}
+
+    async def async_read_setup(self) -> dict:
+        """Read receiver capabilities and speaker/amp setup (no session needed)."""
+
+        return {
+            "info": await self.async_query("GET_AVRINF"),
+            "status": await self.async_query("GET_AVRSTS"),
+        }
+
     async def _read_loop(self) -> None:
         assert self._reader is not None
         try:
             while chunk := await self._reader.read(4096):
                 for message in self._decoder.feed(chunk):
+                    waiters = self._pending.get(message.command)
+                    if waiters:
+                        future = waiters.pop(0)
+                        if not future.done():
+                            future.set_result(message)
                     if self._on_message is not None:
                         self._on_message(message)
         except (OSError, asyncio.CancelledError):
