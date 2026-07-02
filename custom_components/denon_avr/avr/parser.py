@@ -373,6 +373,10 @@ class TelnetParser:
             return self._set_quick_select_name(line[8:])
         if line.startswith("SSSPC"):
             return self._set_speaker_config(line[5:], state)
+        if line.startswith("SSSWM"):
+            # Subwoofer mode: a core enum with no FuncName, decoded like a feature.
+            spec = self._profile.control("subwoofer_mode")
+            return self._set_feature(spec, line[5:], state) if spec else False
         if line.startswith("OPSMLALL"):
             return self._set_sound_mode_list(line[8:], state=state)
         if line.startswith("OPSML"):

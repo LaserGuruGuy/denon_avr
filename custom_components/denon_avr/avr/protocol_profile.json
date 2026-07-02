@@ -417,6 +417,16 @@
       "prefix": "PSSWL ",
       "doc": "Subwoofer level, half step, 50 == 0 dB. The dB range is discovered from the receiver's SubwooferLevel block."
     },
+    "subwoofer_mode": {
+      "scope": "core",
+      "kind": "enum",
+      "query": "SSSWM ?",
+      "prefix": "SSSWM ",
+      "values": ["LFE", "L+M"],
+      "labels": ["LFE", "LFE + Main"],
+      "name": "Subwoofer Mode",
+      "doc": "Subwoofer mode: LFE only, or LFE + Main (the mains' low frequencies are also sent to the subwoofer). Verified live read/write via 'SSSWM <token>'. Core-scoped: it has no Deviceinfo FuncName, so it is always queried and parsed explicitly; labels are given here as there is no device option list."
+    },
     "sleep_timer": {
       "scope": "feature",
       "feature": "SleepTimer",

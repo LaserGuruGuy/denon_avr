@@ -65,7 +65,11 @@ def enum_options(discovery: Discovery, spec: ControlSpec) -> tuple[
     """
 
     values = spec.values
+    # Prefer the device-published labels; then any profile-provided labels (for
+    # controls the device does not describe); finally a humanised wire token.
     labels = discovery.option_labels.get(spec.feature or "", [])
+    if not (labels and len(labels) == len(values)):
+        labels = spec.get("labels") or []
     if labels and len(labels) == len(values):
         pairs = list(zip(labels, values))
     else:
