@@ -417,6 +417,16 @@
       "prefix": "PSSWL ",
       "doc": "Subwoofer level, half step, 50 == 0 dB. The dB range is discovered from the receiver's SubwooferLevel block."
     },
+    "all_zone_stereo": {
+      "scope": "core",
+      "kind": "onoff",
+      "query": "MNZST ?",
+      "prefix": "MNZST ",
+      "on": "ON",
+      "off": "OFF",
+      "name": "All Zone Stereo",
+      "doc": "All Zone Stereo: play the main zone audio in stereo across every zone. Set via 'MNZST ON|OFF' (verified live). Core-scoped (no Deviceinfo FuncName), parsed explicitly; the receiver pushes MNZST ON/OFF on change and echoes it on set, so state follows the push/echo (the '?' query may not return a value)."
+    },
     "subwoofer_mode": {
       "scope": "core",
       "kind": "enum",
@@ -543,8 +553,9 @@
       "kind": "enum",
       "query": "DIM ?",
       "prefix": "DIM ",
-      "values": ["BRI", "DIM", "DRK", "OFF"],
-      "doc": "Front panel display brightness (Bright/Dim/Dark/Off)."
+      "values": ["BRI", "DIM", "DAR", "OFF"],
+      "labels": ["Bright", "Dim", "Dark", "Off"],
+      "doc": "Front panel display brightness. Wire token for Dark is DAR (verified live; 'DRK' is rejected). Labels come from the device when published, otherwise these."
     },
     "video_mode": {
       "scope": "feature",

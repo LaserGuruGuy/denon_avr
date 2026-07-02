@@ -32,8 +32,7 @@ async def async_setup_entry(
         DenonAvrSwitch(coordinator, spec)
         for spec in coordinator.device.profile.controls.values()
         if spec.kind == "onoff"
-        and spec.scope == "feature"
-        and discovery.supports(spec.feature or "")
+        and (spec.scope != "feature" or discovery.supports(spec.feature or ""))
     ]
     async_add_entities(entities)
 

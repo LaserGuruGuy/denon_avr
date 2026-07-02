@@ -377,6 +377,10 @@ class TelnetParser:
             # Subwoofer mode: a core enum with no FuncName, decoded like a feature.
             spec = self._profile.control("subwoofer_mode")
             return self._set_feature(spec, line[5:], state) if spec else False
+        if line.startswith("MNZST"):
+            # All Zone Stereo: a core on/off with no FuncName, decoded like a feature.
+            spec = self._profile.control("all_zone_stereo")
+            return self._set_feature(spec, line[5:], state) if spec else False
         if line.startswith("OPSMLALL"):
             return self._set_sound_mode_list(line[8:], state=state)
         if line.startswith("OPSML"):

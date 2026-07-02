@@ -83,7 +83,7 @@ Notes:
   speaker group size (Large/Small) — each only when the receiver advertises it.
 - **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
   Subwoofer, Speaker Virtualizer, Center Spread, DTS Neural:X, Low Frequency
-  Containment (LFC).
+  Containment (LFC), All Zone Stereo.
 - **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Audio Delay,
   Effect Level, Containment Amount, Sleep Timer, and per channel volume trim and
   speaker distance (m) for each configured speaker.
