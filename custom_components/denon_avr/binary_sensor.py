@@ -37,7 +37,7 @@ class DenonAvrConnectivitySensor(DenonAvrEntity, BinarySensorEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "binary_sensor_connectivity")
-        self._attr_name = "Connectivity"
+        self._attr_translation_key = "connectivity"
 
     @property
     def available(self) -> bool:

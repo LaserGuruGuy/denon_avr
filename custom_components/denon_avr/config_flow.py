@@ -125,6 +125,37 @@ class DenonAvrConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"name": self._name},
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change the receiver's IP address without removing the integration."""
+
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            host = user_input[CONF_HOST].strip()
+            try:
+                mac, _name = await self._async_identify(host)
+            except ConnectionError:
+                errors["base"] = "cannot_connect"
+            else:
+                # Make sure the new address still points at the same receiver, so
+                # a typo cannot silently rebind the entry to a different device.
+                if mac:
+                    await self.async_set_unique_id(mac)
+                    self._abort_if_unique_id_mismatch(reason="wrong_device")
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={CONF_HOST: host}
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(
+                STEP_USER_SCHEMA, {CONF_HOST: entry.data[CONF_HOST]}
+            ),
+            errors=errors,
+        )
+
 
 class DenonAvrOptionsFlow(OptionsFlow):
     """Options for a configured Denon AVR (the "Configure" dialog)."""

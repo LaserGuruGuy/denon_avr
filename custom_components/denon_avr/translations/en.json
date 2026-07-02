@@ -12,13 +12,22 @@
       "ssdp_confirm": {
         "title": "Denon AVR",
         "description": "Do you want to add the discovered receiver {name}?"
+      },
+      "reconfigure": {
+        "title": "Denon AVR",
+        "description": "Update the IP address of your Denon receiver.",
+        "data": {
+          "host": "IP address"
+        }
       }
     },
     "error": {
       "cannot_connect": "Could not reach the receiver. Check the IP address and that the receiver is powered on and on the network."
     },
     "abort": {
-      "already_configured": "This receiver is already configured."
+      "already_configured": "This receiver is already configured.",
+      "wrong_device": "That address belongs to a different receiver than the one configured.",
+      "reconfigure_successful": "The IP address was updated."
     }
   },
   "options": {
@@ -32,6 +41,20 @@
           "sound_mode_learning": "Learn sound mode commands from the receiver at runtime. Off (recommended) uses deterministic command tokens; turn on only if a specific sound mode does not switch."
         }
       }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": { "name": "Connectivity" }
+    },
+    "sensor": {
+      "sound_mode": { "name": "Sound Mode" },
+      "volume": { "name": "Volume" }
+    },
+    "select": {
+      "sound_mode_group": { "name": "Sound Mode Group" },
+      "sound_mode": { "name": "Sound Mode" },
+      "quick_select": { "name": "Quick Select" }
     }
   }
 }

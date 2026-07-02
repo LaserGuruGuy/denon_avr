@@ -87,7 +87,7 @@ class DenonAvrSoundModeGroupSelect(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_sound_mode_group")
-        self._attr_name = "Sound Mode Group"
+        self._attr_translation_key = "sound_mode_group"
 
     @property
     def _genres(self) -> dict[str, str]:
@@ -123,7 +123,7 @@ class DenonAvrSoundModeSelect(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_sound_mode")
-        self._attr_name = "Sound Mode"
+        self._attr_translation_key = "sound_mode"
 
     @property
     def options(self) -> list[str]:
@@ -156,7 +156,7 @@ class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_quick_select")
-        self._attr_name = "Quick Select"
+        self._attr_translation_key = "quick_select"
 
     @property
     def _names(self) -> dict[int, str]:

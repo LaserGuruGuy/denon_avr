@@ -12,13 +12,22 @@
       "ssdp_confirm": {
         "title": "Denon AVR",
         "description": "Wil je de gevonden receiver {name} toevoegen?"
+      },
+      "reconfigure": {
+        "title": "Denon AVR",
+        "description": "Werk het IP-adres van je Denon-receiver bij.",
+        "data": {
+          "host": "IP-adres"
+        }
       }
     },
     "error": {
       "cannot_connect": "Kon de receiver niet bereiken. Controleer het IP-adres en of de receiver aan staat en op het netwerk zit."
     },
     "abort": {
-      "already_configured": "Deze receiver is al geconfigureerd."
+      "already_configured": "Deze receiver is al geconfigureerd.",
+      "wrong_device": "Dat adres hoort bij een andere receiver dan de geconfigureerde.",
+      "reconfigure_successful": "Het IP-adres is bijgewerkt."
     }
   },
   "options": {
@@ -32,6 +41,20 @@
           "sound_mode_learning": "Leer sound mode-commando's tijdens gebruik van de receiver. Uit (aanbevolen) gebruikt vaste commando-tokens; zet alleen aan als een specifieke sound mode niet schakelt."
         }
       }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": { "name": "Verbinding" }
+    },
+    "sensor": {
+      "sound_mode": { "name": "Geluidsmodus" },
+      "volume": { "name": "Volume" }
+    },
+    "select": {
+      "sound_mode_group": { "name": "Geluidsmodusgroep" },
+      "sound_mode": { "name": "Geluidsmodus" },
+      "quick_select": { "name": "Snelkeuze" }
     }
   }
 }

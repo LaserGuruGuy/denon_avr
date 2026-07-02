@@ -74,7 +74,7 @@ class DenonAvrSoundModeSensor(DenonAvrEntity, SensorEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "sensor_sound_mode")
-        self._attr_name = "Sound Mode"
+        self._attr_translation_key = "sound_mode"
 
     @property
     def native_value(self) -> str | None:
@@ -90,7 +90,7 @@ class DenonAvrVolumeSensor(DenonAvrEntity, SensorEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "sensor_volume_db")
-        self._attr_name = "Volume"
+        self._attr_translation_key = "volume"
 
     @property
     def native_value(self) -> float | None:
