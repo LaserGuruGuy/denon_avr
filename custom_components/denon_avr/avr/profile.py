@@ -136,6 +136,33 @@ class ProtocolProfile:
         return self.grammar.get("distance", {})
 
     @property
+    def crossover(self) -> dict[str, Any]:
+        """Speaker crossover grammar (width, unit, discrete Hz value set)."""
+
+        return self.grammar.get("crossover", {})
+
+    def group_channels(self, group: str) -> list[str]:
+        """Return the channel codes that make up a speaker group.
+
+        Groups map to a fixed pair/single of channels (protocol grammar). The
+        count groups (subwoofer, surround back) can be single or double; both
+        possible members are returned so the group can be named/matched whether
+        the receiver configured it as one speaker or two.
+        """
+
+        groups = self.speakers.get("groups", {})
+        if group in groups:
+            return list(groups[group])
+        count = self.speakers.get("count_groups", {})
+        if group in count:
+            members = list(count[group].get("single", []))
+            for code in count[group].get("double", []):
+                if code not in members:
+                    members.append(code)
+            return members
+        return []
+
+    @property
     def sound_mode_refresh_prefixes(self) -> tuple[str, ...]:
         """Line prefixes whose arrival means the audio signal changed.
 

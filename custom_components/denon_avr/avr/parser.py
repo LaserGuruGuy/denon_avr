@@ -352,6 +352,8 @@ class TelnetParser:
             return self._set_channel(line[5:], state.channel_levels)
         if line.startswith("SSSDE"):
             return self._set_distance(line[5:], state.channel_distances)
+        if line.startswith("SSCFR"):
+            return self._set_crossover(line[5:], state.crossovers)
         if line.startswith("CV"):
             return self._set_channel(line[2:], state.channel_trims)
         if len(line) >= 2 and line[0] == "Z" and line[1].isdigit():
@@ -526,6 +528,29 @@ class TelnetParser:
             return False
         divisor = self._profile.distance.get("divisor", 100) or 100
         target[code] = int(raw) / divisor
+        return True
+
+    def _set_crossover(self, remainder: str, target: dict[str, int]) -> bool:
+        """Parse an 'SSCFR<GROUP> <Hz>' crossover line into `target`.
+
+        The value is the crossover frequency in Hz. The 'IDV' mode token (no
+        value), the 'SSCFRALL' aggregate and the 'END' terminator are ignored;
+        the per group values are the authoritative ones.
+        """
+
+        remainder = remainder.strip()
+        if not remainder or remainder.startswith(self._profile.list_terminator):
+            return False
+        parts = remainder.split()
+        if len(parts) != 2:
+            return False
+        group, raw = parts
+        all_group = self._profile.introspection.get("crossover", {}).get(
+            "all_group", "ALL"
+        )
+        if group == all_group or not raw.isdigit():
+            return False
+        target[group] = int(raw)
         return True
 
     def _set_zone(self, index: int, remainder: str, state: AvrState) -> bool:

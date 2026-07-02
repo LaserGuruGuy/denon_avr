@@ -34,6 +34,7 @@ from .models import AvrState, Discovery
 from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
 from .telnet_client import TelnetClient
+from .web_control import WebControlClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +53,9 @@ class DenonAvrDevice:
         self._parser = TelnetParser(self._profile, self._discovery)
 
         self._http = HttpClient(session, host, HTTP_PORT)
+        # Isolated, read-only reader for the one thing the goform/telnet channels
+        # do not expose: the selectable speaker crossover set (see web_control).
+        self._web = WebControlClient(session, host)
         self._telnet = TelnetClient(
             host,
             TELNET_PORT,
@@ -192,6 +196,12 @@ class DenonAvrDevice:
         self._discovery.numeric_meta = discovered.numeric_meta
         self._discovery.volume = discovered.volume
         self._discovery.sound_mode_genres = discovered.sound_mode_genres
+        # The selectable speaker crossover set is not enumerated by goform or
+        # telnet; read it (non-disruptively) from the web control /ajax config.
+        # Best effort: if it is unavailable the profile's protocol set is used.
+        crossover_values = await self._web.async_get_crossover_values()
+        if crossover_values:
+            self._discovery.crossover_values = crossover_values
         # The authoritative source list comes from the telnet SSFUN/SSSOD
         # introspection (correct codes, names and visibility). Keep the Deviceinfo
         # source list only as a fallback for models without that introspection.
@@ -711,6 +721,20 @@ class DenonAvrDevice:
         divisor = self._profile.distance.get("divisor", 100) or 100
         raw = max(0, int(round(meters * divisor)))
         await self._send(f"{set_prefix}{code} {raw:04d}")
+
+    async def async_set_crossover(self, group: str, hertz: int) -> None:
+        """Set a speaker group's crossover frequency via the SSCFR command.
+
+        The frequency is zero padded to the protocol width (e.g. 80 -> '080').
+        The receiver only accepts values from its discrete grid; sending one off
+        the grid is silently ignored, so callers pass a value from the profile's
+        crossover set.
+        """
+
+        spec = self._profile.introspection.get("crossover", {})
+        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSCFR"
+        width = int(self._profile.crossover.get("width", 3) or 3)
+        await self._send(f"{set_prefix}{group} {int(hertz):0{width}d}")
 
     # Encoding helpers -----------------------------------------------------
 

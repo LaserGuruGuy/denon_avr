@@ -29,6 +29,30 @@ def control_name(discovery: Discovery, spec: ControlSpec) -> str:
     return humanize(spec.id)
 
 
+def group_name(discovery: Discovery, channels: list[str]) -> str:
+    """Return a display name for a speaker group from its channel names.
+
+    A group's crossover applies to a speaker pair (or single). The receiver
+    names the individual channels ('Front L', 'Front R'), so derive the group
+    label from those: for a pair, drop the trailing side token to get the shared
+    base ('Front'); for a single channel, use its name. Prefer the channels the
+    receiver actually configured (they carry real names), falling back to the
+    protocol channel codes only when none are configured.
+    """
+
+    configured = {ch.code for ch in discovery.channels}
+    codes = [c for c in channels if c in configured] or channels
+    names = [discovery.channel_name(c) for c in codes]
+    if not names:
+        return channels[0] if channels else ""
+    if len(names) == 1:
+        return names[0]
+    bases = [n.rsplit(" ", 1)[0] for n in names if " " in n]
+    if bases and len(set(bases)) == 1:
+        return bases[0]
+    return names[0]
+
+
 def enum_options(discovery: Discovery, spec: ControlSpec) -> tuple[
     list[str], dict[str, str], dict[str, str]
 ]:

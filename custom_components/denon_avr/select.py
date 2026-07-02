@@ -15,7 +15,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name, enum_options
+from .helpers import control_name, enum_options, group_name
 
 
 async def async_setup_entry(
@@ -43,6 +43,15 @@ async def async_setup_entry(
     # Quick select presets, if the receiver reported any names.
     if discovery.quick_select_names:
         entities.append(DenonAvrQuickSelect(coordinator))
+    # One crossover select per speaker group the receiver reports a crossover
+    # for (SSCFR). Groups whose speakers are configured are enabled; the rest are
+    # registered but disabled by default, mirroring the channel trims/distances.
+    configured = discovery.configured_channels
+    profile = coordinator.device.profile
+    for group in sorted(coordinator.data.crossovers):
+        channels = profile.group_channels(group)
+        enabled = (not configured) or any(c in configured for c in channels)
+        entities.append(DenonAvrCrossover(coordinator, group, channels, enabled))
     async_add_entities(entities)
 
 
@@ -143,6 +152,54 @@ class DenonAvrSoundModeSelect(DenonAvrEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         await self.coordinator.device.async_select_sound_mode(option)
+
+
+class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
+    """A select entity for one speaker group's crossover frequency.
+
+    The allowed frequencies are a discrete, non-uniform Denon protocol set (from
+    the profile), so this is a select rather than a stepped number. Values are
+    shown with their 'Hz' unit; the receiver reports the current value per group.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(
+        self,
+        coordinator: DenonAvrCoordinator,
+        group: str,
+        channels: list[str],
+        enabled: bool,
+    ) -> None:
+        super().__init__(coordinator, f"select_crossover_{group}")
+        self._group = group
+        self._attr_entity_registry_enabled_default = enabled
+        discovery = coordinator.device.discovery
+        crossover = coordinator.device.profile.crossover
+        self._unit = crossover.get("unit", "Hz")
+        # Prefer the set the receiver advertises (its web /ajax config); fall back
+        # to the profile's protocol set only when that API was unavailable.
+        self._values = discovery.crossover_values or [
+            int(v) for v in crossover.get("values", [])
+        ]
+        self._attr_options = [self._format(v) for v in self._values]
+        self._attr_name = (
+            f"{group_name(coordinator.device.discovery, channels)} Crossover"
+        )
+
+    def _format(self, hertz: int) -> str:
+        return f"{hertz} {self._unit}"
+
+    @property
+    def current_option(self) -> str | None:
+        hertz = self.coordinator.data.crossovers.get(self._group)
+        # Only report a value the receiver actually offers, so Home Assistant
+        # never logs an "invalid current option" warning.
+        return self._format(hertz) if hertz in self._values else None
+
+    async def async_select_option(self, option: str) -> None:
+        hertz = int(option.split()[0])
+        await self.coordinator.device.async_set_crossover(self._group, hertz)
 
 
 class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):

@@ -119,6 +119,10 @@ class Discovery:
     # Numeric metadata (min/max/step/default in dB) the receiver publishes for
     # level style controls, keyed by feature name or channel code.
     numeric_meta: dict[str, dict[str, float]] = field(default_factory=dict)
+    # The selectable speaker crossover frequencies (Hz) the receiver advertises
+    # via its web control /ajax speaker config. Empty when that API is
+    # unavailable/locked, in which case the profile's protocol set is used.
+    crossover_values: list[int] = field(default_factory=list)
     # Master volume scale as published by the receiver's Volume block:
     # 'reference' is the absolute value that equals 0.0 dB, 'step' the increment,
     # 'absolute_max' the highest absolute value. Empty when not published.
@@ -184,6 +188,8 @@ class AvrState:
       (for example 'sample_rate', 'decoder').
     * `channel_levels` and `channel_trims` hold per channel dB offsets keyed by
       the receiver channel code.
+    * `crossovers` holds the crossover frequency in Hz per speaker group, keyed
+      by the receiver's speaker group code.
     """
 
     system_power: bool | None = None
@@ -196,6 +202,10 @@ class AvrState:
     channel_levels: dict[str, float] = field(default_factory=dict)
     channel_trims: dict[str, float] = field(default_factory=dict)
     channel_distances: dict[str, float] = field(default_factory=dict)
+    # Per speaker group crossover frequency in Hz, keyed by the receiver's
+    # speaker group code (FRO, CEN, SUA, ...). Crossover is a group setting, not
+    # a per channel one, so this is keyed by group rather than channel.
+    crossovers: dict[str, int] = field(default_factory=dict)
 
     def zone(self, zone_id: str) -> ZoneState:
         """Return the ZoneState for a zone id, creating it on first access."""

@@ -17,7 +17,9 @@ hardcoded.
   `avr/protocol_profile.json` (protocol tokens, not device configuration).
 - **Telnet first, with HTTP as a safety net.** Telnet (port 23) provides the
   full state and real time push; HTTP (port 8080) provides discovery
-  (`Deviceinfo.xml`) and a periodic reconciliation poll.
+  (`Deviceinfo.xml`) and a periodic reconciliation poll. One extra read uses the
+  HTTPS web control API (port 10443) at discovery to obtain the selectable
+  speaker crossover set; all control still goes over telnet.
 - **Stability first.** Auto reconnect with backoff, a keepalive probe, a command
   queue with inter command spacing, and clean teardown on unload.
 
@@ -50,7 +52,7 @@ ports. Nothing needs to be opened towards the internet.
 | **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`) | **Required** |
 | **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
-| **10443/tcp** | HTTPS (`/ajax/*`) | Firmware settings API (`get_config`/`set_config`) for advanced speaker setup — read and write | Planned |
+| **10443/tcp** | HTTPS (`/ajax/*`) | Firmware settings API. Currently read once at discovery for the selectable speaker crossover set; the wider settings write API is planned | Optional (degrades gracefully) |
 | **1256/tcp** | Calibration MultEQ | Speaker/Calibration calibration write session (`ENTER_AUDY` … `SET_SETDAT`/`SET_COEFDT`/`SET_DISFIL` … `EXIT_AUDMD`) | Planned |
 
 Notes:
@@ -59,10 +61,12 @@ Notes:
 - The receiver accepts **multiple concurrent telnet (23) connections** and
   broadcasts events to all of them, so this integration coexists with the Denon
   app and other controllers.
-- Ports **10443** and **1256** are for writing speaker configuration and Calibration
-  calibration (the approach used by
-  [Odyssee](https://github.com/LaserGuruGuy/Odyssee)); open them ahead of time if
-  you want that functionality once it lands.
+- Port **10443** is read once at discovery for the selectable crossover set (a
+  non-disruptive `get_config` read); its write API and port **1256** (Calibration
+  calibration, the approach used by
+  [Odyssee](https://github.com/LaserGuruGuy/Odyssee)) are for writing speaker
+  configuration and calibration — open them ahead of time if you want that
+  functionality once it lands.
 
 ## What you get
 
@@ -72,19 +76,28 @@ Notes:
   and the modes within the active group (context aware, includes Auto).
 - **Selects**: Dynamic Compression, Dynamic Volume, Reference Level Offset,
   MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, HDMI Monitor Out,
-  Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select — each only when the
-  receiver advertises it.
+  Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select, and a per speaker group
+  crossover frequency (Hz) — each only when the receiver advertises it.
 - **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
   Subwoofer, Speaker Virtualizer, Center Spread, DTS Neural:X, Calibration LFC.
 - **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Audio Delay,
-  Effect Level, Containment Amount, Sleep Timer, and a per channel volume trim
-  for each configured speaker.
+  Effect Level, Containment Amount, Sleep Timer, and per channel volume trim and
+  speaker distance (m) for each configured speaker.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
   mode info, sound mode, volume (dB).
 - **Binary sensor**: telnet connectivity.
 
-Per channel trims for speakers the receiver has **not** configured are registered
-but disabled by default; enable them from the entity settings if you need them.
+Per channel trims and distances, and per group crossovers, for speakers the
+receiver has **not** configured are registered but disabled by default; enable
+them from the entity settings if you need them.
+
+Speaker crossover frequencies are a discrete, non-uniform set, so they are
+exposed as a select rather than a stepped number. The current crossover per group
+is read over telnet (`SSCFR`); the list of selectable frequencies is read from the
+receiver's own web control speaker config (`/ajax/speakers/get_config`, the same
+list its Speakers page shows), so even the option set is discovered from the
+device rather than hardcoded. A protocol fallback set is used only if that HTTPS
+API is unavailable or the setup is locked.
 
 ## Notes and limitations
 
@@ -92,12 +105,26 @@ but disabled by default; enable them from the entity settings if you need them.
   Dynamic Compression needs a Dolby/DTS bitstream, Video Mode needs an active
   video signal). The receiver rejects changes that do not apply to the current
   context; this is expected Denon behaviour, not an integration bug.
-- Advanced one time setup settings that the receiver exposes only through its web
-  UI's `/ajax` configuration API (speaker layout/crossovers/distances, HDMI
-  Control/CEC, per input assignment, some zone defaults) are not implemented.
+- Speaker distances and crossovers are supported over telnet (read/write). Other
+  advanced one time setup settings that the receiver exposes only through its web
+  UI's `/ajax` configuration API (full speaker layout, HDMI Control/CEC, per
+  input assignment, some zone defaults) are not implemented. Calibration room
+  calibration remains a job for the receiver's own setup/MultEQ tooling.
+
+## Tested with
+
+Protocol behaviour was verified live against the following. Other Denon/Marantz
+HEOS generation receivers should work as the integration adapts to whatever the
+device reports, but only this combination has been exercised end to end.
+
+| Component | Version |
+|-----------|---------|
+| Receiver | Denon AVR-X3600H (hardware generation `avr-x-2016`) |
+| Receiver firmware | 3.88.614 |
+| Home Assistant Core | 2026.7.0 |
+| Python | 3.13 |
 
 ## Credits
 
-Protocol behaviour was verified live against an AVR-X3600H. Inspired by the
-author's earlier C# tooling and by existing Denon control projects, but written
-from scratch as an independent, fully dynamic integration.
+Inspired by the author's earlier C# tooling and by existing Denon control
+projects, but written from scratch as an independent, fully dynamic integration.
