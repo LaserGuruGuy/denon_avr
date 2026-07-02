@@ -573,6 +573,16 @@
       "values": ["FUL", "NRM"],
       "doc": "Video aspect ratio. Wire values verified live (FUL=16:9, NRM=4:3)."
     },
+    "hdmi_audio_out": {
+      "scope": "feature",
+      "feature": "HdmiAudioOut",
+      "kind": "enum",
+      "query": "VSAUDIO ?",
+      "prefix": "VSAUDIO ",
+      "values": ["AMP", "TV"],
+      "labels": ["Amp", "TV"],
+      "doc": "HDMI audio output routing: AMP (the receiver decodes/plays the audio) or TV (HDMI audio passed through to the TV, muting the receiver). Note the trailing space in the prefix ('VSAUDIO <value>'). Read/write verified live via an /ajax cross-check (AMP<->TV flips the receiver's HDMIAudioOut). Labels come from the device when it publishes them, otherwise these."
+    },
     "input_mode": {
       "scope": "feature",
       "feature": "InputMode",

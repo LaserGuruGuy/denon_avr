@@ -77,7 +77,8 @@ Notes:
   and the modes within the active group (context aware, includes Auto).
 - **Selects**: Dynamic Compression, Dynamic Volume, Reference Level Offset,
   MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, HDMI Monitor Out,
-  Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select, Subwoofer Mode
+  HDMI Audio Out (Amp/TV), Aspect Ratio, Input Mode (ARC/eARC/…), Quick Select,
+  Subwoofer Mode
   (LFE / LFE+Main), a per speaker group crossover frequency (Hz), and a per
   speaker group size (Large/Small) — each only when the receiver advertises it.
 - **Switches**: Tone Control, Dynamic EQ, Loudness Management, Cinema EQ,
