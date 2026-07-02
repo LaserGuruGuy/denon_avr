@@ -8,7 +8,10 @@ receiver, so the entity ids naturally get the model based prefix (for example
 
 from __future__ import annotations
 
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import (
+    CONNECTION_NETWORK_MAC,
+    DeviceInfo,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -27,7 +30,13 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
         # Prefer the MAC as the stable identifier; fall back to the host.
         identifier = device_info.mac_address or self._device.host
         self._attr_unique_id = f"{identifier}_{key}"
+        # Expose the MAC as a device connection (the standard HA convention for
+        # network devices) so the device registry can de-duplicate it.
+        connections = set()
+        if device_info.mac_address:
+            connections.add((CONNECTION_NETWORK_MAC, device_info.mac_address))
         self._attr_device_info = DeviceInfo(
+            connections=connections,
             identifiers={(DOMAIN, identifier)},
             manufacturer=device_info.manufacturer,
             model=device_info.model_name,

@@ -184,8 +184,9 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
         discovery = coordinator.device.discovery
         crossover = coordinator.device.profile.crossover
         self._unit = crossover.get("unit", "Hz")
-        # Prefer the set the receiver advertises (its web /ajax config); fall back
-        # to the profile's protocol set only when that API was unavailable.
+        # Prefer the set read from the device (its web /ajax config — the only
+        # channel that exposes it); fall back to the profile's protocol set only
+        # when that read was unavailable.
         self._values = discovery.crossover_values or [
             int(v) for v in crossover.get("values", [])
         ]

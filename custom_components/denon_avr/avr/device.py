@@ -26,6 +26,7 @@ from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
 from .transport import (
     GoformClient,
+    TcpClient,
     TelnetClient,
     UpnpClient,
     WebControlClient,
@@ -49,8 +50,10 @@ class DenonAvrDevice:
         self._parser = TelnetParser(self._profile, self._discovery)
 
         # Each wire protocol is a separate, isolated transport (see transport/):
-        # goform HTTP for discovery/poll, UPnP for firmware/serial, the web
-        # control /ajax read for the crossover set, and telnet for live control.
+        # goform HTTP for discovery/poll, UPnP for firmware/serial, telnet for
+        # live control, and the web /ajax read for the one datum no other channel
+        # exposes (the crossover set). The length-framed TCP status channel is
+        # used only for a one-shot read at discovery (amp assignment).
         self._goform = GoformClient(session, host)
         self._upnp = UpnpClient(session, host)
         self._web = WebControlClient(session, host)
@@ -193,9 +196,13 @@ class DenonAvrDevice:
         self._discovery.numeric_meta = discovered.numeric_meta
         self._discovery.volume = discovered.volume
         self._discovery.sound_mode_genres = discovered.sound_mode_genres
-        # The selectable speaker crossover set is not enumerated by goform or
-        # telnet; read it (non-disruptively) from the web control /ajax config.
-        # Best effort: if it is unavailable the profile's protocol set is used.
+        # Read the current amp assignment (a static setup value the telnet channel
+        # does not expose) over the length-framed TCP status channel. Best effort
+        # and non-disruptive (a plain status query, no calibration session).
+        self._discovery.amp_assign = await self._async_read_amp_assign()
+        # The selectable crossover set is not exposed by telnet or the TCP status
+        # channel (verified live), so read it from the web /ajax config; fall back
+        # to the profile's protocol set only if that read is unavailable.
         crossover_values = await self._web.async_get_crossover_values()
         if crossover_values:
             self._discovery.crossover_values = crossover_values
@@ -226,6 +233,26 @@ class DenonAvrDevice:
         for attr, value in parse_upnp_description(xml_text).items():
             if getattr(device, attr, None) is None:
                 setattr(device, attr, value)
+
+    async def _async_read_amp_assign(self) -> str | None:
+        """Return the current amp-assignment label, or None if unavailable.
+
+        Uses the length-framed TCP status query (GET_AVRSTS), which the receiver
+        answers without a calibration session, so it is non-disruptive. Best
+        effort: any failure returns None and never blocks setup.
+        """
+
+        client = TcpClient(self._host)
+        try:
+            await client.connect()
+            status = await client.async_query("GET_AVRSTS")
+        except (OSError, asyncio.TimeoutError, ConnectionError) as err:
+            _LOGGER.debug("Amp-assign status read failed: %s", err)
+            return None
+        finally:
+            await client.close()
+        value = status.get("AmpAssign") if isinstance(status, dict) else None
+        return str(value) if value else None
 
     async def _async_probe_introspection(self) -> None:
         """Populate the telnet-discovered model over a short lived connection.

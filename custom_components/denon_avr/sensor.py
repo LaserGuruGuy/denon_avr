@@ -47,6 +47,11 @@ async def async_setup_entry(
     # the standard percentage control; this shows the actual level in dB.
     entities.append(DenonAvrVolumeSensor(coordinator))
 
+    # The current amp assignment, read once at discovery over the TCP status
+    # channel. Only present when that read succeeded (it is a static setup value).
+    if device.discovery.amp_assign is not None:
+        entities.append(DenonAvrAmpAssignSensor(coordinator))
+
     async_add_entities(entities)
 
 
@@ -80,6 +85,25 @@ class DenonAvrSoundModeSensor(DenonAvrEntity, SensorEntity):
     def native_value(self) -> str | None:
         value = self.coordinator.data.values.get("sound_mode")
         return str(value) if value is not None else None
+
+
+class DenonAvrAmpAssignSensor(DenonAvrEntity, SensorEntity):
+    """Diagnostic sensor for the receiver's current amp assignment.
+
+    The value is the receiver's own label (for example 'FrontB'), read once at
+    discovery; amp assignment is a static setup value that the receiver does not
+    push, so this reflects the value at setup time.
+    """
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_name = "Amp Assign"
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "sensor_amp_assign")
+
+    @property
+    def native_value(self) -> str | None:
+        return self.coordinator.device.discovery.amp_assign
 
 
 class DenonAvrVolumeSensor(DenonAvrEntity, SensorEntity):

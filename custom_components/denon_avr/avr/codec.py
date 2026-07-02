@@ -45,15 +45,3 @@ def encode_half_step(value: float) -> str:
     if has_half:
         return f"{whole:02d}5"
     return f"{whole:02d}"
-
-
-def raw_to_db(raw: float, reference: float) -> float:
-    """Convert a raw half step level to a dB offset around the reference."""
-
-    return raw - reference
-
-
-def db_to_raw(db: float, reference: float) -> float:
-    """Convert a dB offset around the reference back to a raw half step level."""
-
-    return reference + db

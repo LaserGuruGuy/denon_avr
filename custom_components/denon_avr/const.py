@@ -9,13 +9,13 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from homeassistant.const import Platform
+from homeassistant.const import CONF_HOST, Platform
 
 DOMAIN = "denon_avr"
 
-# The config entry stores just the receiver address; everything else is
-# discovered from the device.
-CONF_HOST = "host"
+# CONF_HOST (the receiver address, == homeassistant.const.CONF_HOST) is imported
+# above and re-exported here so the rest of the integration keeps a single import
+# site; everything else about the device is discovered at runtime.
 
 # Options (set via the integration's Configure dialog).
 # Adaptive sound mode wire learning: when on, the integration may learn the MS

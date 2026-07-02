@@ -9,7 +9,11 @@ protocol defined range.
 
 from __future__ import annotations
 
-from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.components.number import (
+    NumberDeviceClass,
+    NumberEntity,
+    NumberMode,
+)
 from homeassistant.const import UnitOfLength, UnitOfSoundPressure, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
@@ -22,6 +26,10 @@ from .helpers import control_name
 
 # The control kinds that map to a number entity.
 _NUMBER_KINDS = {"level", "signed_int", "minutes", "integer"}
+
+# Map the profile's plain wire unit tokens to the canonical Home Assistant unit
+# constants (the profile stays HA-independent; this HA layer does the mapping).
+_UNIT_TOKENS = {"ms": UnitOfTime.MILLISECONDS, "m": UnitOfLength.METERS}
 
 
 async def async_setup_entry(
@@ -73,8 +81,10 @@ class DenonAvrNumber(DenonAvrEntity, NumberEntity):
             self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         elif spec.kind == "integer":
             # A plain integer control uses whatever unit the profile gives (or
-            # none), for example milliseconds for the audio delay.
-            self._attr_native_unit_of_measurement = spec.get("unit")
+            # none), for example milliseconds for the audio delay, surfaced as the
+            # canonical HA unit constant where known.
+            unit = spec.get("unit")
+            self._attr_native_unit_of_measurement = _UNIT_TOKENS.get(unit, unit)
         else:
             self._attr_native_unit_of_measurement = UnitOfSoundPressure.DECIBEL
 
@@ -131,6 +141,7 @@ class DenonAvrChannelDistance(DenonAvrEntity, NumberEntity):
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_mode = NumberMode.BOX
+    _attr_device_class = NumberDeviceClass.DISTANCE
 
     def __init__(
         self, coordinator: DenonAvrCoordinator, code: str, enabled: bool
@@ -145,10 +156,8 @@ class DenonAvrChannelDistance(DenonAvrEntity, NumberEntity):
         self._attr_native_max_value = dist.get("max", 18.0)
         self._attr_native_step = dist.get("step", 0.1)
         unit = dist.get("unit")
-        if unit == "m":
-            self._attr_native_unit_of_measurement = UnitOfLength.METERS
-        elif unit:
-            self._attr_native_unit_of_measurement = unit
+        if unit:
+            self._attr_native_unit_of_measurement = _UNIT_TOKENS.get(unit, unit)
 
     @property
     def native_value(self) -> float | None:

@@ -8,6 +8,7 @@ the sound mode list are both built from what the receiver reports.
 from __future__ import annotations
 
 from homeassistant.components.media_player import (
+    MediaPlayerDeviceClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -37,6 +38,8 @@ async def async_setup_entry(
 
 class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
     """A media player representing one zone of the receiver."""
+
+    _attr_device_class = MediaPlayerDeviceClass.RECEIVER
 
     def __init__(self, coordinator: DenonAvrCoordinator, zone: ZoneDescriptor) -> None:
         super().__init__(coordinator, f"media_player_{zone.id}")

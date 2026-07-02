@@ -1,15 +1,12 @@
 """Read-only client for the receiver's HTTPS web control /ajax config API.
 
-This is deliberately kept isolated from the goform HTTP client (port 8080) and
-the telnet control channel. It performs a single, non-disruptive read used at
-discovery: the selectable speaker crossover frequency set. Neither the goform
-document nor the telnet SSCFR channel enumerates that set (they report the
-*current* crossover, not the allowed values), and the calibration (1256) channel
-only exposes it inside a disruptive session. The receiver's own web Speakers page
-reads it from this same /ajax endpoint, so it is the cleanest non-disruptive
-source.
-
-All control stays on telnet; this module only ever reads.
+Kept isolated from the goform HTTP client (port 8080) and the telnet channel. It
+performs one non-disruptive read at discovery: the selectable speaker crossover
+frequency set. That set is not obtainable over the other channels — telnet
+(SSCFR) and the length-framed TCP status reads report only the *current*
+crossover, never the allowed values (verified live) — so this web config, which
+the receiver's own Speakers page uses, is the only non-hardcoded source. All
+control still goes over telnet; this module only ever reads.
 """
 
 from __future__ import annotations

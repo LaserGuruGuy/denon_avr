@@ -119,9 +119,13 @@ class Discovery:
     # Numeric metadata (min/max/step/default in dB) the receiver publishes for
     # level style controls, keyed by feature name or channel code.
     numeric_meta: dict[str, dict[str, float]] = field(default_factory=dict)
-    # The selectable speaker crossover frequencies (Hz) the receiver advertises
-    # via its web control /ajax speaker config. Empty when that API is
-    # unavailable/locked, in which case the profile's protocol set is used.
+    # The current amp-assignment label read from the TCP status channel at
+    # discovery (a static setup value the telnet channel does not expose); None
+    # when unavailable.
+    amp_assign: str | None = None
+    # The selectable speaker crossover frequencies (Hz), read from the web /ajax
+    # config at discovery. No other channel exposes the allowed set (verified
+    # live), so this is the source; empty falls back to the profile's set.
     crossover_values: list[int] = field(default_factory=list)
     # Master volume scale as published by the receiver's Volume block:
     # 'reference' is the absolute value that equals 0.0 dB, 'step' the increment,
