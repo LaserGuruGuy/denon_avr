@@ -350,6 +350,8 @@ class TelnetParser:
             return True
         if line.startswith("SSLEV"):
             return self._set_channel(line[5:], state.channel_levels)
+        if line.startswith("SSSDE"):
+            return self._set_distance(line[5:], state.channel_distances)
         if line.startswith("CV"):
             return self._set_channel(line[2:], state.channel_trims)
         if len(line) >= 2 and line[0] == "Z" and line[1].isdigit():
@@ -503,6 +505,27 @@ class TelnetParser:
         if value is None:
             return False
         target[code] = value - self._profile.level_reference
+        return True
+
+    def _set_distance(self, remainder: str, target: dict[str, float]) -> bool:
+        """Parse an 'SSSDE<CODE> <value>' speaker distance line into `target`.
+
+        The value is the distance times the profile divisor (e.g. '0310' at
+        divisor 100 is 3.10 m). The 'STP' unit line and the 'END' terminator are
+        ignored.
+        """
+
+        remainder = remainder.strip()
+        if not remainder or remainder.startswith(self._profile.list_terminator):
+            return False
+        parts = remainder.split()
+        if len(parts) != 2:
+            return False
+        code, raw = parts
+        if code == "STP" or not raw.isdigit():
+            return False
+        divisor = self._profile.distance.get("divisor", 100) or 100
+        target[code] = int(raw) / divisor
         return True
 
     def _set_zone(self, index: int, remainder: str, state: AvrState) -> bool:

@@ -703,6 +703,15 @@ class DenonAvrDevice:
         set_prefix = spec.get("set_prefix", "CV")
         await self._send(f"{set_prefix}{code} {encode_half_step(raw)}")
 
+    async def async_set_channel_distance(self, code: str, meters: float) -> None:
+        """Set a per channel speaker distance via the SSSDE command."""
+
+        spec = self._profile.introspection.get("channel_distances", {})
+        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSSDE"
+        divisor = self._profile.distance.get("divisor", 100) or 100
+        raw = max(0, int(round(meters * divisor)))
+        await self._send(f"{set_prefix}{code} {raw:04d}")
+
     # Encoding helpers -----------------------------------------------------
 
     def _level_to_raw(self, zone_id: str, level: float) -> float:

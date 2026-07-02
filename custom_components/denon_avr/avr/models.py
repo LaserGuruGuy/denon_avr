@@ -195,6 +195,7 @@ class AvrState:
     readonly: dict[str, str | None] = field(default_factory=dict)
     channel_levels: dict[str, float] = field(default_factory=dict)
     channel_trims: dict[str, float] = field(default_factory=dict)
+    channel_distances: dict[str, float] = field(default_factory=dict)
 
     def zone(self, zone_id: str) -> ZoneState:
         """Return the ZoneState for a zone id, creating it on first access."""

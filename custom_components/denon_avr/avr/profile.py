@@ -130,6 +130,12 @@ class ProtocolProfile:
         return float(self.grammar.get("volume_max_fallback", 98.0))
 
     @property
+    def distance(self) -> dict[str, Any]:
+        """Speaker distance grammar (divisor, min, max, step, unit)."""
+
+        return self.grammar.get("distance", {})
+
+    @property
     def sound_mode_refresh_prefixes(self) -> tuple[str, ...]:
         """Line prefixes whose arrival means the audio signal changed.
 

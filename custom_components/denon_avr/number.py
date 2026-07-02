@@ -10,7 +10,7 @@ protocol defined range.
 from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.const import UnitOfSoundPressure, UnitOfTime
+from homeassistant.const import UnitOfLength, UnitOfSoundPressure, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -53,6 +53,7 @@ async def async_setup_entry(
     for code in codes:
         enabled = (not configured) or code in configured
         entities.append(DenonAvrChannelTrim(coordinator, code, enabled))
+        entities.append(DenonAvrChannelDistance(coordinator, code, enabled))
 
     async_add_entities(entities)
 
@@ -123,6 +124,38 @@ class DenonAvrChannelTrim(DenonAvrEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         await self.coordinator.device.async_set_channel_trim(self._code, value)
+
+
+class DenonAvrChannelDistance(DenonAvrEntity, NumberEntity):
+    """A number entity for one channel's speaker distance."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_mode = NumberMode.BOX
+
+    def __init__(
+        self, coordinator: DenonAvrCoordinator, code: str, enabled: bool
+    ) -> None:
+        super().__init__(coordinator, f"number_channel_distance_{code}")
+        self._code = code
+        self._attr_entity_registry_enabled_default = enabled
+        discovery = coordinator.device.discovery
+        self._attr_name = f"{discovery.channel_name(code)} Distance"
+        dist = coordinator.device.profile.distance
+        self._attr_native_min_value = dist.get("min", 0.0)
+        self._attr_native_max_value = dist.get("max", 18.0)
+        self._attr_native_step = dist.get("step", 0.1)
+        unit = dist.get("unit")
+        if unit == "m":
+            self._attr_native_unit_of_measurement = UnitOfLength.METERS
+        elif unit:
+            self._attr_native_unit_of_measurement = unit
+
+    @property
+    def native_value(self) -> float | None:
+        return self.coordinator.data.channel_distances.get(self._code)
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.coordinator.device.async_set_channel_distance(self._code, value)
 
 
 def _resolve_bounds(device, spec: ControlSpec):
