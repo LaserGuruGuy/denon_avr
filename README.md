@@ -140,8 +140,8 @@ company names, logos, and brands are the property of their respective owners and
 are used here for identification purposes only (nominative use); their use does
 not imply any affiliation or endorsement.
 
-- **Denon**, **Marantz**, and **HEOS** are trademarks of Sound United, LLC (a
-  Masimo company) — <https://www.denon.com>
+- **Denon**, **Marantz**, and **HEOS** are trademarks of D&M Holdings Inc. —
+  <https://www.denon.com>
 - **Audyssey**, **Audyssey MultEQ**, **MultEQ XT32**, **Dynamic EQ**,
   **Dynamic Volume**, and **LFC (Low Frequency Containment)** are trademarks of
   Audyssey Laboratories, Inc. — <https://audyssey.com>
