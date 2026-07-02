@@ -127,3 +127,33 @@ device reports, but only this combination has been exercised end to end.
 
 Inspired by the author's earlier C# tooling and by existing Denon control
 projects, but written from scratch as an independent, fully dynamic integration.
+
+For the official, first‑party Home Assistant integration for these receivers,
+see **Denon AVR Network Receivers**:
+<https://www.home-assistant.io/integrations/denonavr/>.
+
+## Trademarks and acknowledgements
+
+This is an independent, unofficial project. It is **not affiliated with, endorsed
+by, sponsored by, or supported by** any of the companies below. All product and
+company names, logos, and brands are the property of their respective owners and
+are used here for identification purposes only (nominative use); their use does
+not imply any affiliation or endorsement.
+
+- **Denon**, **Marantz**, and **HEOS** are trademarks of Sound United, LLC (a
+  Masimo company) — <https://www.denon.com>
+- **Audyssey**, **Audyssey MultEQ**, **MultEQ XT32**, **Dynamic EQ**,
+  **Dynamic Volume**, and **LFC (Low Frequency Containment)** are trademarks of
+  Audyssey Laboratories, Inc. — <https://audyssey.com>
+- **Dolby**, **Dolby Audio**, **Dolby Surround**, and **Dolby Atmos** are
+  trademarks of Dolby Laboratories, Inc. — <https://www.dolby.com>
+- **DTS**, **DTS Neural:X**, and **DTS Virtual:X** are trademarks of DTS, Inc.,
+  an Xperi company — <https://dts.com>
+- **HDMI**, the HDMI logo, and **High‑Definition Multimedia Interface** are
+  trademarks of HDMI Licensing Administrator, Inc. — <https://www.hdmi.org>
+- **Home Assistant** and the Home Assistant logo are trademarks of the Open Home
+  Foundation — <https://www.openhomefoundation.org>
+- **HACS** (Home Assistant Community Store) — <https://hacs.xyz>
+
+Any other product or company names mentioned are the trademarks of their
+respective owners.
