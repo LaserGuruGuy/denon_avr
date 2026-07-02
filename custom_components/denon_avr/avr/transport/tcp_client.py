@@ -167,6 +167,9 @@ class CalibrationClient:
         self._read_task: asyncio.Task | None = None
         # Pending query waiters keyed by command, resolved by the read loop.
         self._pending: dict[str, list[asyncio.Future]] = {}
+        # Waiters for the next inbound message of any command (used for SET acks,
+        # which may come back as an echo, ACK or NACK).
+        self._any_waiters: list[asyncio.Future] = []
 
     async def connect(self, timeout: float = 5.0) -> None:
         self._reader, self._writer = await asyncio.wait_for(
@@ -216,6 +219,32 @@ class CalibrationClient:
             "status": await self.async_query("GET_AVRSTS"),
         }
 
+    async def async_set(
+        self, command: str, payload: dict | None = None, timeout: float = 5.0
+    ) -> "Message | None":
+        """Send a SET_* command with a JSON payload and return the ack message.
+
+        The receiver acknowledges with an echo, ACK or NACK, so this waits for
+        the next inbound message rather than one keyed to `command`. Returns None
+        on timeout. Writing setup (amp assignment, distances, crossover) does not
+        require an Calibration session; only the calibration measurement does.
+        """
+
+        data = b""
+        if payload is not None:
+            data = json.dumps(payload, separators=(",", ":")).encode("ascii")
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future = loop.create_future()
+        self._any_waiters.append(future)
+        try:
+            await self.send(command, data)
+            return await asyncio.wait_for(future, timeout)
+        except asyncio.TimeoutError:
+            return None
+        finally:
+            if future in self._any_waiters:
+                self._any_waiters.remove(future)
+
     async def _read_loop(self) -> None:
         assert self._reader is not None
         try:
@@ -226,6 +255,10 @@ class CalibrationClient:
                         future = waiters.pop(0)
                         if not future.done():
                             future.set_result(message)
+                    if self._any_waiters:
+                        any_future = self._any_waiters.pop(0)
+                        if not any_future.done():
+                            any_future.set_result(message)
                     if self._on_message is not None:
                         self._on_message(message)
         except (OSError, asyncio.CancelledError):
