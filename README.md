@@ -37,6 +37,33 @@ Settings → Devices & Services → Add Integration → **Denon AVR**, then ente
 receiver's **IP address**. The name and all capabilities are read from the device
 automatically; no other input is required.
 
+## Network ports and protocols
+
+All traffic is on the local network and is initiated by Home Assistant (client)
+towards the receiver (server). To let the two communicate through a router or
+VLAN firewall, allow the Home Assistant host to reach the receiver on these
+ports. Nothing needs to be opened towards the internet.
+
+| Port | Proto | Purpose | Used by |
+|------|-------|---------|---------|
+| **23/tcp** | Telnet | Primary control channel and real‑time push: power, volume, mute, source, sound modes and all state updates | **Required** |
+| **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`) | **Required** |
+| **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
+| **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
+| **10443/tcp** | HTTPS (`/ajax/*`) | Firmware settings API (`get_config`/`set_config`) for advanced speaker setup — read and write | Planned |
+| **1256/tcp** | Calibration MultEQ | Speaker/Calibration calibration write session (`ENTER_AUDY` … `SET_SETDAT`/`SET_COEFDT`/`SET_DISFIL` … `EXIT_AUDMD`) | Planned |
+
+Notes:
+
+- Port **1255/tcp** (HEOS) is intentionally **not** used by this integration.
+- The receiver accepts **multiple concurrent telnet (23) connections** and
+  broadcasts events to all of them, so this integration coexists with the Denon
+  app and other controllers.
+- Ports **10443** and **1256** are for writing speaker configuration and Calibration
+  calibration (the approach used by
+  [Odyssee](https://github.com/LaserGuruGuy/Odyssee)); open them ahead of time if
+  you want that functionality once it lands.
+
 ## What you get
 
 - **Media player** per zone (main + zone 2 where present): power, volume, mute,
