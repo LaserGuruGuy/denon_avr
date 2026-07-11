@@ -17,19 +17,37 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 from .coordinator import DenonAvrCoordinator
 
+# Display names for the logical sub-devices grouped under the receiver. A
+# sub-device keeps a large, cohesive subsystem (e.g. the graphic equaliser) on
+# its own device page instead of crowding the main receiver device.
+SUB_DEVICE_NAMES = {"eq": "Graphic EQ"}
+
 
 class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
     """Base class providing device info and availability for all entities."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: DenonAvrCoordinator, key: str) -> None:
+    def __init__(
+        self, coordinator: DenonAvrCoordinator, key: str, sub_device: str | None = None
+    ) -> None:
         super().__init__(coordinator)
         self._device = coordinator.device
         device_info = self._device.discovery.device
         # Prefer the MAC as the stable identifier; fall back to the host.
         identifier = device_info.mac_address or self._device.host
         self._attr_unique_id = f"{identifier}_{key}"
+        if sub_device:
+            # A logical sub-device linked to the main receiver via via_device.
+            suffix = SUB_DEVICE_NAMES.get(sub_device, sub_device)
+            self._attr_device_info = DeviceInfo(
+                identifiers={(DOMAIN, f"{identifier}_{sub_device}")},
+                via_device=(DOMAIN, identifier),
+                manufacturer=device_info.manufacturer,
+                model=device_info.model_name,
+                name=f"{device_info.model_name or 'Denon AVR'} {suffix}",
+            )
+            return
         # Expose the MAC as a device connection (the standard HA convention for
         # network devices) so the device registry can de-duplicate it.
         connections = set()

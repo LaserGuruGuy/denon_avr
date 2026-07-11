@@ -43,7 +43,11 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: DenonAvrCoordinator, spec: ControlSpec) -> None:
-        super().__init__(coordinator, f"switch_{spec.id}")
+        # A control may opt into a logical sub-device (e.g. the graphic EQ on/off
+        # lives on the EQ sub-device alongside its bands).
+        super().__init__(
+            coordinator, f"switch_{spec.id}", sub_device=spec.get("subdevice")
+        )
         self._spec = spec
         self._attr_name = control_name(coordinator.device.discovery, spec)
         # Optional profile-provided icon (e.g. a speaker/mute icon for main mute).

@@ -198,6 +198,22 @@ class NowPlaying:
 
 
 @dataclass
+class GraphicEqState:
+    """Manual graphic-EQ state read from the setup config API (port 10443).
+
+    Reflects the currently-selected channel: ``bands`` maps each band's wire tag
+    (for example ``Eq63Hz``) to its gain in dB. ``speaker_selection`` is the wire
+    code ("1" L/R, "2" Each, "3" All); ``channel_index`` is the selected channel.
+    Empty until the first read, and only meaningful while the model has a graphic
+    EQ. The on/off state is carried separately by the telnet ``graphic_eq`` value.
+    """
+
+    speaker_selection: str | None = None
+    channel_index: int | None = None
+    bands: dict[str, float] = field(default_factory=dict)
+
+
+@dataclass
 class AvrState:
     """Complete volatile state of the receiver as parsed from telnet events.
 
@@ -235,6 +251,8 @@ class AvrState:
     speaker_sizes: dict[str, str] = field(default_factory=dict)
     # Now-playing media for network sources, from the HEOS CLI (see transport).
     now_playing: NowPlaying = field(default_factory=NowPlaying)
+    # Manual graphic-EQ state, read from the setup config API (see graphic_eq).
+    graphic_eq: GraphicEqState = field(default_factory=GraphicEqState)
 
     def zone(self, zone_id: str) -> ZoneState:
         """Return the ZoneState for a zone id, creating it on first access."""

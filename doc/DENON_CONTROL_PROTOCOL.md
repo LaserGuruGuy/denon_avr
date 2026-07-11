@@ -290,8 +290,11 @@ Nine fixed bands (63 Hz … 16 kHz), range −20.0 … +6.0 dB step 0.5 (wire = 
 Writes send `<GraphicEQ>…</GraphicEQ>` with only the tags being changed (e.g.
 `<AdjustEQ><Channel>N</Channel><Eq500Hz>V</Eq500Hz></AdjustEQ>`), plus `<Enable>`,
 `<SpeakerSelection>`, `<CurveCopy>1</CurveCopy>`, `<SetDefaults>`. Editing requires
-MultEQ **off** and the graphic EQ **enabled**. Coverage: `[ ]` sub-device (build
-in progress) — a distinct interface, so it fits a discovery-gated EQ sub-device.
+MultEQ **off** and the graphic EQ **enabled**. Coverage: `[x]` — a discovery-gated
+**EQ sub-device** (on/off switch, speaker-selection + channel selects, one number
+per band, Copy-Curve button). The band frequencies and dB range are a fixed
+constant hardcoded in the profile (not fetched, so the entity structure is robust
+if the setup interface changes); only the live per-band values use this API.
 
 ---
 

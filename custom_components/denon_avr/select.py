@@ -59,6 +59,13 @@ async def async_setup_entry(
         channels = profile.group_channels(group)
         enabled = (not configured) or any(c in configured for c in channels)
         entities.append(DenonAvrSpeakerSize(coordinator, group, channels, enabled))
+    # Manual graphic-EQ selects, on the EQ sub-device, when the receiver has a
+    # graphic EQ this profile can drive: the speaker-selection mode and (when it
+    # reports a channel list) the channel being adjusted.
+    if coordinator.device.eq_supported:
+        entities.append(DenonAvrEqSpeakerSelection(coordinator))
+        if discovery.channels:
+            entities.append(DenonAvrEqChannel(coordinator))
     async_add_entities(entities)
 
 
@@ -282,3 +289,60 @@ class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):
             if name == option:
                 await self.coordinator.device.async_select_quick_select(number)
                 return
+
+
+class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
+    """Graphic-EQ speaker selection: one curve for all, the L/R pair, or each."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "select_eq_speaker_selection", sub_device="eq")
+        self._attr_name = "Speaker Selection"
+        # code -> label, from the fixed graphic-EQ grammar.
+        self._by_code: dict[str, str] = dict(
+            coordinator.device.eq_grammar.get("speaker_selection", {})
+        )
+        self._by_label = {label: code for code, label in self._by_code.items()}
+        self._attr_options = list(self._by_code.values())
+
+    @property
+    def current_option(self) -> str | None:
+        code = self.coordinator.data.graphic_eq.speaker_selection
+        return self._by_code.get(code) if code else None
+
+    async def async_select_option(self, option: str) -> None:
+        code = self._by_label.get(option)
+        if code:
+            await self.coordinator.device.async_set_eq_speaker_selection(code)
+
+
+class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
+    """Graphic-EQ channel being adjusted (used when speaker selection is 'each').
+
+    The channel options are the receiver's own channel names; the wire value is
+    the channel's index in that list, which is what the config API expects.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "select_eq_channel", sub_device="eq")
+        self._attr_name = "EQ Channel"
+        self._channels = [
+            channel.name for channel in coordinator.device.discovery.channels
+        ]
+        self._attr_options = self._channels
+
+    @property
+    def current_option(self) -> str | None:
+        index = self.coordinator.data.graphic_eq.channel_index
+        if index is None or not 0 <= index < len(self._channels):
+            return None
+        return self._channels[index]
+
+    async def async_select_option(self, option: str) -> None:
+        if option in self._channels:
+            await self.coordinator.device.async_set_eq_channel(
+                self._channels.index(option)
+            )

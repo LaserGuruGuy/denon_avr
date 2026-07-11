@@ -19,6 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .avr import graphic_eq
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
@@ -62,6 +63,13 @@ async def async_setup_entry(
         enabled = (not configured) or code in configured
         entities.append(DenonAvrChannelTrim(coordinator, code, enabled))
         entities.append(DenonAvrChannelDistance(coordinator, code, enabled))
+
+    # One number per manual graphic-EQ band, on the EQ sub-device, when the
+    # receiver has a graphic EQ this profile can drive. The bands reflect the
+    # channel picked by the EQ Channel select.
+    if device.eq_supported:
+        for label in device.eq_grammar.get("bands", []):
+            entities.append(DenonAvrEqBand(coordinator, label))
 
     async_add_entities(entities)
 
@@ -175,3 +183,32 @@ def _resolve_bounds(device, spec: ControlSpec):
         return meta["min"], meta["max"], meta["step"]
     # Fall back to the profile's protocol defined range (LFE, sleep timer).
     return spec.get("min"), spec.get("max"), spec.get("step")
+
+
+class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
+    """One manual graphic-EQ band gain in dB, shown as a slider (fader).
+
+    The value applies to the channel currently picked by the EQ Channel select
+    (or to all/LR depending on the speaker-selection mode). Read and written via
+    the setup config API; the range comes from the fixed graphic-EQ grammar.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_native_unit_of_measurement = "dB"
+    _attr_mode = NumberMode.SLIDER
+
+    def __init__(self, coordinator: DenonAvrCoordinator, label: str) -> None:
+        grammar = coordinator.device.eq_grammar
+        self._tag = graphic_eq.band_tag(grammar, label)
+        super().__init__(coordinator, f"number_eq_{self._tag}", sub_device="eq")
+        self._attr_name = f"EQ {label}"
+        self._attr_native_min_value = float(grammar.get("min_db", -20.0))
+        self._attr_native_max_value = float(grammar.get("max_db", 6.0))
+        self._attr_native_step = float(grammar.get("step_db", 0.5))
+
+    @property
+    def native_value(self) -> float | None:
+        return self.coordinator.data.graphic_eq.bands.get(self._tag)
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.coordinator.device.async_set_eq_band(self._tag, value)

@@ -414,7 +414,8 @@
       "prefix": "PSGEQ ",
       "on": "ON",
       "off": "OFF",
-      "doc": "Graphic EQ on/off. The per-band adjustment is not exposed over telnet, so only the enable is controlled here."
+      "subdevice": "eq",
+      "doc": "Graphic EQ on/off (telnet PSGEQ). The per-band values are on the setup config API, not telnet; this on/off switch lives on the EQ sub-device with the band numbers."
     },
     "room_size": {
       "group": "audyssey",

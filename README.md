@@ -50,32 +50,44 @@ ports. Nothing needs to be opened towards the internet.
 | **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
 | **1256/tcp** | Length‑framed JSON | Read once at setup for the amp assignment (a plain, non‑disruptive status read) | Optional (degrades gracefully) |
+| **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources | Optional (degrades gracefully) |
+| **10443/tcp** | HTTPS (setup config) | Manual graphic‑EQ per‑band values read/write (non‑disruptive; self‑signed cert) | Optional (graphic EQ only) |
 
 Notes:
 
-- Port **1255/tcp** (HEOS) is intentionally **not** used by this integration.
 - The receiver accepts **multiple concurrent telnet (23) connections** and
   broadcasts events to all of them, so this integration coexists with the Denon
   app and other controllers.
+- The HEOS (1255) and setup‑config (10443) channels are only opened when the
+  receiver advertises the matching capability; both are non‑disruptive.
 
 ## What you get
 
 - **Media player** per zone (main + zone 2 where present): power, volume, mute,
-  source selection, and (main zone) sound mode.
+  source selection, and (main zone) sound mode. On the main zone, network sources
+  show **album art, track/artist/album and play/pause/next transport** (via HEOS);
+  otherwise the player carries a source‑aware **input icon** (TV, disc, tuner,
+  Bluetooth, USB, cast, …).
 - **Sound mode** as two coupled selects: a genre group (Movie/Music/Game/Pure)
   and the modes within the active group (context aware, includes Auto).
 - **Selects**: Dynamic Compression, Dynamic Volume, Reference Level Offset,
-  MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, HDMI Monitor Out,
-  HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
-  (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Volume Scale,
-  Volume Limit, Muting Level, a per speaker group crossover frequency (Hz), and a
-  per speaker group size (Large/Small) — each only when the receiver advertises it.
+  MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, Picture Mode, HDMI
+  Monitor Out, HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
+  (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Room Size, Volume
+  Scale, Volume Limit, Muting Level, a per speaker group crossover frequency (Hz),
+  and a per speaker group size (Large/Small) — each only when the receiver
+  advertises it.
 - **Switches**: Main Power, Main Mute, Tone Control, Dynamic EQ, Loudness
   Management, Cinema EQ, Subwoofer, Speaker Virtualizer, Center Spread,
-  DTS Neural:X, Low Frequency Containment (LFC), All Zone Stereo.
-- **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Audio Delay,
-  Effect Level, Containment Amount, Sleep Timer, and per channel volume trim and
-  speaker distance (m) for each configured speaker.
+  DTS Neural:X, Low Frequency Containment (LFC), Graphic EQ, Auto Lip Sync,
+  All Zone Stereo.
+- **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Center Level
+  Adjust, Audio Delay, Effect Level, Containment Amount, Sleep Timer, and per
+  channel volume trim and speaker distance (m) for each configured speaker.
+- **Graphic EQ** (a sub‑device, when the receiver has one): the on/off, a
+  speaker‑selection mode (L/R · Each · All), the channel being adjusted, and one
+  slider per band (63 Hz … 16 kHz), plus a **Copy Curve** button that seeds the
+  manual EQ from the reference curve. See the equaliser card recipe below.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
   mode info, sound mode, volume (dB), and the current amp assignment.
 - **Binary sensor**: telnet connectivity.
@@ -89,6 +101,40 @@ exposed as a select rather than a stepped number. The current crossover per grou
 is read over telnet; the selectable frequencies are the fixed Denon
 crossover grid (a protocol constant, verified live), the same as every other
 enum's values.
+
+### Graphic equaliser card
+
+The graphic EQ is exposed as plain entities (one number per band, plus the
+speaker‑selection and channel selects), so any card can drive it. For a proper
+fader look, this integration does **not** ship a card (an integration must not);
+instead install a mixer/fader card from HACS — for example **`wrodie/mixer-card`**
+— and point it at the band numbers. A minimal Lovelace example:
+
+```yaml
+type: vertical-stack
+cards:
+  - type: entities
+    entities:
+      - switch.avr_x3600h_graphic_eq
+      - select.avr_x3600h_speaker_selection
+      - select.avr_x3600h_eq_channel
+  - type: custom:mixer-card
+    faders:
+      - entity_id: number.avr_x3600h_eq_63_hz
+      - entity_id: number.avr_x3600h_eq_125_hz
+      - entity_id: number.avr_x3600h_eq_250_hz
+      - entity_id: number.avr_x3600h_eq_500_hz
+      - entity_id: number.avr_x3600h_eq_1_khz
+      - entity_id: number.avr_x3600h_eq_2_khz
+      - entity_id: number.avr_x3600h_eq_4_khz
+      - entity_id: number.avr_x3600h_eq_8_khz
+      - entity_id: number.avr_x3600h_eq_16_khz
+```
+
+The nine faders show the band gains of the channel picked by the EQ Channel
+select; switch channels to edit each one. Editing requires MultEQ **off** and the
+graphic EQ **enabled** (both are entities above). Entity ids follow your device
+name — adjust the prefix to match yours.
 
 ## Notes and limitations
 

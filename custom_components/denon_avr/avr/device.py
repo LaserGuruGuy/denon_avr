@@ -24,12 +24,14 @@ from .codec import encode_half_step
 from .models import AvrState, Discovery, NowPlaying
 from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
+from . import graphic_eq
 from .transport import (
     GoformClient,
     HeosClient,
     TcpClient,
     TelnetClient,
     UpnpClient,
+    WebConfigClient,
     async_probe,
 )
 
@@ -55,6 +57,10 @@ class DenonAvrDevice:
         # one-shot read at discovery (amp assignment).
         self._goform = GoformClient(session, host)
         self._upnp = UpnpClient(session, host)
+        # Setup-interface config API (HTTPS 10443), used for the manual graphic
+        # EQ per-band values, which are not on the telnet channel.
+        self._webconfig = WebConfigClient(session, host)
+        self._eq_grammar = self._profile.grammar.get("graphic_eq", {})
         self._telnet = TelnetClient(
             host,
             on_line=self._handle_line,
@@ -342,6 +348,9 @@ class DenonAvrDevice:
         if not self._telnet.connected:
             self._apply_http_status("main", status)
             self._schedule_update()
+        # Refresh the manual graphic EQ per-band values (non-disruptive; a no-op
+        # unless the receiver advertises a graphic EQ this profile can drive).
+        await self.async_refresh_graphic_eq()
 
     # Telnet callbacks -----------------------------------------------------
 
@@ -473,6 +482,60 @@ class DenonAvrDevice:
 
     async def async_media_previous(self) -> None:
         await self._heos.async_previous()
+
+    # Manual graphic EQ, via the setup-interface config API. Gated on the
+    # GraphicEQ capability; every call is non-disruptive and best effort.
+    @property
+    def eq_grammar(self) -> dict:
+        """The fixed graphic-EQ access grammar from the profile."""
+
+        return self._eq_grammar
+
+    @property
+    def eq_supported(self) -> bool:
+        """True when the receiver advertises a graphic EQ this profile can drive."""
+
+        return bool(self._eq_grammar) and self._discovery.supports("GraphicEQ")
+
+    async def async_refresh_graphic_eq(self) -> None:
+        """Read the current graphic-EQ document into state (non-disruptive)."""
+
+        if not self.eq_supported:
+            return
+        xml = await self._webconfig.async_get(
+            self._eq_grammar.get("config_section", "audio"),
+            int(self._eq_grammar.get("config_type", 0)),
+        )
+        if xml is None:
+            return
+        self._state.graphic_eq = graphic_eq.parse(xml, self._eq_grammar)
+        self._schedule_update()
+
+    async def _eq_set(self, payload: str) -> None:
+        if not self.eq_supported:
+            return
+        await self._webconfig.async_set(
+            self._eq_grammar.get("config_section", "audio"),
+            int(self._eq_grammar.get("config_type", 0)),
+            payload,
+        )
+        # Re-read so entities reflect exactly what the receiver applied.
+        await self.async_refresh_graphic_eq()
+
+    async def async_set_eq_band(self, tag: str, db: float) -> None:
+        channel = self._state.graphic_eq.channel_index or 0
+        await self._eq_set(graphic_eq.band_payload(self._eq_grammar, channel, tag, db))
+
+    async def async_set_eq_channel(self, index: int) -> None:
+        await self._eq_set(graphic_eq.channel_payload(self._eq_grammar, index))
+
+    async def async_set_eq_speaker_selection(self, code: str) -> None:
+        await self._eq_set(
+            graphic_eq.speaker_selection_payload(self._eq_grammar, code)
+        )
+
+    async def async_eq_curve_copy(self) -> None:
+        await self._eq_set(graphic_eq.curve_copy_payload(self._eq_grammar))
 
     def _zone(self, zone_id: str):
         """Return the discovered ZoneDescriptor for a zone id, if any."""
