@@ -411,7 +411,14 @@ class TelnetParser:
         # Generic feature controls.
         for prefix, spec in self._feature_matchers:
             if line.startswith(prefix):
-                return self._set_feature(spec, line[len(prefix):], state)
+                remainder = line[len(prefix):]
+                # A control with a short, overloaded prefix (e.g. picture mode
+                # 'PV', shared with the video-adjust tokens PVBR/PVCN/...) opts
+                # into exact matching: it only claims the line when the value is
+                # one of its known enum tokens, so it never swallows a sibling.
+                if spec.get("exact_enum") and remainder.strip() not in spec.values:
+                    continue
+                return self._set_feature(spec, remainder, state)
 
         return False
 

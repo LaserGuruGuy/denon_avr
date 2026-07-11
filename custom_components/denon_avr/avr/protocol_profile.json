@@ -665,6 +665,18 @@
       "values": ["AUTO", "GAME", "MOVI"],
       "doc": "Video processing mode. Wire values verified live (AUTO/GAME/MOVI); labels come from Deviceinfo. Only changeable with an active video signal."
     },
+    "picture_mode": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "PictureMode",
+      "kind": "enum",
+      "query": "PV?",
+      "prefix": "PV",
+      "exact_enum": true,
+      "values": ["OFF", "STD", "MOV", "VVD", "STM", "CTM", "DAY", "NGT"],
+      "labels": ["Off", "Standard", "Movie", "Vivid", "Stream", "Custom", "ISF Day", "ISF Night"],
+      "doc": "Picture mode (Denon protocol PV<mode>). Tokens from the official protocol doc. The 'PV' prefix is shared with the video-adjust settings (PVBR/PVCN/...), so exact_enum makes this control claim only the picture-mode value tokens. Device reports PVSTM (Stream)."
+    },
     "hdmi_video_output": {
       "group": "video",
       "scope": "feature",
