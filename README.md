@@ -86,7 +86,9 @@ the sub‑device its setting belongs to.
   MultEQ, Restorer, ECO, Front Display dimmer, Video Mode, Picture Mode, HDMI
   Monitor Out, HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
   (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Room Size, Volume
-  Scale, Volume Limit, Muting Level, a per speaker group crossover frequency (Hz),
+  Scale, Volume Limit, Muting Level, a per speaker group crossover frequency (Hz)
+  plus a Crossover Speaker Selection (All / Individual) that gates them against a
+  single All Crossover,
   a per speaker group size (Large/Small), Front Speaker (A/B/A+B), Amp Assign
   (the amp‑assignment mode — options are read from the receiver per its amp type,
   e.g. 7.1ch + Front B / 9.1ch / Bi‑Amp / Zone2), the amp‑assign Floor Layout and
