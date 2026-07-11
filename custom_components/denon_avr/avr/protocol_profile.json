@@ -386,6 +386,48 @@
       "off": "OFF",
       "doc": "Graphic EQ on/off. The per-band adjustment is not exposed over telnet, so only the enable is controlled here."
     },
+    "room_size": {
+      "group": "audyssey",
+      "scope": "feature",
+      "feature": "RoomSize",
+      "kind": "enum",
+      "query": "PSRSZ ?",
+      "prefix": "PSRSZ ",
+      "values": ["S", "MS", "M", "ML", "L"],
+      "labels": ["Small", "Medium Small", "Medium", "Medium Large", "Large"],
+      "doc": "Audyssey DSX room size. Wire tokens from the Denon protocol document; labels from Deviceinfo when published. Candidate: silent on the X3600H '?' probe (a no-op/inapplicable state also yields silence), gated on the advertised RoomSize capability."
+    },
+    "dialog_level": {
+      "group": "audio",
+      "scope": "feature",
+      "feature": "DialogLevel",
+      "kind": "level",
+      "query": "PSDIL ?",
+      "prefix": "PSDIL ",
+      "doc": "Dialog (center) level adjust. PSDIL <nn> half-step, 50 = 0 dB (level kind); the receiver also has a PSDIL ON/OFF enable that is not separately exposed (a non-numeric value is ignored by the level decoder). Range derives from the device's DialogLevel block. Candidate: silent on the X3600H '?' probe."
+    },
+    "headphone_eq": {
+      "group": "audio",
+      "scope": "feature",
+      "feature": "HeadphoneEq",
+      "kind": "onoff",
+      "query": "PSHEQ ?",
+      "prefix": "PSHEQ ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Headphone EQ on/off. PSHEQ verified live (responds 'OFF'), but the X3600H does not advertise a HeadphoneEq FuncName, so this stays dormant on it and activates on models that do advertise it. A telnet-response gate (create when the device answers the query) would let telnet-only capabilities like this populate; noted as a future enhancement."
+    },
+    "auto_lip_sync": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "AutoLipSync",
+      "kind": "onoff",
+      "query": "SSHOSALS ?",
+      "prefix": "SSHOSALS ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Auto lip sync (automatic A/V delay). Token SSHOSALS from the denonavr library. Candidate: silent unless a video source is active; gated on the advertised AutoLipSync capability."
+    },
     "dynamic_volume": {
       "group": "audyssey",
       "scope": "feature",
