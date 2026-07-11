@@ -190,32 +190,28 @@
       "name": "Input Signal",
       "query": "SSINFAISSIG ?",
       "prefix": "SSINFAISSIG",
-      "doc": "Raw input signal type code.",
-      "triggers_sound_mode_refresh": true
+      "doc": "Raw input signal type code."
     },
     "sample_rate": {
       "kind": "sample_rate",
       "name": "Sample Rate",
       "query": "SSINFAISFSV ?",
       "prefix": "SSINFAISFSV",
-      "doc": "Sample rate token such as '48K'. 'NON' means no active signal.",
-      "triggers_sound_mode_refresh": true
+      "doc": "Sample rate token such as '48K'. 'NON' means no active signal."
     },
     "audio_format": {
       "kind": "passthrough",
       "name": "Audio Format",
       "query": "SSINFAISFOR ?",
       "prefix": "SSINFAISFOR",
-      "doc": "Channel layout such as '2/0/.0'.",
-      "triggers_sound_mode_refresh": true
+      "doc": "Channel layout such as '2/0/.0'."
     },
     "decoder": {
       "kind": "trimmed",
       "name": "Decoder",
       "query": "SYSDA ?",
       "prefix": "SYSDA ",
-      "doc": "Active decoder/audio format, for example 'PCM' (space padded).",
-      "triggers_sound_mode_refresh": true
+      "doc": "Active decoder/audio format, for example 'PCM' (space padded)."
     },
     "mode_info": {
       "kind": "trimmed",
@@ -223,6 +219,26 @@
       "query": "SYSMI ?",
       "prefix": "SYSMI ",
       "doc": "Informational mode string, for example 'Stereo' (space padded)."
+    }
+  },
+  "refresh": {
+    "doc": "Coalesced re-query groups. When a pushed line's prefix matches an entry in 'on', that group's 'queries' are re-sent after 'debounce' seconds; a burst of matching events collapses into a single re-query. This keeps derived state the receiver does not push on every relevant change in sync: the sound mode lists follow a signal change; the audio information (format/decoder/rate/mode) and the channel/speaker layout follow a sound mode or source change, which the receiver reports (MS/SI) but without re-sending the dependent state.",
+    "groups": {
+      "sound_mode_lists": {
+        "queries": ["OPSMLALL ?", "OPSML ?"],
+        "on": ["SSINFAISSIG", "SSINFAISFSV", "SSINFAISFOR", "SYSDA"],
+        "debounce": 1.0
+      },
+      "audio_info": {
+        "queries": ["SSINFAISSIG ?", "SSINFAISFSV ?", "SSINFAISFOR ?", "SYSDA ?", "SYSMI ?"],
+        "on": ["MS", "SI"],
+        "debounce": 1.0
+      },
+      "speaker_channel": {
+        "queries": ["CV?", "SSLEV ?", "SSSPC ?", "SSCFR ?", "SSSDE ?"],
+        "on": ["MS", "SI"],
+        "debounce": 1.2
+      }
     }
   },
   "controls": {

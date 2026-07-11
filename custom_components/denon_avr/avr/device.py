@@ -67,12 +67,15 @@ class DenonAvrDevice:
         # refreshes). Without these, asyncio only keeps a weak reference and the
         # task can be garbage collected before it runs.
         self._pending_tasks: set[asyncio.Task] = set()
-        # Line prefixes that signal an audio format change (decoder, input
-        # signal, sample rate, audio format). The sound mode lists are signal
-        # dependent, so these trigger a coalesced re-query. Coalescing avoids a
-        # query storm when the receiver pushes several of them at once.
-        self._refresh_trigger_prefixes = self._profile.sound_mode_refresh_prefixes
-        self._mode_refresh_scheduled = False
+        # Data driven coalesced re-query groups (profile 'refresh' section). The
+        # receiver does not push some derived state on every relevant change
+        # (audio format on a mode change, channel/speaker layout on a mode or
+        # source change, the signal dependent sound mode lists), so when a
+        # group's trigger prefix arrives its queries are re-sent after a short
+        # debounce. Coalescing avoids a query storm when several triggers arrive
+        # at once. A group is scheduled at most once until its re-query fires.
+        self._refresh_groups = self._profile.refresh_groups
+        self._refresh_scheduled: set[str] = set()
         self._available = False
         # Adaptive sound mode wire learning. Off by default for predictability;
         # the coordinator sets this from the config entry option. When off, wire
@@ -348,13 +351,15 @@ class DenonAvrDevice:
             remainder = line[len("OPSMLALL") :].strip()
             if remainder.startswith(self._profile.list_terminator):
                 self._create_task(self._query_current_sound_modes())
-        # An audio format change (new stream/decoder, even on the same source)
-        # changes which sound modes the receiver offers. Most changes are pushed
-        # by the receiver, but re-query the lists to stay in sync regardless.
-        if self._refresh_trigger_prefixes and line.startswith(
-            self._refresh_trigger_prefixes
-        ):
-            self._schedule_mode_list_refresh()
+        # Data driven refresh: any group whose trigger prefix this line matches
+        # gets a coalesced re-query. This keeps state the receiver does not
+        # re-push on every change in sync - the signal dependent sound mode
+        # lists on an audio format change, and the audio information and
+        # channel/speaker layout on a sound mode (MS) or source (SI) change.
+        for group_id, group in self._refresh_groups.items():
+            on = group.get("on")
+            if on and line.startswith(tuple(on)):
+                self._schedule_refresh(group_id)
 
     def _handle_availability(self, available: bool) -> None:
         """React to the telnet link going up or down."""
@@ -584,36 +589,34 @@ class DenonAvrDevice:
         if query:
             await self._send(query)
 
-    async def _query_sound_mode_lists(self) -> None:
-        """Re-query both the all groups (OPSMLALL) and current (OPSML) lists."""
+    def _schedule_refresh(self, group_id: str) -> None:
+        """Coalesce a refresh group's re-query into one delayed send.
 
-        for query in (
-            self._profile.introspection_query("sound_mode_list"),
-            self._current_sound_modes_query(),
-        ):
-            if query:
-                await self._send(query)
-
-    def _schedule_mode_list_refresh(self) -> None:
-        """Coalesce audio format change events into one delayed list re-query.
-
-        The receiver emits several signal events (decoder, sample rate, ...) for
-        a single format change; a short debounce collapses them into one refresh
-        and lets the receiver settle on the new format before querying.
+        The receiver emits a burst of events for a single change (several signal
+        events for one format change; several MS/SI lines for one mode/source
+        switch); a short debounce collapses them into one re-query and lets the
+        receiver settle on the new state before querying. A group is scheduled
+        at most once until its re-query fires.
         """
 
-        if self._mode_refresh_scheduled:
+        if group_id in self._refresh_scheduled:
             return
-        self._mode_refresh_scheduled = True
+        group = self._refresh_groups.get(group_id)
+        if not group:
+            return
+        self._refresh_scheduled.add(group_id)
+        queries = list(group.get("queries", []))
+        debounce = float(group.get("debounce", 1.0))
 
         async def _refresh() -> None:
             try:
-                await asyncio.sleep(1.0)
-                await self._query_sound_mode_lists()
+                await asyncio.sleep(debounce)
+                for query in queries:
+                    await self._send(query)
             except asyncio.CancelledError:
                 pass
             finally:
-                self._mode_refresh_scheduled = False
+                self._refresh_scheduled.discard(group_id)
 
         self._create_task(_refresh())
 

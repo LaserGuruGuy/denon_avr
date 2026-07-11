@@ -91,6 +91,7 @@ class ProtocolProfile:
         }
         self.introspection: dict[str, dict[str, Any]] = raw.get("introspection", {})
         self.readonly: dict[str, dict[str, Any]] = raw.get("readonly", {})
+        self.refresh: dict[str, Any] = raw.get("refresh", {})
         # Deviceinfo generation code -> hardware type name (e.g. "avr-x-2016"),
         # matching the naming the official Denon integration reports.
         self.receiver_generations: dict[str, str] = {
@@ -163,20 +164,17 @@ class ProtocolProfile:
         return []
 
     @property
-    def sound_mode_refresh_prefixes(self) -> tuple[str, ...]:
-        """Line prefixes whose arrival means the audio signal changed.
+    def refresh_groups(self) -> dict[str, dict[str, Any]]:
+        """Coalesced re-query groups keyed by id.
 
-        The sound mode lists are signal dependent, so when one of these events
-        arrives (decoder, input signal, sample rate, audio format) the lists
-        should be re-queried. Which events trigger this is flagged in the
-        profile's readonly section, keeping it data driven, not hard coded.
+        Each group has 'queries' (commands to re-send), 'on' (line prefixes
+        whose arrival schedules the re-query) and 'debounce' (seconds). This
+        keeps derived state the receiver does not push on every relevant change
+        (audio format, channel/speaker layout, signal-dependent mode lists) in
+        sync, fully data driven from the profile's refresh section.
         """
 
-        return tuple(
-            spec.get("prefix", "")
-            for spec in self.readonly.values()
-            if spec.get("triggers_sound_mode_refresh") and spec.get("prefix")
-        )
+        return self.refresh.get("groups", {})
 
     def introspection_query(self, key: str) -> str | None:
         """Return the query string for an introspection item, or None."""
