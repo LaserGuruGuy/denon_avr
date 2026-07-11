@@ -43,60 +43,48 @@ class WebConfigClient:
     async def async_get(
         self, section: str, type_id: int, extra: dict[str, str] | None = None
     ) -> str | None:
-        """GET one config group as raw XML text, or None on any failure.
+        """Read one config group as raw XML text, or None on any failure.
 
         ``extra`` adds query parameters, e.g. ``{"opt1": "1", "opt2": "0"}`` to
         select the graphic-EQ channel to read.
         """
 
-        url = f"{self._base}/ajax/{section}/get_config"
-        params = {"type": str(type_id)}
+        params = {"type": type_id}
         if extra:
             params.update(extra)
-        try:
-            async with self._session.get(
-                url,
-                params=params,
-                ssl=False,
-                timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT),
-            ) as response:
-                if response.status != 200:
-                    _LOGGER.debug(
-                        "get_config %s type=%s returned HTTP %s",
-                        section,
-                        type_id,
-                        response.status,
-                    )
-                    return None
-                return await response.text()
-        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
-            _LOGGER.debug("get_config %s type=%s failed: %s", section, type_id, err)
-            return None
+        return await self._get(f"/ajax/{section}/get_config", params)
 
     async def async_set(self, section: str, type_id: int, xml: str) -> bool:
         """Apply an XML fragment for one config group. Return True on HTTP 200.
 
-        The setup UI issues this as a GET with the payload in the query string
-        (its jQuery call defaults to GET), not a POST; a POST is rejected with
-        HTTP 400. The XML is percent-encoded as a single query parameter.
+        Both reads and writes are GETs on this interface (the setup UI's jQuery
+        call defaults to GET); a POST is rejected with HTTP 400. The XML is just
+        another query parameter, so this shares the same request path as a read.
         """
 
-        url = f"{self._base}/ajax/{section}/set_config"
-        query = f"type={type_id}&data={quote(xml, safe='')}"
+        return await self._get(
+            f"/ajax/{section}/set_config", {"type": type_id, "data": xml}
+        ) is not None
+
+    async def _get(self, path: str, params: dict[str, object]) -> str | None:
+        """Issue a GET and return the body text, or None on error/non-200.
+
+        The one request path for both reads and writes. Parameters are
+        percent-encoded fully (encodeURIComponent-equivalent, ``safe=''``), which
+        the setup interface expects for the XML payload and is harmless for the
+        simple read parameters.
+        """
+
+        query = "&".join(f"{key}={quote(str(value), safe='')}" for key, value in params.items())
+        url = f"{self._base}{path}?{query}"
         try:
             async with self._session.get(
-                f"{url}?{query}",
-                ssl=False,
-                timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT),
+                url, ssl=False, timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
             ) as response:
                 if response.status != 200:
-                    _LOGGER.debug(
-                        "set_config %s type=%s returned HTTP %s",
-                        section,
-                        type_id,
-                        response.status,
-                    )
-                return response.status == 200
+                    _LOGGER.debug("%s returned HTTP %s", path, response.status)
+                    return None
+                return await response.text()
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
-            _LOGGER.debug("set_config %s type=%s failed: %s", section, type_id, err)
-            return False
+            _LOGGER.debug("GET %s failed: %s", path, err)
+            return None
