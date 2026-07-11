@@ -80,7 +80,7 @@ def parse_device_info(
     xml_text: str,
     feature_names: set[str] | None = None,
     enum_features: set[str] | None = None,
-    generations: dict[str, str] | None = None,
+    receiver_type: dict[str, str] | None = None,
 ) -> Discovery:
     """Parse the Deviceinfo XML into a Discovery object.
 
@@ -104,14 +104,21 @@ def parse_device_info(
     device = discovery.device
     device.model_name = (root.findtext("ModelName") or "").strip() or None
     device.mac_address = _format_mac(root.findtext("MacAddress"))
-    # The receiver reports its generation as a numeric code (Gen); map it to the
-    # friendly name the official integration uses when we know it, and otherwise
-    # fall back to the raw code from the device. That keeps the hardware type
-    # populated for any receiver, known or not, always sourced from the equipment
-    # (the map only prettifies the label; it never invents one).
-    gen = (root.findtext("Gen") or "").strip()
-    if gen:
-        device.hardware_type = (generations or {}).get(gen) or gen
+    # Classify the receiver type (the device's hardware version) the way the
+    # official library does: an AVR-X family device reached over the 8080
+    # interface is "avr-x-2016", otherwise "avr". A device is AVR-X when its
+    # CommApiVers OR its ModelName matches the library's patterns. This is read
+    # from the equipment and works for any model (no per-model table).
+    if receiver_type:
+        commapi = (root.findtext("CommApiVers") or "").strip()
+        model = device.model_name or ""
+        is_avr_x = bool(
+            (commapi and re.search(receiver_type.get("commapi_pattern", ""), commapi))
+            or (model and re.search(receiver_type.get("avr_x_pattern", ""), model))
+        )
+        device.hardware_type = receiver_type.get(
+            "avr_x_type" if is_avr_x else "default_type"
+        )
     zones_text = root.findtext("DeviceZones")
     if zones_text and zones_text.strip().isdigit():
         device.zone_count = max(1, int(zones_text.strip()))

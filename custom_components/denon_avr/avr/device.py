@@ -197,7 +197,7 @@ class DenonAvrDevice:
             xml_text,
             feature_names,
             enum_features,
-            generations=self._profile.receiver_generations,
+            receiver_type=self._profile.receiver_type,
         )
         # Copy discovered data into our shared discovery object so the parser and
         # entities keep referencing a single instance.
