@@ -426,7 +426,7 @@
       "prefix": "SSHOSALS ",
       "on": "ON",
       "off": "OFF",
-      "doc": "Auto lip sync (automatic A/V delay). Token SSHOSALS from the denonavr library. Candidate: silent unless a video source is active; gated on the advertised AutoLipSync capability."
+      "doc": "Auto lip sync (automatic A/V delay), token SSHOSALS. Candidate: silent unless a video source is active; gated on the advertised AutoLipSync capability."
     },
     "dynamic_volume": {
       "group": "audyssey",

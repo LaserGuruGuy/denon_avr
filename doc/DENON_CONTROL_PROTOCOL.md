@@ -13,29 +13,28 @@ profile entry, gated by its `FuncName`.
 
 ## Sources (ground truth, in priority order)
 
-1. **Denon control protocol document, V01** — application models AVR-X6400H /
-   X4400H / X3400H / X2400H / X1400H / S930H / S730H (2017 generation). The most
-   complete first-party grammar we have (832 distinct command tokens).
-   Published by Denon: <https://www.denon.com> (control protocol documents).
-2. **The receiver itself** — live telnet/goform/HEOS probing of the target
+1. **The manufacturer's published control-protocol document (2017 generation)**
+   — application models AVR-X6400H / X4400H / X3400H / X2400H / X1400H / S930H /
+   S730H. The most complete first-party grammar available (832 distinct command
+   tokens).
+2. **The receiver itself** — live telnet / HTTP / HEOS probing of the target
    device (this project's reference unit is an **AVR-X3600H**, 2019). Ground
    truth for that model's exact tokens, values and quirks. Note: an empty telnet
    reply to a `?` query does **not** prove a command is unsupported (a no-op set
    or an inapplicable state also yields silence) — cross-check before concluding.
-3. **`ol-iver/denonavr`** (the de-facto Python library) — real-world telnet
-   command templates validated across many newer models (2020–2023: X3700H,
-   X3800H, X6800H, ...). Source of commands newer than the V01 document (e.g.
-   `BTTX`, `PSDIRAC`, `PSDACFIL`, `PSIMAX*`, `SSHOSALS`).
-4. **`unfoldedcircle/integration-denonavr`** — cross-check only; its command set
-   is a list of symbolic one-shot "simple commands" mapped onto the same tokens.
+3. **A widely-used community control library** — real-world telnet command
+   templates validated across many newer models (2020–2023). Source of commands
+   newer than the 2017 document (e.g. `BTTX`, `PSDIRAC`, `PSDACFIL`, `PSIMAX*`,
+   `SSHOSALS`).
+4. **Another community integration** — cross-check only; its command set is a
+   list of symbolic one-shot "simple commands" mapped onto the same tokens.
 
 Newer models (X3800H / X3900H / X6800H) publish only owner's manuals, not a
-public control-protocol spreadsheet, so their additions are captured here via
+public control-protocol document, so their additions are captured here via
 sources 2–4 and annotated by generation rather than by a per-model document.
 
-Command tokens are functional facts (the wire protocol), documented here in our
-own words; this file is not a reproduction of Denon's document. Denon publishes
-the protocol and we gratefully acknowledge it.
+Command tokens are functional facts (the wire protocol), documented here in the
+project's own words.
 
 ## Coverage legend
 
@@ -250,10 +249,10 @@ not stateful entities.
 
 ## 16. Raw remote codes (`RC…`) — model-specific
 
-`denonavr` uses opaque remote codes for a few toggles that lack a clean setter,
-e.g. HDMI-CEC on/off (`RCKSK0410826`/`...827`), Dolby Atmos toggle, input-mode
-select. These are model-specific and brittle; prefer a real setter when one
-exists. `[action]` only, and only if no cleaner token is available.
+Some control libraries use opaque remote codes for a few toggles that lack a
+clean setter, e.g. HDMI-CEC on/off (`RCKSK0410826`/`...827`), Dolby Atmos toggle,
+input-mode select. These are model-specific and brittle; prefer a real setter
+when one exists. `[action]` only, and only if no cleaner token is available.
 
 ---
 
