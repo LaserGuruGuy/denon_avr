@@ -201,7 +201,9 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
         grammar = coordinator.device.eq_grammar
         self._tag = graphic_eq.band_tag(grammar, label)
         super().__init__(coordinator, f"number_eq_{self._tag}", sub_device="eq")
-        self._attr_name = f"EQ {label}"
+        # The device is already named "... Graphic EQ", so the band name is just
+        # the frequency (avoids a doubled "Graphic EQ EQ 63 Hz").
+        self._attr_name = label
         self._attr_native_min_value = float(grammar.get("min_db", -20.0))
         self._attr_native_max_value = float(grammar.get("max_db", 6.0))
         self._attr_native_step = float(grammar.get("step_db", 0.5))

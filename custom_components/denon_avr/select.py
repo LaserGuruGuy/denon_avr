@@ -328,7 +328,7 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_eq_channel", sub_device="eq")
-        self._attr_name = "EQ Channel"
+        self._attr_name = "Channel"
         self._channels = [
             channel.name for channel in coordinator.device.discovery.channels
         ]

@@ -49,7 +49,11 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
             coordinator, f"switch_{spec.id}", sub_device=spec.get("subdevice")
         )
         self._spec = spec
-        self._attr_name = control_name(coordinator.device.discovery, spec)
+        # On a sub-device the receiver's feature name would double the device
+        # name (e.g. "Graphic EQ Graphic EQ"), so a sub-device control may give a
+        # short profile name (e.g. "Enabled") to read cleanly under its device.
+        override = spec.get("name") if spec.get("subdevice") else None
+        self._attr_name = override or control_name(coordinator.device.discovery, spec)
         # Optional profile-provided icon (e.g. a speaker/mute icon for main mute).
         icon = spec.get("icon")
         if icon:
