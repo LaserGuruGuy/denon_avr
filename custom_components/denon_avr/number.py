@@ -23,7 +23,7 @@ from .avr import graphic_eq
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name
+from .helpers import control_name, control_sub_device
 
 # The control kinds that map to a number entity.
 _NUMBER_KINDS = {"level", "signed_int", "minutes", "integer"}
@@ -81,7 +81,10 @@ class DenonAvrNumber(DenonAvrEntity, NumberEntity):
     _attr_mode = NumberMode.SLIDER
 
     def __init__(self, coordinator: DenonAvrCoordinator, spec: ControlSpec) -> None:
-        super().__init__(coordinator, f"number_{spec.id}")
+        # Route to a logical sub-device (Audio/Video/Speakers) by command group.
+        super().__init__(
+            coordinator, f"number_{spec.id}", sub_device=control_sub_device(spec)
+        )
         self._spec = spec
         self._attr_name = control_name(coordinator.device.discovery, spec)
 
@@ -123,7 +126,9 @@ class DenonAvrChannelTrim(DenonAvrEntity, NumberEntity):
     def __init__(
         self, coordinator: DenonAvrCoordinator, code: str, enabled: bool
     ) -> None:
-        super().__init__(coordinator, f"number_channel_trim_{code}")
+        super().__init__(
+            coordinator, f"number_channel_trim_{code}", sub_device="speakers"
+        )
         self._code = code
         # Channels the receiver has not configured are registered but disabled by
         # default; the user can still enable them from the UI.
@@ -154,7 +159,9 @@ class DenonAvrChannelDistance(DenonAvrEntity, NumberEntity):
     def __init__(
         self, coordinator: DenonAvrCoordinator, code: str, enabled: bool
     ) -> None:
-        super().__init__(coordinator, f"number_channel_distance_{code}")
+        super().__init__(
+            coordinator, f"number_channel_distance_{code}", sub_device="speakers"
+        )
         self._code = code
         self._attr_entity_registry_enabled_default = enabled
         discovery = coordinator.device.discovery

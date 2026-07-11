@@ -16,7 +16,7 @@ from .avr import graphic_eq
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name, enum_options, group_name
+from .helpers import control_name, control_sub_device, enum_options, group_name
 
 
 async def async_setup_entry(
@@ -75,7 +75,10 @@ class DenonAvrSelect(DenonAvrEntity, SelectEntity):
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: DenonAvrCoordinator, spec: ControlSpec) -> None:
-        super().__init__(coordinator, f"select_{spec.id}")
+        # Route to a logical sub-device (Audio/Video/Speakers) by command group.
+        super().__init__(
+            coordinator, f"select_{spec.id}", sub_device=control_sub_device(spec)
+        )
         self._spec = spec
         self._attr_name = control_name(coordinator.device.discovery, spec)
         options, self._label_to_value, self._value_to_label = enum_options(
@@ -186,7 +189,9 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
         channels: list[str],
         enabled: bool,
     ) -> None:
-        super().__init__(coordinator, f"select_crossover_{group}")
+        super().__init__(
+            coordinator, f"select_crossover_{group}", sub_device="speakers"
+        )
         self._group = group
         self._attr_entity_registry_enabled_default = enabled
         discovery = coordinator.device.discovery
@@ -234,7 +239,9 @@ class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
         channels: list[str],
         enabled: bool,
     ) -> None:
-        super().__init__(coordinator, f"select_speaker_size_{group}")
+        super().__init__(
+            coordinator, f"select_speaker_size_{group}", sub_device="speakers"
+        )
         self._group = group
         self._attr_entity_registry_enabled_default = enabled
         sizes = coordinator.device.profile.speakers.get("sizes", {}).get("options", {})

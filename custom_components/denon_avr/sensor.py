@@ -99,7 +99,7 @@ class DenonAvrAmpAssignSensor(DenonAvrEntity, SensorEntity):
     _attr_name = "Amp Assign"
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
-        super().__init__(coordinator, "sensor_amp_assign")
+        super().__init__(coordinator, "sensor_amp_assign", sub_device="speakers")
 
     @property
     def native_value(self) -> str | None:

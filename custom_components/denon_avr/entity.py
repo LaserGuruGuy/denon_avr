@@ -17,10 +17,16 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 from .coordinator import DenonAvrCoordinator
 
-# Display names for the logical sub-devices grouped under the receiver. A
-# sub-device keeps a large, cohesive subsystem (e.g. the graphic equaliser) on
-# its own device page instead of crowding the main receiver device.
-SUB_DEVICE_NAMES = {"eq": "Graphic EQ"}
+# Display names for the logical sub-devices grouped under the receiver. Each
+# keeps a cohesive subsystem on its own device page (mirroring the receiver's
+# setup menus) instead of crowding the main receiver device. Routing of a
+# control to one of these lives in helpers.control_sub_device.
+SUB_DEVICE_NAMES = {
+    "audio": "Audio",
+    "video": "Video",
+    "speakers": "Speakers",
+    "eq": "Graphic EQ",
+}
 
 
 class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):

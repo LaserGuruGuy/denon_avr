@@ -17,6 +17,43 @@ def humanize(text: str) -> str:
     return text.replace("_", " ").replace(":", "").strip().title()
 
 
+# Protocol command group -> HA sub-device card. Presentation only: this mirrors
+# the receiver's own setup menus (Audio / Video / Speakers) so a large control
+# set is split across cohesive device pages instead of crowding one device.
+# Groups absent here (power, volume, source, system) keep their entities on the
+# main receiver device with the daily-use playback controls.
+_GROUP_SUB_DEVICE: dict[str, str] = {
+    "audio": "audio",
+    "audyssey": "audio",
+    "tone": "audio",
+    "surround": "audio",
+    "video": "video",
+    "speaker": "speakers",
+}
+
+# Controls whose card differs from their command group's default. All Zone Stereo
+# is a whole-house playback toggle (its state is derived from the sound mode), so
+# it stays with the playback controls on the main device rather than the Audio
+# settings card.
+_MAIN_DEVICE_CONTROLS = {"all_zone_stereo"}
+
+
+def control_sub_device(spec: ControlSpec) -> str | None:
+    """Return the sub-device card an entity for this control belongs on.
+
+    None means the main receiver device. Resolution order: an explicit profile
+    ``subdevice`` wins (e.g. the graphic EQ on/off lives with the EQ bands), then
+    a per-control exception, then the control's command group.
+    """
+
+    explicit = spec.get("subdevice")
+    if explicit is not None:
+        return explicit
+    if spec.id in _MAIN_DEVICE_CONTROLS:
+        return None
+    return _GROUP_SUB_DEVICE.get(spec.group)
+
+
 def control_name(discovery: Discovery, spec: ControlSpec) -> str:
     """Return the display name for a control, preferring the device title."""
 

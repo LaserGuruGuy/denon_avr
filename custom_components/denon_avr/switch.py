@@ -16,7 +16,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name
+from .helpers import control_name, control_sub_device
 
 
 async def async_setup_entry(
@@ -43,16 +43,15 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: DenonAvrCoordinator, spec: ControlSpec) -> None:
-        # A control may opt into a logical sub-device (e.g. the graphic EQ on/off
-        # lives on the EQ sub-device alongside its bands).
-        super().__init__(
-            coordinator, f"switch_{spec.id}", sub_device=spec.get("subdevice")
-        )
+        # Route to a logical sub-device (Audio/Video/Speakers/EQ) based on the
+        # control's command group, honouring any explicit profile override.
+        sub_device = control_sub_device(spec)
+        super().__init__(coordinator, f"switch_{spec.id}", sub_device=sub_device)
         self._spec = spec
         # On a sub-device the receiver's feature name would double the device
         # name (e.g. "Graphic EQ Graphic EQ"), so a sub-device control may give a
         # short profile name (e.g. "Enabled") to read cleanly under its device.
-        override = spec.get("name") if spec.get("subdevice") else None
+        override = spec.get("name") if sub_device else None
         self._attr_name = override or control_name(coordinator.device.discovery, spec)
         # Optional profile-provided icon (e.g. a speaker/mute icon for main mute).
         icon = spec.get("icon")

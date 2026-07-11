@@ -63,6 +63,14 @@ Notes:
 
 ## What you get
 
+Settings are organised into **sub‑devices that mirror the receiver's own setup
+menus**, so a large control set stays tidy instead of crowding one page. The main
+receiver device keeps the day‑to‑day controls (player, power, source, sound mode,
+quick select, input mode, front‑display dimmer); the **Audio**, **Video**,
+**Speakers** and **Graphic EQ** sub‑devices each carry their own part of the
+setup. The lists below are grouped by entity type; each entity lands on the
+sub‑device its setting belongs to.
+
 - **Media player** per zone (main + zone 2 where present): power, volume, mute,
   source selection, and (main zone) sound mode. On the main zone, network sources
   show **album art, track/artist/album and play/pause/next transport** (via HEOS);
