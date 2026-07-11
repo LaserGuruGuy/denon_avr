@@ -345,8 +345,14 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
+        options = self._options()
         index = self.coordinator.device.eq_channel
-        return next((label for i, label in self._options() if i == index), None)
+        for i, label in options:
+            if i == index:
+                return label
+        # eq_channel not in the current mode's list (e.g. just after a mode
+        # switch): show the first channel rather than an unknown state.
+        return options[0][1] if options else None
 
     async def async_select_option(self, option: str) -> None:
         for index, label in self._options():

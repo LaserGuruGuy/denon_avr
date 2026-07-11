@@ -577,6 +577,9 @@ class DenonAvrDevice:
         await self.async_refresh_graphic_eq()
 
     async def async_set_eq_speaker_selection(self, code: str) -> None:
+        # A new mode re-scopes the channel list, so start from the first channel.
+        self._eq_channel = 0
+        self._eq_pending.clear()
         await self._eq_set(
             graphic_eq.speaker_selection_payload(self._eq_grammar, code)
         )
