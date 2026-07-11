@@ -52,9 +52,14 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
             self._attr_icon = icon
 
     @property
-    def is_on(self) -> bool | None:
-        value = self.coordinator.data.values.get(self._spec.id)
-        return bool(value) if value is not None else None
+    def is_on(self) -> bool:
+        # Treat a not-yet-reported value as off so every toggle renders as a
+        # single slider for a consistent look. A switch left at "unknown"
+        # otherwise shows as a split on/off pair, which looks inconsistent next
+        # to the others. Disconnection is handled by the entity's availability,
+        # not here, so this only affects a control the receiver has not (yet)
+        # reported a value for (e.g. auto lip sync with no active video source).
+        return bool(self.coordinator.data.values.get(self._spec.id))
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self.coordinator.device.async_set_control(self._spec.id, True)
