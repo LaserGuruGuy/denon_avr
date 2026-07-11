@@ -16,7 +16,7 @@ from .avr import graphic_eq
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name, control_sub_device, enum_options, group_name
+from .helpers import control_sub_device, enum_options, group_name
 
 
 async def async_setup_entry(
@@ -109,7 +109,7 @@ class DenonAvrSelect(DenonAvrEntity, SelectEntity):
             coordinator, f"select_{spec.id}", sub_device=control_sub_device(spec)
         )
         self._spec = spec
-        self._attr_name = control_name(coordinator.device.discovery, spec)
+        self._attr_translation_key = spec.id
         options, self._label_to_value, self._value_to_label = enum_options(
             coordinator.device.discovery, spec
         )
@@ -273,7 +273,7 @@ class DenonAvrCrossoverSpeakerSelection(DenonAvrEntity, SelectEntity):
         super().__init__(
             coordinator, "select_crossover_speaker_selection", sub_device="speakers"
         )
-        self._attr_name = "Crossover Speaker Selection"
+        self._attr_translation_key = "crossover_speaker_selection"
         # Wire tokens -> labels come from the profile grammar (kept out of this
         # HA layer like every other enum's tokens).
         self._labels = coordinator.device.profile.crossover.get(
@@ -301,7 +301,7 @@ class DenonAvrCrossoverAll(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_crossover_all", sub_device="speakers")
-        self._attr_name = "All Crossover"
+        self._attr_translation_key = "all_crossover"
         crossover = coordinator.device.profile.crossover
         self._unit = crossover.get("unit", "Hz")
         self._values = [int(v) for v in crossover.get("values", [])]
@@ -378,7 +378,7 @@ class DenonAvrSubwooferCount(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_subwoofer_count", sub_device="speakers")
-        self._attr_name = "Subwoofers"
+        self._attr_translation_key = "subwoofer_count"
         # Wire tokens -> labels from the profile grammar, not hardcoded here.
         self._labels = coordinator.device.profile.speakers.get(
             "subwoofer_count", {"NON": "None", "1SP": "1", "2SP": "2"}
@@ -438,7 +438,7 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_eq_speaker_selection", sub_device="eq")
-        self._attr_name = "Speaker Selection"
+        self._attr_translation_key = "eq_speaker_selection"
         # code -> label, from the fixed graphic-EQ grammar.
         self._by_code: dict[str, str] = dict(
             coordinator.device.graphic_eq.grammar.get("speaker_selection", {})
@@ -470,7 +470,7 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_eq_channel", sub_device="eq")
-        self._attr_name = "Channel"
+        self._attr_translation_key = "eq_channel"
         self._grammar = coordinator.device.graphic_eq.grammar
 
     def _options(self) -> list[tuple[int, str]]:
@@ -520,7 +520,7 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
     ) -> None:
         super().__init__(coordinator, f"select_{control['id']}", sub_device=sub_device)
         self._id = control["id"]
-        self._attr_name = control.get("name")
+        self._attr_translation_key = control["id"]
         self._controller_attr = controller_attr
 
     @property

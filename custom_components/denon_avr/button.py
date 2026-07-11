@@ -45,7 +45,7 @@ class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "button_eq_apply", sub_device="eq")
-        self._attr_name = "Apply"
+        self._attr_translation_key = "eq_apply"
 
     async def async_press(self) -> None:
         await self.coordinator.device.graphic_eq.apply()
@@ -59,7 +59,7 @@ class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "button_eq_curve_copy", sub_device="eq")
-        self._attr_name = "Copy Curve"
+        self._attr_translation_key = "eq_copy_curve"
 
     async def async_press(self) -> None:
         await self.coordinator.device.graphic_eq.curve_copy()
@@ -73,7 +73,7 @@ class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "button_eq_set_defaults", sub_device="eq")
-        self._attr_name = "Default"
+        self._attr_translation_key = "eq_default"
 
     async def async_press(self) -> None:
         await self.coordinator.device.graphic_eq.set_defaults()

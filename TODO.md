@@ -76,11 +76,16 @@ advertises the capability, so every item below is additive and self-gating.
   playlists and seek/shuffle/repeat are further HEOS CLI additions.
 
 ## Cross-cutting
-- **should — Multi-language (i18n).** Localise the device-independent entity names
-  and select options via `_attr_translation_key` + `strings.json` / `translations/
-  *.json` (`state` section for option labels), for the controls that currently use
-  a hard-coded `_attr_name` / profile `name`/`labels`. Device-derived names stay
-  dynamic. This is the main step toward full localisation.
+- **Multi-language (i18n).** Entity **names** are localised (v1.1.0): every
+  fixed-identity entity has a `_attr_translation_key` with English
+  (`strings.json`/`translations/en.json`) and Dutch (`translations/nl.json`);
+  device-derived names (per channel/group, sound modes, sources) stay dynamic.
+  *Remaining:* **select option (state) localisation** — the fixed-enum options
+  (Large/Small, Individual/All, None/1/2, NTSC/PAL, All/Video/Off, HDMI signal
+  format, etc.) are still shown in English; adding a `state` block per select and
+  switching option handling to stable keys would localise those too. Device-
+  supplied options (sound modes, sources, amp-assign labels, pass-through source)
+  legitimately stay dynamic.
 - **could — Newer receiver models.** Amp-assign options are device-driven off the
   queried `AmpType`; the option table covers the current lineup (2ch … 15-channel,
   Atmos height types). A 2024+ model adding a new `AmpType`/`AssignMode` id would

@@ -32,16 +32,277 @@
   },
   "entity": {
     "binary_sensor": {
-      "connectivity": { "name": "Verbinding" }
+      "connectivity": {
+        "name": "Verbinding"
+      }
     },
     "sensor": {
-      "sound_mode": { "name": "Geluidsmodus" },
-      "volume": { "name": "Volume" }
+      "sound_mode": {
+        "name": "Geluidsmodus"
+      },
+      "volume": {
+        "name": "Volume"
+      },
+      "input_signal": {
+        "name": "Ingangssignaal"
+      },
+      "sample_rate": {
+        "name": "Bemonsteringsfrequentie"
+      },
+      "audio_format": {
+        "name": "Audioformaat"
+      },
+      "decoder": {
+        "name": "Decoder"
+      },
+      "mode_info": {
+        "name": "Modusinformatie"
+      }
     },
     "select": {
-      "sound_mode_group": { "name": "Geluidsmodusgroep" },
-      "sound_mode": { "name": "Geluidsmodus" },
-      "quick_select": { "name": "Snelkeuze" }
+      "sound_mode_group": {
+        "name": "Geluidsmodusgroep"
+      },
+      "sound_mode": {
+        "name": "Geluidsmodus"
+      },
+      "quick_select": {
+        "name": "Snelkeuze"
+      },
+      "dynamic_compression": {
+        "name": "Dynamische compressie"
+      },
+      "room_size": {
+        "name": "Kamergrootte"
+      },
+      "dynamic_volume": {
+        "name": "Dynamisch volume"
+      },
+      "reference_level_offset": {
+        "name": "Referentieniveau-offset"
+      },
+      "multeq": {
+        "name": "MultEQ"
+      },
+      "restorer": {
+        "name": "Restorer"
+      },
+      "volume_scale": {
+        "name": "Volumeschaal"
+      },
+      "volume_limit": {
+        "name": "Volumelimiet"
+      },
+      "muting_level": {
+        "name": "Dempingsniveau"
+      },
+      "subwoofer_mode": {
+        "name": "Subwoofermodus"
+      },
+      "front_speaker": {
+        "name": "Voorluidspreker"
+      },
+      "lpf_for_lfe": {
+        "name": "LPF voor LFE"
+      },
+      "eco_mode": {
+        "name": "Eco-modus"
+      },
+      "dimmer": {
+        "name": "Dimmer"
+      },
+      "video_mode": {
+        "name": "Videomodus"
+      },
+      "picture_mode": {
+        "name": "Beeldmodus"
+      },
+      "noise_reduction": {
+        "name": "Ruisonderdrukking"
+      },
+      "hdmi_video_output": {
+        "name": "HDMI-video-uitgang"
+      },
+      "aspect_ratio": {
+        "name": "Beeldverhouding"
+      },
+      "hdmi_audio_out": {
+        "name": "HDMI-audio-uitgang"
+      },
+      "resolution_hdmi": {
+        "name": "HDMI-resolutie"
+      },
+      "input_mode": {
+        "name": "Ingangsmodus"
+      },
+      "hdmi_power_off_control": {
+        "name": "HDMI-uitschakelbediening"
+      },
+      "pass_through_source": {
+        "name": "Doorvoerbron"
+      },
+      "rc_select": {
+        "name": "RC-selectie"
+      },
+      "osd_volume": {
+        "name": "Volume op scherm"
+      },
+      "osd_now_playing": {
+        "name": "Nu speelt-weergave"
+      },
+      "hdmi_signal_format": {
+        "name": "4K-signaalformaat"
+      },
+      "tv_format": {
+        "name": "Tv-formaat"
+      },
+      "amp_assign": {
+        "name": "Toewijsmodus"
+      },
+      "floor_layout": {
+        "name": "Vloerindeling"
+      },
+      "height_speaker": {
+        "name": "Hoogteluidsprekers"
+      },
+      "crossover_speaker_selection": {
+        "name": "Luidsprekerselectie crossover"
+      },
+      "all_crossover": {
+        "name": "Alle crossover"
+      },
+      "subwoofer_count": {
+        "name": "Subwoofers"
+      },
+      "eq_speaker_selection": {
+        "name": "Luidsprekerselectie"
+      },
+      "eq_channel": {
+        "name": "Kanaal"
+      }
+    },
+    "switch": {
+      "main_power": {
+        "name": "Aan/uit"
+      },
+      "main_mute": {
+        "name": "Dempen"
+      },
+      "tone_control": {
+        "name": "Toonregeling"
+      },
+      "dynamic_eq": {
+        "name": "Dynamische EQ"
+      },
+      "graphic_eq": {
+        "name": "Ingeschakeld"
+      },
+      "headphone_eq": {
+        "name": "Hoofdtelefoon-EQ"
+      },
+      "auto_lip_sync": {
+        "name": "Automatische lipsynchronisatie"
+      },
+      "loudness_management": {
+        "name": "Loudness-beheer"
+      },
+      "cinema_eq": {
+        "name": "Cinema-EQ"
+      },
+      "subwoofer_switch": {
+        "name": "Subwooferschakelaar"
+      },
+      "all_zone_stereo": {
+        "name": "Alle zones stereo"
+      },
+      "speaker_virtualizer": {
+        "name": "Luidsprekervirtualisatie"
+      },
+      "center_spread": {
+        "name": "Center Spread"
+      },
+      "dts_neural_x": {
+        "name": "DTS Neural:X"
+      },
+      "low_frequency_containment": {
+        "name": "Lagefrequentiebeperking"
+      },
+      "hdmi_control": {
+        "name": "HDMI-bediening"
+      },
+      "arc": {
+        "name": "ARC"
+      },
+      "tv_audio_switching": {
+        "name": "Tv-audio-omschakeling"
+      },
+      "hdmi_power_saving": {
+        "name": "HDMI-energiebesparing"
+      },
+      "smart_menu": {
+        "name": "Smart Menu"
+      },
+      "hdmi_pass_through": {
+        "name": "HDMI-doorvoer"
+      },
+      "osd_info": {
+        "name": "Info op scherm"
+      }
+    },
+    "number": {
+      "bass": {
+        "name": "Lage tonen"
+      },
+      "treble": {
+        "name": "Hoge tonen"
+      },
+      "lfe": {
+        "name": "LFE"
+      },
+      "dialog_level": {
+        "name": "Dialoogniveau"
+      },
+      "subwoofer_level": {
+        "name": "Subwooferniveau"
+      },
+      "sleep_timer": {
+        "name": "Slaaptimer"
+      },
+      "effect_level": {
+        "name": "Effectniveau"
+      },
+      "containment_amount": {
+        "name": "Beperkingsniveau"
+      },
+      "audio_delay": {
+        "name": "Audiovertraging"
+      },
+      "dialog_control": {
+        "name": "Dialoogregeling"
+      },
+      "contrast": {
+        "name": "Contrast"
+      },
+      "brightness": {
+        "name": "Helderheid"
+      },
+      "saturation": {
+        "name": "Verzadiging"
+      },
+      "enhancer": {
+        "name": "Beeldverbetering"
+      }
+    },
+    "button": {
+      "eq_apply": {
+        "name": "Toepassen"
+      },
+      "eq_copy_curve": {
+        "name": "Curve kopiëren"
+      },
+      "eq_default": {
+        "name": "Standaard"
+      }
     }
   }
 }

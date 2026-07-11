@@ -23,7 +23,7 @@ from .avr import graphic_eq
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name, control_sub_device
+from .helpers import control_sub_device
 
 # The control kinds that map to a number entity.
 _NUMBER_KINDS = {"level", "signed_int", "minutes", "integer", "centered"}
@@ -86,7 +86,7 @@ class DenonAvrNumber(DenonAvrEntity, NumberEntity):
             coordinator, f"number_{spec.id}", sub_device=control_sub_device(spec)
         )
         self._spec = spec
-        self._attr_name = control_name(coordinator.device.discovery, spec)
+        self._attr_translation_key = spec.id
 
         if spec.kind == "minutes":
             self._attr_native_unit_of_measurement = UnitOfTime.MINUTES

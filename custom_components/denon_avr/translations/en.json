@@ -32,16 +32,277 @@
   },
   "entity": {
     "binary_sensor": {
-      "connectivity": { "name": "Connectivity" }
+      "connectivity": {
+        "name": "Connectivity"
+      }
     },
     "sensor": {
-      "sound_mode": { "name": "Sound Mode" },
-      "volume": { "name": "Volume" }
+      "sound_mode": {
+        "name": "Sound Mode"
+      },
+      "volume": {
+        "name": "Volume"
+      },
+      "input_signal": {
+        "name": "Input Signal"
+      },
+      "sample_rate": {
+        "name": "Sample Rate"
+      },
+      "audio_format": {
+        "name": "Audio Format"
+      },
+      "decoder": {
+        "name": "Decoder"
+      },
+      "mode_info": {
+        "name": "Mode Info"
+      }
     },
     "select": {
-      "sound_mode_group": { "name": "Sound Mode Group" },
-      "sound_mode": { "name": "Sound Mode" },
-      "quick_select": { "name": "Quick Select" }
+      "sound_mode_group": {
+        "name": "Sound Mode Group"
+      },
+      "sound_mode": {
+        "name": "Sound Mode"
+      },
+      "quick_select": {
+        "name": "Quick Select"
+      },
+      "dynamic_compression": {
+        "name": "Dynamic Compression"
+      },
+      "room_size": {
+        "name": "Room Size"
+      },
+      "dynamic_volume": {
+        "name": "Dynamic Volume"
+      },
+      "reference_level_offset": {
+        "name": "Reference Level Offset"
+      },
+      "multeq": {
+        "name": "MultEQ"
+      },
+      "restorer": {
+        "name": "Restorer"
+      },
+      "volume_scale": {
+        "name": "Volume Scale"
+      },
+      "volume_limit": {
+        "name": "Volume Limit"
+      },
+      "muting_level": {
+        "name": "Muting Level"
+      },
+      "subwoofer_mode": {
+        "name": "Subwoofer Mode"
+      },
+      "front_speaker": {
+        "name": "Front Speaker"
+      },
+      "lpf_for_lfe": {
+        "name": "LPF for LFE"
+      },
+      "eco_mode": {
+        "name": "Eco Mode"
+      },
+      "dimmer": {
+        "name": "Dimmer"
+      },
+      "video_mode": {
+        "name": "Video Mode"
+      },
+      "picture_mode": {
+        "name": "Picture Mode"
+      },
+      "noise_reduction": {
+        "name": "Noise Reduction"
+      },
+      "hdmi_video_output": {
+        "name": "HDMI Video Output"
+      },
+      "aspect_ratio": {
+        "name": "Aspect Ratio"
+      },
+      "hdmi_audio_out": {
+        "name": "HDMI Audio Out"
+      },
+      "resolution_hdmi": {
+        "name": "Resolution HDMI"
+      },
+      "input_mode": {
+        "name": "Input Mode"
+      },
+      "hdmi_power_off_control": {
+        "name": "HDMI Power Off Control"
+      },
+      "pass_through_source": {
+        "name": "Pass Through Source"
+      },
+      "rc_select": {
+        "name": "RC Select"
+      },
+      "osd_volume": {
+        "name": "On-Screen Volume"
+      },
+      "osd_now_playing": {
+        "name": "Now Playing Display"
+      },
+      "hdmi_signal_format": {
+        "name": "4K Signal Format"
+      },
+      "tv_format": {
+        "name": "TV Format"
+      },
+      "amp_assign": {
+        "name": "Amp Assign"
+      },
+      "floor_layout": {
+        "name": "Floor Layout"
+      },
+      "height_speaker": {
+        "name": "Height Speakers"
+      },
+      "crossover_speaker_selection": {
+        "name": "Crossover Speaker Selection"
+      },
+      "all_crossover": {
+        "name": "All Crossover"
+      },
+      "subwoofer_count": {
+        "name": "Subwoofers"
+      },
+      "eq_speaker_selection": {
+        "name": "Speaker Selection"
+      },
+      "eq_channel": {
+        "name": "Channel"
+      }
+    },
+    "switch": {
+      "main_power": {
+        "name": "Main Power"
+      },
+      "main_mute": {
+        "name": "Main Mute"
+      },
+      "tone_control": {
+        "name": "Tone Control"
+      },
+      "dynamic_eq": {
+        "name": "Dynamic EQ"
+      },
+      "graphic_eq": {
+        "name": "Enabled"
+      },
+      "headphone_eq": {
+        "name": "Headphone EQ"
+      },
+      "auto_lip_sync": {
+        "name": "Auto Lip Sync"
+      },
+      "loudness_management": {
+        "name": "Loudness Management"
+      },
+      "cinema_eq": {
+        "name": "Cinema EQ"
+      },
+      "subwoofer_switch": {
+        "name": "Subwoofer Switch"
+      },
+      "all_zone_stereo": {
+        "name": "All Zone Stereo"
+      },
+      "speaker_virtualizer": {
+        "name": "Speaker Virtualizer"
+      },
+      "center_spread": {
+        "name": "Center Spread"
+      },
+      "dts_neural_x": {
+        "name": "DTS Neural:X"
+      },
+      "low_frequency_containment": {
+        "name": "Low Frequency Containment"
+      },
+      "hdmi_control": {
+        "name": "HDMI Control"
+      },
+      "arc": {
+        "name": "ARC"
+      },
+      "tv_audio_switching": {
+        "name": "TV Audio Switching"
+      },
+      "hdmi_power_saving": {
+        "name": "HDMI Power Saving"
+      },
+      "smart_menu": {
+        "name": "Smart Menu"
+      },
+      "hdmi_pass_through": {
+        "name": "HDMI Pass Through"
+      },
+      "osd_info": {
+        "name": "On-Screen Info"
+      }
+    },
+    "number": {
+      "bass": {
+        "name": "Bass"
+      },
+      "treble": {
+        "name": "Treble"
+      },
+      "lfe": {
+        "name": "LFE"
+      },
+      "dialog_level": {
+        "name": "Dialog Level"
+      },
+      "subwoofer_level": {
+        "name": "Subwoofer Level"
+      },
+      "sleep_timer": {
+        "name": "Sleep Timer"
+      },
+      "effect_level": {
+        "name": "Effect Level"
+      },
+      "containment_amount": {
+        "name": "Containment Amount"
+      },
+      "audio_delay": {
+        "name": "Audio Delay"
+      },
+      "dialog_control": {
+        "name": "Dialog Control"
+      },
+      "contrast": {
+        "name": "Contrast"
+      },
+      "brightness": {
+        "name": "Brightness"
+      },
+      "saturation": {
+        "name": "Saturation"
+      },
+      "enhancer": {
+        "name": "Enhancer"
+      }
+    },
+    "button": {
+      "eq_apply": {
+        "name": "Apply"
+      },
+      "eq_copy_curve": {
+        "name": "Copy Curve"
+      },
+      "eq_default": {
+        "name": "Default"
+      }
     }
   }
 }

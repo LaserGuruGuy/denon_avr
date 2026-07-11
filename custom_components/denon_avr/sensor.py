@@ -19,7 +19,6 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .avr.models import AvrState
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import humanize
 
 
 async def async_setup_entry(
@@ -33,12 +32,10 @@ async def async_setup_entry(
     device = coordinator.device
     entities: list[SensorEntity] = []
 
-    # Audio information sensors, one per read only field in the profile.
-    for control_id, spec in device.profile.readonly.items():
-        name = spec.get("name") or humanize(control_id)
-        entities.append(
-            DenonAvrReadonlySensor(coordinator, control_id, name)
-        )
+    # Audio information sensors, one per read only field in the profile. The
+    # display name comes from the translation files, keyed by the control id.
+    for control_id in device.profile.readonly:
+        entities.append(DenonAvrReadonlySensor(coordinator, control_id))
 
     # The current sound mode as a diagnostic sensor (also on the media player).
     entities.append(DenonAvrSoundModeSensor(coordinator))
@@ -55,12 +52,10 @@ class DenonAvrReadonlySensor(DenonAvrEntity, SensorEntity):
 
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
-    def __init__(
-        self, coordinator: DenonAvrCoordinator, control_id: str, name: str
-    ) -> None:
+    def __init__(self, coordinator: DenonAvrCoordinator, control_id: str) -> None:
         super().__init__(coordinator, f"sensor_{control_id}")
         self._control_id = control_id
-        self._attr_name = name
+        self._attr_translation_key = control_id
 
     @property
     def native_value(self) -> str | None:

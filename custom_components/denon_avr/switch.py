@@ -16,7 +16,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
-from .helpers import control_name, control_sub_device
+from .helpers import control_sub_device
 
 
 async def async_setup_entry(
@@ -58,11 +58,7 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
         sub_device = control_sub_device(spec)
         super().__init__(coordinator, f"switch_{spec.id}", sub_device=sub_device)
         self._spec = spec
-        # On a sub-device the receiver's feature name would double the device
-        # name (e.g. "Graphic EQ Graphic EQ"), so a sub-device control may give a
-        # short profile name (e.g. "Enabled") to read cleanly under its device.
-        override = spec.get("name") if sub_device else None
-        self._attr_name = override or control_name(coordinator.device.discovery, spec)
+        self._attr_translation_key = spec.id
         # Optional profile-provided icon (e.g. a speaker/mute icon for main mute).
         icon = spec.get("icon")
         if icon:
@@ -100,7 +96,7 @@ class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
         self._id = control["id"]
         self._on = control["on"]
         self._off = control["off"]
-        self._attr_name = control.get("name")
+        self._attr_translation_key = control["id"]
 
     @property
     def _video(self):
