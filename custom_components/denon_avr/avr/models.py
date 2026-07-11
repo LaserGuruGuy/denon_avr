@@ -254,8 +254,8 @@ class AvrState:
     speaker_sizes: dict[str, str] = field(default_factory=dict)
     # Now-playing media for network sources, from the HEOS CLI (see transport).
     now_playing: NowPlaying = field(default_factory=NowPlaying)
-    # Manual graphic-EQ state, read from the setup config API (see graphic_eq).
-    graphic_eq: GraphicEqState = field(default_factory=GraphicEqState)
+    # Manual graphic-EQ state is owned by the device's GraphicEqController, not
+    # here, because it is read from the setup config API rather than telnet.
 
     def zone(self, zone_id: str) -> ZoneState:
         """Return the ZoneState for a zone id, creating it on first access."""

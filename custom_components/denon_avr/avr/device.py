@@ -58,16 +58,16 @@ class DenonAvrDevice:
         self._goform = GoformClient(session, host)
         self._upnp = UpnpClient(session, host)
         # Setup-interface config API (HTTPS 10443), used for the manual graphic
-        # EQ per-band values, which are not on the telnet channel.
+        # EQ per-band values, which are not on the telnet channel. The EQ
+        # subsystem is encapsulated in its own controller (read/edit/apply),
+        # keeping it off this device's transport-orchestration surface.
         self._webconfig = WebConfigClient(session, host)
-        self._eq_grammar = self._profile.grammar.get("graphic_eq", {})
-        # Staged graphic-EQ band edits (tag -> dB). The bands are edited locally
-        # and written together by the Apply action, because the receiver only
-        # accepts a full band block, not a single band.
-        self._eq_pending: dict[str, float] = {}
-        # The graphic-EQ channel currently being read/edited (the config API's
-        # 'opt1' index); the read returns this channel's own curve.
-        self._eq_channel = 0
+        self._graphic_eq = graphic_eq.GraphicEqController(
+            self._webconfig,
+            self._profile.grammar.get("graphic_eq", {}),
+            lambda: self._discovery.supports("GraphicEQ"),
+            self._schedule_update,
+        )
         self._telnet = TelnetClient(
             host,
             on_line=self._handle_line,
@@ -357,7 +357,7 @@ class DenonAvrDevice:
             self._schedule_update()
         # Refresh the manual graphic EQ per-band values (non-disruptive; a no-op
         # unless the receiver advertises a graphic EQ this profile can drive).
-        await self.async_refresh_graphic_eq()
+        await self._graphic_eq.refresh()
 
     # Telnet callbacks -----------------------------------------------------
 
@@ -490,102 +490,11 @@ class DenonAvrDevice:
     async def async_media_previous(self) -> None:
         await self._heos.async_previous()
 
-    # Manual graphic EQ, via the setup-interface config API. Gated on the
-    # GraphicEQ capability; every call is non-disruptive and best effort.
     @property
-    def eq_grammar(self) -> dict:
-        """The fixed graphic-EQ access grammar from the profile."""
+    def graphic_eq(self) -> graphic_eq.GraphicEqController:
+        """The manual graphic-EQ subsystem (read/edit/apply). See GraphicEqController."""
 
-        return self._eq_grammar
-
-    @property
-    def eq_supported(self) -> bool:
-        """True when the receiver advertises a graphic EQ this profile can drive."""
-
-        return bool(self._eq_grammar) and self._discovery.supports("GraphicEQ")
-
-    async def async_refresh_graphic_eq(self) -> None:
-        """Read the current graphic-EQ document into state (non-disruptive)."""
-
-        if not self.eq_supported:
-            return
-        # Read the currently-selected channel's own curve (opt1 = channel index).
-        param = self._eq_grammar.get("channel_read_param", "opt1")
-        xml = await self._webconfig.async_get(
-            self._eq_grammar.get("config_section", "audio"),
-            int(self._eq_grammar.get("config_type", 0)),
-            {param: str(self._eq_channel), "opt2": "0"},
-        )
-        if xml is None:
-            return
-        self._state.graphic_eq = graphic_eq.parse(xml, self._eq_grammar)
-        self._schedule_update()
-
-    async def _eq_set(self, payload: str) -> None:
-        if not self.eq_supported:
-            return
-        await self._webconfig.async_set(
-            self._eq_grammar.get("config_section", "audio"),
-            int(self._eq_grammar.get("config_type", 0)),
-            payload,
-        )
-        # Re-read so entities reflect exactly what the receiver applied.
-        await self.async_refresh_graphic_eq()
-
-    def eq_band_value(self, tag: str) -> float | None:
-        """The band's gain to show: a staged edit if any, else the read value."""
-
-        if tag in self._eq_pending:
-            return self._eq_pending[tag]
-        return self._state.graphic_eq.bands.get(tag)
-
-    def eq_has_pending(self) -> bool:
-        """True when there are staged band edits not yet applied."""
-
-        return bool(self._eq_pending)
-
-    async def async_set_eq_band(self, tag: str, db: float) -> None:
-        # Stage the edit; it is written by async_apply_graphic_eq (the receiver
-        # only accepts the whole band block at once).
-        self._eq_pending[tag] = db
-        self._schedule_update()
-
-    async def async_apply_graphic_eq(self) -> None:
-        """Write the current band curve (read values overlaid with edits)."""
-
-        if not self.eq_supported:
-            return
-        bands = dict(self._state.graphic_eq.bands)
-        bands.update(self._eq_pending)
-        await self._eq_set(
-            graphic_eq.adjust_payload(self._eq_grammar, self._eq_channel, bands)
-        )
-        self._eq_pending.clear()
-
-    @property
-    def eq_channel(self) -> int:
-        """The graphic-EQ channel index currently selected for read/edit."""
-
-        return self._eq_channel
-
-    async def async_set_eq_channel(self, index: int) -> None:
-        """Switch the channel being read/edited and load its own curve."""
-
-        self._eq_channel = index
-        # Staged edits belong to the previous channel; drop them on a switch.
-        self._eq_pending.clear()
-        await self.async_refresh_graphic_eq()
-
-    async def async_set_eq_speaker_selection(self, code: str) -> None:
-        # A new mode re-scopes the channel list, so start from the first channel.
-        self._eq_channel = 0
-        self._eq_pending.clear()
-        await self._eq_set(
-            graphic_eq.speaker_selection_payload(self._eq_grammar, code)
-        )
-
-    async def async_eq_curve_copy(self) -> None:
-        await self._eq_set(graphic_eq.curve_copy_payload(self._eq_grammar))
+        return self._graphic_eq
 
     def _zone(self, zone_id: str):
         """Return the discovered ZoneDescriptor for a zone id, if any."""

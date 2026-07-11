@@ -63,7 +63,7 @@ async def async_setup_entry(
     # Manual graphic-EQ selects, on the EQ sub-device, when the receiver has a
     # graphic EQ this profile can drive: the speaker-selection mode and the
     # channel being adjusted (read per-channel via the config API's opt1 index).
-    if coordinator.device.eq_supported:
+    if coordinator.device.graphic_eq.supported:
         entities.append(DenonAvrEqSpeakerSelection(coordinator))
         entities.append(DenonAvrEqChannel(coordinator))
     async_add_entities(entities)
@@ -301,20 +301,20 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
         self._attr_name = "Speaker Selection"
         # code -> label, from the fixed graphic-EQ grammar.
         self._by_code: dict[str, str] = dict(
-            coordinator.device.eq_grammar.get("speaker_selection", {})
+            coordinator.device.graphic_eq.grammar.get("speaker_selection", {})
         )
         self._by_label = {label: code for code, label in self._by_code.items()}
         self._attr_options = list(self._by_code.values())
 
     @property
     def current_option(self) -> str | None:
-        code = self.coordinator.data.graphic_eq.speaker_selection
+        code = self.coordinator.device.graphic_eq.state.speaker_selection
         return self._by_code.get(code) if code else None
 
     async def async_select_option(self, option: str) -> None:
         code = self._by_label.get(option)
         if code:
-            await self.coordinator.device.async_set_eq_speaker_selection(code)
+            await self.coordinator.device.graphic_eq.set_speaker_selection(code)
 
 
 class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
@@ -331,10 +331,10 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_eq_channel", sub_device="eq")
         self._attr_name = "Channel"
-        self._grammar = coordinator.device.eq_grammar
+        self._grammar = coordinator.device.graphic_eq.grammar
 
     def _options(self) -> list[tuple[int, str]]:
-        eq = self.coordinator.data.graphic_eq
+        eq = self.coordinator.device.graphic_eq.state
         return graphic_eq.channel_options(
             self._grammar, eq.speaker_selection, eq.selectable
         )
@@ -346,7 +346,7 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         options = self._options()
-        index = self.coordinator.device.eq_channel
+        index = self.coordinator.device.graphic_eq.channel
         for i, label in options:
             if i == index:
                 return label
@@ -357,5 +357,5 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         for index, label in self._options():
             if label == option:
-                await self.coordinator.device.async_set_eq_channel(index)
+                await self.coordinator.device.graphic_eq.set_channel(index)
                 return

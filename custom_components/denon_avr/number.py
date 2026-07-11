@@ -67,8 +67,8 @@ async def async_setup_entry(
     # One number per manual graphic-EQ band, on the EQ sub-device, when the
     # receiver has a graphic EQ this profile can drive. The bands reflect the
     # channel picked by the EQ Channel select.
-    if device.eq_supported:
-        for label in device.eq_grammar.get("bands", []):
+    if device.graphic_eq.supported:
+        for label in device.graphic_eq.grammar.get("bands", []):
             entities.append(DenonAvrEqBand(coordinator, label))
 
     async_add_entities(entities)
@@ -198,7 +198,7 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
     _attr_mode = NumberMode.SLIDER
 
     def __init__(self, coordinator: DenonAvrCoordinator, label: str) -> None:
-        grammar = coordinator.device.eq_grammar
+        grammar = coordinator.device.graphic_eq.grammar
         self._tag = graphic_eq.band_tag(grammar, label)
         super().__init__(coordinator, f"number_eq_{self._tag}", sub_device="eq")
         # The device is already named "... Graphic EQ", so the band name is just
@@ -211,8 +211,8 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         # Show the staged edit if any, else the value read from the receiver.
-        return self.coordinator.device.eq_band_value(self._tag)
+        return self.coordinator.device.graphic_eq.band_value(self._tag)
 
     async def async_set_native_value(self, value: float) -> None:
         # Stage the edit; press Apply (button) to write the whole curve.
-        await self.coordinator.device.async_set_eq_band(self._tag, value)
+        await self.coordinator.device.graphic_eq.set_band(self._tag, value)
