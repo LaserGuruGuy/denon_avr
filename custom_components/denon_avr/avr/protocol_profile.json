@@ -375,6 +375,17 @@
       "off": "OFF",
       "doc": "Dynamic EQ."
     },
+    "graphic_eq": {
+      "group": "audyssey",
+      "scope": "feature",
+      "feature": "GraphicEQ",
+      "kind": "onoff",
+      "query": "PSGEQ ?",
+      "prefix": "PSGEQ ",
+      "on": "ON",
+      "off": "OFF",
+      "doc": "Graphic EQ on/off. The per-band adjustment is not exposed over telnet, so only the enable is controlled here."
+    },
     "dynamic_volume": {
       "group": "audyssey",
       "scope": "feature",
