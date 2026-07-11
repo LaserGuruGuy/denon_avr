@@ -46,9 +46,13 @@ def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
     if selection:
         state.speaker_selection = selection
 
-    each = root.findtext("SelectableSpeaker/Each")
-    if each:
-        state.selectable = each.strip()
+    # The enable flags live under a mode-specific sub-element: Each (individual)
+    # or LR (pairs); All mode has none (a single grayed curve).
+    flags = root.findtext("SelectableSpeaker/Each") or root.findtext(
+        "SelectableSpeaker/LR"
+    )
+    if flags:
+        state.selectable = flags.strip()
 
     adjust = root.find("AdjustEQ")
     if adjust is None:
@@ -76,7 +80,8 @@ def channel_options(
     ``selectable`` string are offered.
     """
 
-    if speaker_selection == "3":  # All - one shared curve
+    # Mode values (from the setup UI): 1 = All, 2 = Each, 3 = Left/Right.
+    if speaker_selection == "1":  # All - one shared curve, no channel pick
         return [(0, "All")]
     key = "channels_each" if speaker_selection == "2" else "channels_lr"
     labels = grammar.get(key, [])

@@ -96,7 +96,7 @@
       "min_db": -20.0,
       "max_db": 6.0,
       "step_db": 0.5,
-      "speaker_selection": {"1": "Left / Right", "2": "Each", "3": "All"},
+      "speaker_selection": {"1": "All", "2": "Each", "3": "Left / Right"},
       "channel_read_param": "opt1",
       "channel_enable": "3",
       "channels_lr": ["Front", "Center", "Surround", "Surround Back", "Front Wide", "Front Height", "Top Front", "Top Middle", "Top Rear", "Surround Height", "Top Surround", "Rear Height", "Front Dolby", "Surround Dolby", "Back Dolby", "Surround Back 1", "Center Height"],
