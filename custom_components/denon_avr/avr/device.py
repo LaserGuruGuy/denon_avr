@@ -784,6 +784,17 @@ class DenonAvrDevice:
         width = int(self._profile.crossover.get("width", 3) or 3)
         await self._send(f"{set_prefix}{group} {int(hertz):0{width}d}")
 
+    async def async_set_crossover_mode(self, mode: str) -> None:
+        """Set the crossover speaker-selection mode ('IDV' per-group / 'ALL').
+
+        Sent as '<prefix> <mode>' (e.g. 'SSCFR IDV'); this gates whether the
+        per-group crossovers or the single All crossover applies on the receiver.
+        """
+
+        spec = self._profile.introspection.get("crossover", {})
+        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSCFR"
+        await self._send(f"{set_prefix} {mode}")
+
     async def async_set_speaker_size(self, group: str, token: str) -> None:
         """Set a speaker group's size (Large/Small) via the SSSPC command."""
 

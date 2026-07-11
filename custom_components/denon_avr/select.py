@@ -53,6 +53,11 @@ async def async_setup_entry(
         channels = profile.group_channels(group)
         enabled = (not configured) or any(c in configured for c in channels)
         entities.append(DenonAvrCrossover(coordinator, group, channels, enabled))
+    # Crossover speaker-selection (All / Individual) and the single All crossover
+    # it gates, when the receiver reports any crossovers.
+    if coordinator.data.crossovers:
+        entities.append(DenonAvrCrossoverSpeakerSelection(coordinator))
+        entities.append(DenonAvrCrossoverAll(coordinator))
     # One size select (Large/Small) per regular speaker group the receiver
     # reports (the count groups - subwoofer, surround back - are not sizes).
     size_groups = profile.speakers.get("groups", {})
@@ -231,6 +236,15 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
         return f"{hertz} {self._unit}"
 
     @property
+    def available(self) -> bool:
+        # In "All" crossover speaker-selection mode the single All crossover
+        # applies, so the per-group ones are inactive.
+        return (
+            super().available
+            and self.coordinator.data.values.get("crossover_speaker_selection") != "ALL"
+        )
+
+    @property
     def current_option(self) -> str | None:
         hertz = self.coordinator.data.crossovers.get(self._group)
         # Only report a value the receiver actually offers, so Home Assistant
@@ -240,6 +254,64 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         hertz = int(option.split()[0])
         await self.coordinator.device.async_set_crossover(self._group, hertz)
+
+
+class DenonAvrCrossoverSpeakerSelection(DenonAvrEntity, SelectEntity):
+    """Crossover speaker selection: All (one shared crossover) or Individual.
+
+    This gates the crossover controls: in "All" the single All Crossover applies
+    and the per-group crossovers go unavailable; in "Individual" the per-group
+    ones apply and All Crossover goes unavailable.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _LABELS = {"IDV": "Individual", "ALL": "All"}
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(
+            coordinator, "select_crossover_speaker_selection", sub_device="speakers"
+        )
+        self._attr_name = "Crossover Speaker Selection"
+        self._attr_options = ["Individual", "All"]
+
+    @property
+    def current_option(self) -> str | None:
+        return self._LABELS.get(
+            self.coordinator.data.values.get("crossover_speaker_selection")
+        )
+
+    async def async_select_option(self, option: str) -> None:
+        mode = "ALL" if option == "All" else "IDV"
+        await self.coordinator.device.async_set_crossover_mode(mode)
+
+
+class DenonAvrCrossoverAll(DenonAvrEntity, SelectEntity):
+    """The single 'All' crossover frequency, used in All speaker-selection mode."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "select_crossover_all", sub_device="speakers")
+        self._attr_name = "All Crossover"
+        crossover = coordinator.device.profile.crossover
+        self._unit = crossover.get("unit", "Hz")
+        self._values = [int(v) for v in crossover.get("values", [])]
+        self._attr_options = [f"{v} {self._unit}" for v in self._values]
+
+    @property
+    def available(self) -> bool:
+        return (
+            super().available
+            and self.coordinator.data.values.get("crossover_speaker_selection") == "ALL"
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        hertz = self.coordinator.data.values.get("crossover_all")
+        return f"{hertz} {self._unit}" if hertz in self._values else None
+
+    async def async_select_option(self, option: str) -> None:
+        await self.coordinator.device.async_set_crossover("ALL", int(option.split()[0]))
 
 
 class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):

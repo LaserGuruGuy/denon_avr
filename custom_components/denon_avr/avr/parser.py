@@ -386,7 +386,7 @@ class TelnetParser:
         if line.startswith("SSSDE"):
             return self._set_distance(line[5:], state.channel_distances)
         if line.startswith("SSCFR"):
-            return self._set_crossover(line[5:], state.crossovers)
+            return self._set_crossover(line[5:], state)
         if line.startswith("CV"):
             return self._set_channel(line[2:], state.channel_trims)
         if len(line) >= 2 and line[0] == "Z" and line[1].isdigit():
@@ -564,27 +564,37 @@ class TelnetParser:
         target[code] = int(raw) / divisor
         return True
 
-    def _set_crossover(self, remainder: str, target: dict[str, int]) -> bool:
-        """Parse an 'SSCFR<GROUP> <Hz>' crossover line into `target`.
+    def _set_crossover(self, remainder: str, state: AvrState) -> bool:
+        """Parse an 'SSCFR...' crossover line.
 
-        The value is the crossover frequency in Hz. The 'IDV' mode token (no
-        value), the 'SSCFRALL' aggregate and the 'END' terminator are ignored;
-        the per group values are the authoritative ones.
+        Handles the per group 'SSCFR<GROUP> <Hz>' values (into state.crossovers),
+        the speaker-selection mode 'SSCFR IDV'/'SSCFR ALL' and the 'SSCFRALL <Hz>'
+        aggregate value (into state.values, driving the crossover speaker-
+        selection and All-crossover selects). The 'END' terminator is ignored.
         """
 
         remainder = remainder.strip()
         if not remainder or remainder.startswith(self._profile.list_terminator):
             return False
         parts = remainder.split()
-        if len(parts) != 2:
-            return False
-        group, raw = parts
         all_group = self._profile.introspection.get("crossover", {}).get(
             "all_group", "ALL"
         )
-        if group == all_group or not raw.isdigit():
+        if len(parts) == 1:
+            # Speaker-selection mode: IDV (per-group) or ALL (one crossover).
+            if parts[0] in ("IDV", "ALL"):
+                state.values["crossover_speaker_selection"] = parts[0]
+                return True
             return False
-        target[group] = int(raw)
+        if len(parts) != 2:
+            return False
+        group, raw = parts
+        if not raw.isdigit():
+            return False
+        if group == all_group:
+            state.values["crossover_all"] = int(raw)
+            return True
+        state.crossovers[group] = int(raw)
         return True
 
     def _set_zone(self, index: int, remainder: str, state: AvrState) -> bool:
