@@ -28,7 +28,6 @@ from . import graphic_eq, video_config
 from .transport import (
     GoformClient,
     HeosClient,
-    TcpClient,
     TelnetClient,
     UpnpClient,
     WebConfigClient,
@@ -73,6 +72,13 @@ class DenonAvrDevice:
         self._video_config = video_config.VideoConfigController(
             self._webconfig,
             self._profile.grammar.get("video_web", {}),
+            self._schedule_update,
+        )
+        # Speaker-setup settings with no telnet token (amp assign), same /ajax
+        # config API, different section.
+        self._speaker_config = video_config.VideoConfigController(
+            self._webconfig,
+            self._profile.grammar.get("speakers_web", {}),
             self._schedule_update,
         )
         self._telnet = TelnetClient(
@@ -215,15 +221,13 @@ class DenonAvrDevice:
         self._discovery.numeric_meta = discovered.numeric_meta
         self._discovery.volume = discovered.volume
         self._discovery.sound_mode_genres = discovered.sound_mode_genres
-        # Read the current amp assignment (a static setup value the telnet channel
-        # does not expose) over the length-framed TCP status channel. Best effort
-        # and non-disruptive (a plain status query, no calibration session).
-        self._discovery.amp_assign = await self._async_read_amp_assign()
         # Read the video setup config availability + values (over the /ajax API),
         # and inject the menus that are present as discovery features so the
         # telnet picture controls (gated on "PictureAdjust") are built at setup.
         await self._video_config.discover()
         self._discovery.features |= self._video_config.feature_flags()
+        # Speaker /ajax config (amp assign): no availability map, just read it.
+        await self._speaker_config.discover()
         # The authoritative source list comes from the telnet SSFUN/SSSOD
         # introspection (correct codes, names and visibility). Keep the Deviceinfo
         # source list only as a fallback for models without that introspection.
@@ -251,26 +255,6 @@ class DenonAvrDevice:
         for attr, value in parse_upnp_description(xml_text).items():
             if getattr(device, attr, None) is None:
                 setattr(device, attr, value)
-
-    async def _async_read_amp_assign(self) -> str | None:
-        """Return the current amp-assignment label, or None if unavailable.
-
-        Uses the length-framed TCP status query (GET_AVRSTS), which the receiver
-        answers without a calibration session, so it is non-disruptive. Best
-        effort: any failure returns None and never blocks setup.
-        """
-
-        client = TcpClient(self._host)
-        try:
-            await client.connect()
-            status = await client.async_query("GET_AVRSTS")
-        except (OSError, asyncio.TimeoutError, ConnectionError) as err:
-            _LOGGER.debug("Amp-assign status read failed: %s", err)
-            return None
-        finally:
-            await client.close()
-        value = status.get("AmpAssign") if isinstance(status, dict) else None
-        return str(value) if value else None
 
     async def _async_probe_introspection(self) -> None:
         """Populate the telnet-discovered model over a short lived connection.
@@ -368,6 +352,8 @@ class DenonAvrDevice:
         # Refresh the video setup menu values (non-disruptive; no-op unless the
         # receiver advertises a video config API this profile can drive).
         await self._video_config.refresh()
+        # Refresh the speaker setup menu values (amp assign).
+        await self._speaker_config.refresh()
 
     # Telnet callbacks -----------------------------------------------------
 
@@ -511,6 +497,12 @@ class DenonAvrDevice:
         """The /ajax video setup subsystem (HDMI setup, OSD, TV/4K format)."""
 
         return self._video_config
+
+    @property
+    def speaker_config(self) -> video_config.VideoConfigController:
+        """The /ajax speaker setup subsystem (amp assign)."""
+
+        return self._speaker_config
 
     def _zone(self, zone_id: str):
         """Return the discovered ZoneDescriptor for a zone id, if any."""

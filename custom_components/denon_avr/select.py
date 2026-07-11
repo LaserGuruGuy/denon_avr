@@ -76,6 +76,17 @@ async def async_setup_entry(
             for control in video.controls()
             if control.get("kind") == "select" and video.present(control["id"])
         )
+    # Speaker-setup /ajax selects (Amp Assign), on the Speakers sub-device. The
+    # amp-assign options are device-driven (keyed on the queried AmpType).
+    speakers = coordinator.device.speaker_config
+    if speakers.supported:
+        entities.extend(
+            DenonAvrVideoSelect(
+                coordinator, control, controller_attr="speaker_config", sub_device="speakers"
+            )
+            for control in speakers.controls()
+            if control.get("kind") == "select" and speakers.present(control["id"])
+        )
     async_add_entities(entities)
 
 
@@ -389,29 +400,37 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
 
     _attr_entity_category = EntityCategory.CONFIG
 
-    def __init__(self, coordinator: DenonAvrCoordinator, control: dict) -> None:
-        super().__init__(coordinator, f"select_{control['id']}", sub_device="video")
+    def __init__(
+        self,
+        coordinator: DenonAvrCoordinator,
+        control: dict,
+        controller_attr: str = "video_config",
+        sub_device: str = "video",
+    ) -> None:
+        super().__init__(coordinator, f"select_{control['id']}", sub_device=sub_device)
         self._id = control["id"]
         self._attr_name = control.get("name")
+        self._controller_attr = controller_attr
 
     @property
-    def _video(self):
-        return self.coordinator.device.video_config
+    def _ctrl(self):
+        # The /ajax config controller backing this select (video or speakers).
+        return getattr(self.coordinator.device, self._controller_attr)
 
     @property
     def available(self) -> bool:
-        return super().available and self._video.available(self._id)
+        return super().available and self._ctrl.available(self._id)
 
     @property
     def options(self) -> list[str]:
-        return list(self._video.options(self._id).values())
+        return list(self._ctrl.options(self._id).values())
 
     @property
     def current_option(self) -> str | None:
-        return self._video.options(self._id).get(self._video.value(self._id))
+        return self._ctrl.options(self._id).get(self._ctrl.value(self._id))
 
     async def async_select_option(self, option: str) -> None:
-        for wire, label in self._video.options(self._id).items():
+        for wire, label in self._ctrl.options(self._id).items():
             if label == option:
-                await self._video.async_set(self._id, wire)
+                await self._ctrl.async_set(self._id, wire)
                 return

@@ -94,7 +94,10 @@ class VideoConfigController:
 
         if not self.supported:
             return
-        await self._read_availability()
+        # Some sections (e.g. speakers amp-assign) have no listSetupMenu; only
+        # read the availability map when the grammar declares one.
+        if "availability_type" in self._grammar:
+            await self._read_availability()
         await self._read_menus()
 
     async def refresh(self) -> None:
@@ -102,8 +105,12 @@ class VideoConfigController:
 
         if not self.supported:
             return
+        previous = self._fields
         await self._read_menus()
-        self._on_update()
+        # This runs on every reconcile poll; only notify when a value actually
+        # changed so we do not write HA state each interval for no reason.
+        if self._fields != previous:
+            self._on_update()
 
     async def _read_availability(self) -> None:
         type_id = self._grammar.get("availability_type", 1)
@@ -116,8 +123,9 @@ class VideoConfigController:
         fields: dict[str, dict[str, Any]] = {}
         for type_id, root_tag in self._grammar.get("menus", {}).items():
             # Only fetch a menu the receiver advertises, to avoid the HTTP 500 an
-            # absent menu returns.
-            if self._avail.get(root_tag, _NOT_AVAILABLE) < _GRAYOUT:
+            # absent menu returns. When the section has no availability map
+            # (self._avail empty), read every menu unconditionally.
+            if self._avail and self._avail.get(root_tag, _NOT_AVAILABLE) < _GRAYOUT:
                 continue
             root = _parse(await self._webconfig.async_get(self._section, int(type_id)))
             if root is None:
@@ -163,11 +171,18 @@ class VideoConfigController:
                 "options": options,
             }
         else:
-            fields[control["id"]] = {
+            field = {
                 "value": (element.text or "").strip(),
                 "display": display,
                 "options": None,
             }
+            # Amp assign: the valid option list depends on the receiver's amp
+            # hardware, so capture the sibling AmpType value; options() keys the
+            # per-AmpType table on it.
+            amptype_tag = control.get("amptype_tag")
+            if amptype_tag:
+                field["amptype"] = (root.findtext(amptype_tag) or "").strip()
+            fields[control["id"]] = field
 
     # Home Assistant facing accessors ------------------------------------
 
@@ -194,6 +209,17 @@ class VideoConfigController:
         if field and field.get("options"):
             return field["options"]
         control = self._control(control_id) or {}
+        amptype_options = control.get("amptype_options")
+        if amptype_options is not None and field is not None:
+            # Device-driven: pick the mode list for the receiver's queried
+            # AmpType, deduping labels (a few amp types map two ids to one label).
+            result: dict[str, str] = {}
+            seen: set[str] = set()
+            for value, label in amptype_options.get(field.get("amptype", ""), []):
+                if label not in seen:
+                    seen.add(label)
+                    result[value] = label
+            return result
         return control.get("options", {})
 
     # Write --------------------------------------------------------------

@@ -202,8 +202,13 @@ class GraphicEqController:
         )
         if xml is None:
             return
-        self.state = parse(xml, self._grammar)
-        self._on_update()
+        new_state = parse(xml, self._grammar)
+        # Only notify on an actual change: this runs on every reconcile poll, so
+        # an unconditional callback would write HA state every interval for no
+        # reason (GraphicEqState is a dataclass, so equality is a value compare).
+        if new_state != self.state:
+            self.state = new_state
+            self._on_update()
 
     async def _apply_payload(self, payload: str) -> None:
         if not self.supported:

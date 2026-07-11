@@ -125,6 +125,29 @@
         {"id": "hdmi_signal_format", "type": 8, "tag": "Format", "kind": "select", "options": {"1": "Standard", "2": "Enhanced", "3": "Custom", "4": "8K Enhanced"}, "name": "4K Signal Format"},
         {"id": "tv_format", "type": 9, "tag": "TVFormat", "kind": "select", "options": {"1": "NTSC", "2": "PAL"}, "name": "TV Format"}
       ]
+    },
+    "speakers_web": {
+      "doc": "Speaker-setup settings with no telnet token, read/written via the /ajax speakers config API. Amp Assign (AssignMode, config type=2) is DEVICE-DRIVEN: the valid modes depend on the receiver's queried AmpType, so the option list is keyed by AmpType in amptype_options (extracted from the setup UI's getAmpAssignList, covering every Denon/Marantz amp type - not X3600H-specific). Read type=2 gives AmpType (selects the list) + AssignMode (current value); set is a field-only /ajax write <AssignMode>N</AssignMode>. Values are numeric AssignMode ids; labels are the receiver's own (e.g. 6='7.1ch + Front B').",
+      "config_section": "speakers",
+      "menus": {"2": "AmpAssign"},
+      "controls": [
+        {"id": "amp_assign", "type": 2, "tag": "AssignMode", "amptype_tag": "AmpType", "kind": "select", "name": "Amp Assign",
+         "amptype_options": {
+           "3": [["1", "7.1ch"]],
+           "4": [["1", "Surround Back"], ["2", "ZONE2"], ["5", "Front Height"], ["8", "Top Front"], ["9", "Top Middle"], ["10", "Front Dolby"], ["11", "Surround Dolby"]],
+           "5": [["1", "9.1ch"], ["2", "7.1ch + ZONE2"], ["7", "7.1ch (Bi-Amp)"], ["14", "5.1ch (Bi-Amp) + ZONE2"], ["6", "7.1ch + Front B"], ["12", "11.1ch"], ["17", "Pre Amplifier"]],
+           "6": [["1", "9.1ch"], ["2", "7.1ch + ZONE2"], ["3", "7.1ch + ZONE3"], ["13", "5.1ch + ZONE2/3"], ["4", "7.1ch + ZONE2/3-MONO"], ["7", "7.1ch (Bi-Amp)"], ["14", "5.1ch (Bi-Amp) + ZONE2"], ["6", "7.1ch + Front B"], ["12", "11.1ch"], ["17", "Pre Amplifier"]],
+           "7": [["12", "11.1ch"], ["15", "5.1ch Full Bi-Amp"]],
+           "8": [["12", "11.1ch"]],
+           "9": [["12", "13.1ch"], ["2", "11.1ch + ZONE2"], ["3", "11.1ch + ZONE3"], ["13", "9.1ch + ZONE2/3"], ["4", "11.1ch + ZONE2/3-MONO"], ["7", "11.1ch (Bi-Amp)"], ["14", "9.1ch (Bi-Amp) + ZONE2"], ["6", "11.1ch + Front B"], ["15", "5.1ch Full Bi-Amp"], ["16", "Custom"], ["17", "Pre Amplifier"]],
+           "10": [["12", "13.1ch"], ["7", "11.1ch (Bi-Amp)"], ["6", "11.1ch + Front B"]],
+           "11": [["1", "11.1ch"], ["15", "5.1ch Full Bi-Amp"], ["17", "Pre Amplifier"]],
+           "12": [["2", "13.1ch + ZONE2"], ["3", "13.1ch + ZONE3"], ["13", "11.1ch + ZONE2/3"], ["4", "13.1ch + ZONE2/3-MONO"], ["7", "13.1ch (Bi-Amp)"], ["14", "11.1ch (Bi-Amp) + ZONE2"], ["6", "13.1ch + Front B"], ["15", "7.1ch Full Bi-Amp"], ["16", "Custom"], ["17", "Pre Amplifier"]],
+           "13": [["7", "13.1ch (Bi-Amp)"], ["6", "13.1ch + Front B"], ["16", "Custom"]],
+           "14": [["1", "9.1ch"], ["2", "7.1ch + ZONE2"], ["7", "7.1ch (Bi-Amp)"], ["14", "5.1ch (Bi-Amp) + ZONE2"], ["6", "7.1ch + Front B"], ["17", "Pre Amplifier"]],
+           "15": [["1", "9.1ch"], ["2", "7.1ch + ZONE2"], ["3", "7.1ch + ZONE3"], ["13", "5.1ch + ZONE2/3"], ["4", "7.1ch + ZONE2/3-MONO"], ["7", "7.1ch (Bi-Amp)"], ["14", "5.1ch (Bi-Amp) + ZONE2"], ["6", "7.1ch + Front B"], ["17", "Pre Amplifier"]]
+         }}
+      ]
     }
   },
   "speakers": {
@@ -641,7 +664,7 @@
       "values": ["SPA", "SPB", "A+B"],
       "labels": ["Front A", "Front B", "A + B"],
       "name": "Front Speaker",
-      "doc": "Front speaker terminal selection (Denon PSFRONT SPA/SPB/A+B). NOTE the query is 'PSFRONT?' with NO space (unlike other PS controls); the set is 'PSFRONT <token>' with a space. Only applies when Amp Assign = Front B - the receiver reports/accepts it only in that mode, so the state may be unknown otherwise. Verified live: read via 'PSFRONT?' and set 'PSFRONT A+B' echoed."
+      "doc": "Front speaker terminal selection (Denon PSFRONT SPA/SPB/A+B). NOTE the query is 'PSFRONT?' with NO space (unlike other PS controls); the set is 'PSFRONT <token>' with a space. Only applies when Amp Assign is set to Front B; the receiver reports/accepts it only in that mode, so the state may be unknown otherwise. Verified live: read via 'PSFRONT?' and set 'PSFRONT A+B' echoed."
     },
     "sleep_timer": {
       "group": "system",

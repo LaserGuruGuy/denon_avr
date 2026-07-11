@@ -116,10 +116,6 @@ class Discovery:
     # Numeric metadata (min/max/step/default in dB) the receiver publishes for
     # level style controls, keyed by feature name or channel code.
     numeric_meta: dict[str, dict[str, float]] = field(default_factory=dict)
-    # The current amp-assignment label read from the TCP status channel at
-    # discovery (a static setup value the telnet channel does not expose); None
-    # when unavailable.
-    amp_assign: str | None = None
     # Master volume scale as published by the receiver's Volume block:
     # 'reference' is the absolute value that equals 0.0 dB, 'step' the increment,
     # 'absolute_max' the highest absolute value. Empty when not published.
