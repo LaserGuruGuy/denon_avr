@@ -293,9 +293,12 @@ A band write sends the whole block `<GraphicEQ><AdjustEQ><Channel>N</Channel>`
 `<Eq63Hz>…</Eq63Hz>…<Eq16kHz>…</Eq16kHz></AdjustEQ></GraphicEQ>` (a partial block
 is rejected). `<SpeakerSelection>`, `<CurveCopy>1</CurveCopy>` and `<SetDefaults>`
 are sent on their own. Editing requires
-MultEQ **off** and the graphic EQ **enabled**. Coverage: `[x]` — a discovery-gated
-**EQ sub-device** (on/off switch, speaker-selection + channel selects, one number
-per band, Copy-Curve button). The band frequencies and dB range are a fixed
+MultEQ **off** and the graphic EQ **enabled**. `get_config` only ever reads back
+one channel (no working per-channel read), so per-channel ("Each") editing is not
+exposed; the "All" speaker-selection mode (single curve) is fully controllable.
+Coverage: `[x]` — a discovery-gated **EQ sub-device** (on/off switch,
+speaker-selection select, one number per band, Apply + Copy-Curve buttons; bands
+stage locally and Apply writes the whole block). The band frequencies and dB range are a fixed
 constant hardcoded in the profile (not fetched, so the entity structure is robust
 if the setup interface changes); only the live per-band values use this API.
 

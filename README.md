@@ -85,11 +85,13 @@ Notes:
   Adjust, Audio Delay, Effect Level, Containment Amount, Sleep Timer, and per
   channel volume trim and speaker distance (m) for each configured speaker.
 - **Graphic EQ** (a sub‑device, when the receiver has one): the on/off, a
-  speaker‑selection mode (L/R · Each · All), the channel being adjusted, and one
-  slider per band (63 Hz … 16 kHz). The sliders **stage** the curve; press
-  **Apply** to write it to the receiver (it accepts only the whole band block at
-  once). A **Copy Curve** button seeds the manual EQ from the reference curve.
-  See the equaliser card recipe below.
+  speaker‑selection mode (L/R · Each · All), and one slider per band
+  (63 Hz … 16 kHz). The sliders **stage** the curve; press **Apply** to write it
+  to the receiver (it accepts only the whole band block at once). A **Copy Curve**
+  button seeds the manual EQ from the reference curve. Fully controllable in the
+  **All** speaker‑selection mode (one curve); per‑channel (“Each”) editing is not
+  exposed because the receiver's config API only reads back a single channel. See
+  the equaliser card recipe below.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
   mode info, sound mode, volume (dB), and the current amp assignment.
 - **Binary sensor**: telnet connectivity.
@@ -119,7 +121,6 @@ cards:
     entities:
       - switch.avr_x3600h_graphic_eq
       - select.avr_x3600h_speaker_selection
-      - select.avr_x3600h_eq_channel
       - button.avr_x3600h_apply
       - button.avr_x3600h_copy_curve
   - type: custom:mixer-card
@@ -135,10 +136,10 @@ cards:
       - entity_id: number.avr_x3600h_eq_16_khz
 ```
 
-The nine faders show the band gains of the channel picked by the EQ Channel
-select; switch channels to edit each one. Editing requires MultEQ **off** and the
-graphic EQ **enabled** (both are entities above). Entity ids follow your device
-name — adjust the prefix to match yours.
+Adjust the nine faders, then press **Apply** to write the curve. Editing requires
+MultEQ **off** and the graphic EQ **enabled** (both are entities above), and works
+on the single curve in the **All** speaker‑selection mode. Entity ids follow your
+device name — adjust the prefix to match yours.
 
 ## Notes and limitations
 

@@ -83,14 +83,6 @@ def adjust_payload(
     return _wrap(grammar["root_tag"], f"<AdjustEQ>{''.join(parts)}</AdjustEQ>")
 
 
-def channel_payload(grammar: dict[str, Any], channel_index: int) -> str:
-    """Build the set_config XML to select the channel being adjusted."""
-
-    return _wrap(
-        grammar["root_tag"], f"<AdjustEQ><Channel>{channel_index}</Channel></AdjustEQ>"
-    )
-
-
 def speaker_selection_payload(grammar: dict[str, Any], code: str) -> str:
     """Build the set_config XML to set the speaker-selection mode."""
 

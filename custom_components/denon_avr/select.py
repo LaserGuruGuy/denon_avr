@@ -59,13 +59,12 @@ async def async_setup_entry(
         channels = profile.group_channels(group)
         enabled = (not configured) or any(c in configured for c in channels)
         entities.append(DenonAvrSpeakerSize(coordinator, group, channels, enabled))
-    # Manual graphic-EQ selects, on the EQ sub-device, when the receiver has a
-    # graphic EQ this profile can drive: the speaker-selection mode and (when it
-    # reports a channel list) the channel being adjusted.
+    # Manual graphic-EQ speaker-selection mode, on the EQ sub-device, when the
+    # receiver has a graphic EQ this profile can drive. There is deliberately no
+    # per-channel select: the config API only ever reads back one channel, so a
+    # channel picker cannot show a channel's own curve and would just revert.
     if coordinator.device.eq_supported:
         entities.append(DenonAvrEqSpeakerSelection(coordinator))
-        if discovery.channels:
-            entities.append(DenonAvrEqChannel(coordinator))
     async_add_entities(entities)
 
 
@@ -315,34 +314,3 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
         code = self._by_label.get(option)
         if code:
             await self.coordinator.device.async_set_eq_speaker_selection(code)
-
-
-class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
-    """Graphic-EQ channel being adjusted (used when speaker selection is 'each').
-
-    The channel options are the receiver's own channel names; the wire value is
-    the channel's index in that list, which is what the config API expects.
-    """
-
-    _attr_entity_category = EntityCategory.CONFIG
-
-    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
-        super().__init__(coordinator, "select_eq_channel", sub_device="eq")
-        self._attr_name = "Channel"
-        self._channels = [
-            channel.name for channel in coordinator.device.discovery.channels
-        ]
-        self._attr_options = self._channels
-
-    @property
-    def current_option(self) -> str | None:
-        index = self.coordinator.data.graphic_eq.channel_index
-        if index is None or not 0 <= index < len(self._channels):
-            return None
-        return self._channels[index]
-
-    async def async_select_option(self, option: str) -> None:
-        if option in self._channels:
-            await self.coordinator.device.async_set_eq_channel(
-                self._channels.index(option)
-            )

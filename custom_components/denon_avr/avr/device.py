@@ -555,9 +555,6 @@ class DenonAvrDevice:
         await self._eq_set(graphic_eq.adjust_payload(self._eq_grammar, channel, bands))
         self._eq_pending.clear()
 
-    async def async_set_eq_channel(self, index: int) -> None:
-        await self._eq_set(graphic_eq.channel_payload(self._eq_grammar, index))
-
     async def async_set_eq_speaker_selection(self, code: str) -> None:
         await self._eq_set(
             graphic_eq.speaker_selection_payload(self._eq_grammar, code)
