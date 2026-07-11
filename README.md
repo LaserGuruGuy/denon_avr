@@ -87,9 +87,11 @@ the sub‑device its setting belongs to.
   Monitor Out, HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
   (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Room Size, Volume
   Scale, Volume Limit, Muting Level, a per speaker group crossover frequency (Hz),
-  a per speaker group size (Large/Small), Front Speaker (A/B/A+B), and Amp Assign
+  a per speaker group size (Large/Small), Front Speaker (A/B/A+B), Amp Assign
   (the amp‑assignment mode — options are read from the receiver per its amp type,
-  e.g. 7.1ch + Front B / 9.1ch / Bi‑Amp / Zone2). On **Video**: HDMI Power‑Off Control,
+  e.g. 7.1ch + Front B / 9.1ch / Bi‑Amp / Zone2), the amp‑assign Floor Layout and
+  Height Speakers (options read from the receiver), and LPF for LFE (80–250 Hz).
+  On **Video**: HDMI Power‑Off Control,
   Pass‑Through Source, RC Select, On‑Screen Volume position, Now‑Playing display,
   4K Signal Format, TV Format (NTSC/PAL). On **Picture**: Noise Reduction. Each
   only when the receiver advertises it.
