@@ -544,6 +544,7 @@
     },
     "subwoofer_level": {
       "group": "speaker",
+      "subdevice": "audio",
       "scope": "feature",
       "feature": "SubwooferLevel",
       "kind": "level",
