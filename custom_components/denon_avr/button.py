@@ -27,8 +27,27 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
     entities: list[ButtonEntity] = []
     if coordinator.device.eq_supported:
+        entities.append(DenonAvrEqApply(coordinator))
         entities.append(DenonAvrEqCurveCopy(coordinator))
     async_add_entities(entities)
+
+
+class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
+    """Write the edited band curve to the receiver.
+
+    The band sliders stage their values locally (the receiver accepts only a
+    full band block, not a single band); pressing this applies the whole curve.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:content-save"
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "button_eq_apply", sub_device="eq")
+        self._attr_name = "Apply"
+
+    async def async_press(self) -> None:
+        await self.coordinator.device.async_apply_graphic_eq()
 
 
 class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):

@@ -61,6 +61,10 @@ class DenonAvrDevice:
         # EQ per-band values, which are not on the telnet channel.
         self._webconfig = WebConfigClient(session, host)
         self._eq_grammar = self._profile.grammar.get("graphic_eq", {})
+        # Staged graphic-EQ band edits (tag -> dB). The bands are edited locally
+        # and written together by the Apply action, because the receiver only
+        # accepts a full band block, not a single band.
+        self._eq_pending: dict[str, float] = {}
         self._telnet = TelnetClient(
             host,
             on_line=self._handle_line,
@@ -522,9 +526,34 @@ class DenonAvrDevice:
         # Re-read so entities reflect exactly what the receiver applied.
         await self.async_refresh_graphic_eq()
 
+    def eq_band_value(self, tag: str) -> float | None:
+        """The band's gain to show: a staged edit if any, else the read value."""
+
+        if tag in self._eq_pending:
+            return self._eq_pending[tag]
+        return self._state.graphic_eq.bands.get(tag)
+
+    def eq_has_pending(self) -> bool:
+        """True when there are staged band edits not yet applied."""
+
+        return bool(self._eq_pending)
+
     async def async_set_eq_band(self, tag: str, db: float) -> None:
+        # Stage the edit; it is written by async_apply_graphic_eq (the receiver
+        # only accepts the whole band block at once).
+        self._eq_pending[tag] = db
+        self._schedule_update()
+
+    async def async_apply_graphic_eq(self) -> None:
+        """Write the current band curve (read values overlaid with edits)."""
+
+        if not self.eq_supported:
+            return
+        bands = dict(self._state.graphic_eq.bands)
+        bands.update(self._eq_pending)
         channel = self._state.graphic_eq.channel_index or 0
-        await self._eq_set(graphic_eq.band_payload(self._eq_grammar, channel, tag, db))
+        await self._eq_set(graphic_eq.adjust_payload(self._eq_grammar, channel, bands))
+        self._eq_pending.clear()
 
     async def async_set_eq_channel(self, index: int) -> None:
         await self._eq_set(graphic_eq.channel_payload(self._eq_grammar, index))

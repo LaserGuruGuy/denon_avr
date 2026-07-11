@@ -262,7 +262,9 @@ on/off). They are read and written through the receiver's setup interface on
 **HTTPS port 10443**, which is non-disruptive (no calibration session):
 
 - **read:** `GET /ajax/<section>/get_config?type=<id>` → an XML document
-- **write:** `POST /ajax/<section>/set_config`, body `type=<id>&data=<url-encoded XML>`
+- **write:** `GET /ajax/<section>/set_config?type=<id>&data=<url-encoded XML>`
+  (the setup UI issues this as a GET; a POST is rejected with HTTP 400). A band
+  write must carry the **whole `AdjustEQ` block** (`Channel` + all bands).
 
 `<section>` is `audio` or `globals`. The certificate is self-signed. Audio
 config `type` ids: 2 center level, 3 subwoofer level, 4 surround parameter
@@ -287,9 +289,10 @@ containment), 10 graphic EQ, 11 bass sync, 12 dialog level, 13 DAC filter,
 ```
 
 Nine fixed bands (63 Hz … 16 kHz), range −20.0 … +6.0 dB step 0.5 (wire = dB×10).
-Writes send `<GraphicEQ>…</GraphicEQ>` with only the tags being changed (e.g.
-`<AdjustEQ><Channel>N</Channel><Eq500Hz>V</Eq500Hz></AdjustEQ>`), plus `<Enable>`,
-`<SpeakerSelection>`, `<CurveCopy>1</CurveCopy>`, `<SetDefaults>`. Editing requires
+A band write sends the whole block `<GraphicEQ><AdjustEQ><Channel>N</Channel>`
+`<Eq63Hz>…</Eq63Hz>…<Eq16kHz>…</Eq16kHz></AdjustEQ></GraphicEQ>` (a partial block
+is rejected). `<SpeakerSelection>`, `<CurveCopy>1</CurveCopy>` and `<SetDefaults>`
+are sent on their own. Editing requires
 MultEQ **off** and the graphic EQ **enabled**. Coverage: `[x]` — a discovery-gated
 **EQ sub-device** (on/off switch, speaker-selection + channel selects, one number
 per band, Copy-Curve button). The band frequencies and dB range are a fixed

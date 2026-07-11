@@ -86,8 +86,10 @@ Notes:
   channel volume trim and speaker distance (m) for each configured speaker.
 - **Graphic EQ** (a sub‑device, when the receiver has one): the on/off, a
   speaker‑selection mode (L/R · Each · All), the channel being adjusted, and one
-  slider per band (63 Hz … 16 kHz), plus a **Copy Curve** button that seeds the
-  manual EQ from the reference curve. See the equaliser card recipe below.
+  slider per band (63 Hz … 16 kHz). The sliders **stage** the curve; press
+  **Apply** to write it to the receiver (it accepts only the whole band block at
+  once). A **Copy Curve** button seeds the manual EQ from the reference curve.
+  See the equaliser card recipe below.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
   mode info, sound mode, volume (dB), and the current amp assignment.
 - **Binary sensor**: telnet connectivity.
@@ -118,6 +120,8 @@ cards:
       - switch.avr_x3600h_graphic_eq
       - select.avr_x3600h_speaker_selection
       - select.avr_x3600h_eq_channel
+      - button.avr_x3600h_apply
+      - button.avr_x3600h_copy_curve
   - type: custom:mixer-card
     faders:
       - entity_id: number.avr_x3600h_eq_63_hz

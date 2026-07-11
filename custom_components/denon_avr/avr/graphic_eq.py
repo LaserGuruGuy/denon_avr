@@ -65,15 +65,22 @@ def _wrap(root_tag: str, inner: str) -> str:
     return f"<{root_tag}>{inner}</{root_tag}>"
 
 
-def band_payload(
-    grammar: dict[str, Any], channel_index: int, tag: str, db: float
+def adjust_payload(
+    grammar: dict[str, Any], channel_index: int, bands_db: dict[str, float]
 ) -> str:
-    """Build the set_config XML to set one band's gain for one channel."""
+    """Build the set_config XML to write a full band block for one channel.
+
+    The receiver rejects a partial AdjustEQ, so every band is sent; ``bands_db``
+    maps each band tag to its gain in dB. Bands missing from the map default to
+    0 dB so the document is always complete.
+    """
 
     divisor = float(grammar.get("db_divisor", 10)) or 1.0
-    wire = int(round(db * divisor))
-    inner = f"<Channel>{channel_index}</Channel><{tag}>{wire}</{tag}>"
-    return _wrap(grammar["root_tag"], f"<AdjustEQ>{inner}</AdjustEQ>")
+    parts = [f"<Channel>{channel_index}</Channel>"]
+    for tag in band_tags(grammar):
+        wire = int(round(float(bands_db.get(tag, 0.0)) * divisor))
+        parts.append(f"<{tag}>{wire}</{tag}>")
+    return _wrap(grammar["root_tag"], f"<AdjustEQ>{''.join(parts)}</AdjustEQ>")
 
 
 def channel_payload(grammar: dict[str, Any], channel_index: int) -> str:

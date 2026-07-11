@@ -65,16 +65,19 @@ class WebConfigClient:
             return None
 
     async def async_set(self, section: str, type_id: int, xml: str) -> bool:
-        """POST an XML fragment for one config group. Return True on HTTP 200."""
+        """Apply an XML fragment for one config group. Return True on HTTP 200.
+
+        The setup UI issues this as a GET with the payload in the query string
+        (its jQuery call defaults to GET), not a POST; a POST is rejected with
+        HTTP 400. The XML is percent-encoded as a single query parameter.
+        """
 
         url = f"{self._base}/ajax/{section}/set_config"
-        body = f"type={type_id}&data={quote(xml)}"
+        query = f"type={type_id}&data={quote(xml, safe='')}"
         try:
-            async with self._session.post(
-                url,
-                data=body,
+            async with self._session.get(
+                f"{url}?{query}",
                 ssl=False,
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
                 timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT),
             ) as response:
                 if response.status != 200:

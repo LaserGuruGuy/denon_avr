@@ -210,7 +210,9 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
 
     @property
     def native_value(self) -> float | None:
-        return self.coordinator.data.graphic_eq.bands.get(self._tag)
+        # Show the staged edit if any, else the value read from the receiver.
+        return self.coordinator.device.eq_band_value(self._tag)
 
     async def async_set_native_value(self, value: float) -> None:
+        # Stage the edit; press Apply (button) to write the whole curve.
         await self.coordinator.device.async_set_eq_band(self._tag, value)
