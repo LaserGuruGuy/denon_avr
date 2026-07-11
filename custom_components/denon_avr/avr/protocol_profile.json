@@ -65,6 +65,30 @@
       "width": 3,
       "unit": "Hz",
       "values": [40, 60, 80, 90, 100, 110, 120, 150, 180, 200, 250]
+    },
+    "graphic_eq": {
+      "doc": [
+        "Manual graphic equaliser grammar. The per-band values are NOT on the",
+        "telnet channel (telnet only toggles the EQ on/off); they are read and",
+        "written through the setup interface config API on port 10443:",
+        "GET /ajax/<section>/get_config?type=<config_type> and POST",
+        "/ajax/<section>/set_config with body 'type=<config_type>&data=<XML>'.",
+        "Both are non-disruptive. Nine fixed bands span 63 Hz..16 kHz; each wire",
+        "value is the gain in dB multiplied by db_divisor (e.g. -110 = -11.0 dB).",
+        "Speaker selection chooses whether one curve applies to all speakers, the",
+        "left/right pair, or each channel individually. Editing requires MultEQ",
+        "off and the graphic EQ enabled."
+      ],
+      "config_section": "audio",
+      "config_type": 10,
+      "root_tag": "GraphicEQ",
+      "bands": ["Eq63Hz", "Eq125Hz", "Eq250Hz", "Eq500Hz", "Eq1kHz", "Eq2kHz", "Eq4kHz", "Eq8kHz", "Eq16kHz"],
+      "band_labels": ["63 Hz", "125 Hz", "250 Hz", "500 Hz", "1 kHz", "2 kHz", "4 kHz", "8 kHz", "16 kHz"],
+      "db_divisor": 10,
+      "min_db": -20.0,
+      "max_db": 6.0,
+      "step_db": 0.5,
+      "speaker_selection": {"1": "Left / Right", "2": "Each", "3": "All"}
     }
   },
   "speakers": {

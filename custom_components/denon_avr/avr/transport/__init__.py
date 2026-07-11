@@ -21,6 +21,7 @@ from .heos import HeosClient
 from .tcp_client import TcpClient
 from .telnet import TelnetClient, async_probe
 from .upnp import UpnpClient
+from .webconfig import WebConfigClient
 
 __all__ = [
     "GoformClient",
@@ -28,5 +29,6 @@ __all__ = [
     "TcpClient",
     "TelnetClient",
     "UpnpClient",
+    "WebConfigClient",
     "async_probe",
 ]

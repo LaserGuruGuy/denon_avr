@@ -254,6 +254,45 @@ clean setter, e.g. HDMI-CEC on/off (`RCKSK0410826`/`...827`), Dolby Atmos toggle
 input-mode select. These are model-specific and brittle; prefer a real setter
 when one exists. `[action]` only, and only if no cleaner token is available.
 
+## 17. Setup-interface config API (graphic EQ, audio setup)
+
+Some audio settings — most importantly the **manual graphic equaliser** per-band
+values — are not on the telnet channel at all (telnet only toggles the EQ
+on/off). They are read and written through the receiver's setup interface on
+**HTTPS port 10443**, which is non-disruptive (no calibration session):
+
+- **read:** `GET /ajax/<section>/get_config?type=<id>` → an XML document
+- **write:** `POST /ajax/<section>/set_config`, body `type=<id>&data=<url-encoded XML>`
+
+`<section>` is `audio` or `globals`. The certificate is self-signed. Audio
+config `type` ids: 2 center level, 3 subwoofer level, 4 surround parameter
+(incl. High/Low-pass filter value lists), 5 restorer, 6 audio delay + auto lip
+sync, 9 Audyssey (MultEQ / DynamicEQ / RefLevOffset / DynamicVolume / LFC /
+containment), 10 graphic EQ, 11 bass sync, 12 dialog level, 13 DAC filter,
+14 Dirac. Empty `<rx>`/document means the model does not have that group.
+
+**Graphic EQ (`type=10`)** document shape:
+
+```
+<GraphicEQ>
+  <Enable>1</Enable>                         on/off
+  <SpeakerSelection>2</SpeakerSelection>     1 = Left/Right, 2 = Each, 3 = All
+  <SelectableSpeaker><Each>3311…</Each></SelectableSpeaker>
+  <AdjustEQ>
+    <Channel>0</Channel>                     selected channel index
+    <Eq63Hz>-110</Eq63Hz> … <Eq16kHz>-40</Eq16kHz>   9 bands, gain = value / 10 dB
+  </AdjustEQ>
+  <CurveCopy/>                               write 1 to copy the Audyssey/flat curve
+</GraphicEQ>
+```
+
+Nine fixed bands (63 Hz … 16 kHz), range −20.0 … +6.0 dB step 0.5 (wire = dB×10).
+Writes send `<GraphicEQ>…</GraphicEQ>` with only the tags being changed (e.g.
+`<AdjustEQ><Channel>N</Channel><Eq500Hz>V</Eq500Hz></AdjustEQ>`), plus `<Enable>`,
+`<SpeakerSelection>`, `<CurveCopy>1</CurveCopy>`, `<SetDefaults>`. Editing requires
+MultEQ **off** and the graphic EQ **enabled**. Coverage: `[ ]` sub-device (build
+in progress) — a distinct interface, so it fits a discovery-gated EQ sub-device.
+
 ---
 
 ## Adding a command to this integration
