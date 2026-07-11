@@ -13,10 +13,11 @@ hardcoded.
   channels, sound modes and their genre groups, quick select names, feature
   availability, control ranges and option labels are all read from the receiver
   at runtime. The only fixed data is the Denon wire grammar.
-- **Telnet, HTTP** Telnet (port 23) provides the full state and real time push;
-  HTTP (port 8080) provides discovery and a periodic reconciliation poll. One
-  non-disruptive read at discovery fetches the amp assignment over the TCP
-  channel (port 1256); all control goes over telnet.
+- **Telnet, HTTP** Telnet (port 23) provides the full state, real time push and
+  the bulk of control; HTTP (port 8080) provides discovery and a periodic
+  reconciliation poll. A few settings that have no telnet command (graphic‑EQ
+  bands, HDMI/OSD/format setup, amp assign) are read and written over the setup
+  config API (HTTPS 10443); everything else is telnet.
 - **Stability** Auto reconnect with backoff, keepalive probe, command queue
   with inter command spacing, teardown on unload.
 
@@ -49,9 +50,9 @@ ports. Nothing needs to be opened towards the internet.
 | **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`) | **Required** |
 | **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
-| **1256/tcp** | Length‑framed JSON | Read once at setup for the amp assignment (a plain, non‑disruptive status read) | Optional (degrades gracefully) |
+| **1256/tcp** | Length‑framed JSON | Not currently used (reserved for a future Audyssey/calibration read path) | Unused |
 | **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources | Optional (degrades gracefully) |
-| **10443/tcp** | HTTPS (setup config) | Graphic‑EQ per‑band values and the Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) read/write — settings with no telnet token (non‑disruptive; self‑signed cert) | Optional (graphic EQ + video setup) |
+| **10443/tcp** | HTTPS (setup config) | Graphic‑EQ per‑band values, the Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) and Amp Assign — settings with no telnet token, read/write (non‑disruptive; self‑signed cert) | Optional (graphic EQ + video + amp assign) |
 
 Notes:
 
@@ -86,7 +87,9 @@ the sub‑device its setting belongs to.
   Monitor Out, HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
   (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Room Size, Volume
   Scale, Volume Limit, Muting Level, a per speaker group crossover frequency (Hz),
-  and a per speaker group size (Large/Small). On **Video**: HDMI Power‑Off Control,
+  a per speaker group size (Large/Small), Front Speaker (A/B/A+B), and Amp Assign
+  (the amp‑assignment mode — options are read from the receiver per its amp type,
+  e.g. 7.1ch + Front B / 9.1ch / Bi‑Amp / Zone2). On **Video**: HDMI Power‑Off Control,
   Pass‑Through Source, RC Select, On‑Screen Volume position, Now‑Playing display,
   4K Signal Format, TV Format (NTSC/PAL). On **Picture**: Noise Reduction. Each
   only when the receiver advertises it.
@@ -107,7 +110,7 @@ the sub‑device its setting belongs to.
   curve, and **Default** resets the channel to flat. See the equaliser card
   recipe below.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
-  mode info, sound mode, volume (dB), and the current amp assignment.
+  mode info, sound mode, and volume (dB).
 - **Binary sensor**: telnet connectivity.
 
 Per channel trims and distances, and per group crossovers and sizes, for
