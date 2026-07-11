@@ -217,7 +217,7 @@
     }
   },
   "receiver_generations": {
-    "doc": "Deviceinfo <Gen> code -> hardware type name, matching what the official Denon integration reports. Only verified codes are listed; unknown codes leave the hardware type unset (no guessing).",
+    "doc": "Deviceinfo <Gen> code -> friendly hardware-generation name, matching what the official Denon integration reports. Only verified codes are listed here; an unmapped code falls back to the raw <Gen> value read from the receiver, so the hardware type is always populated from the equipment and works for unknown models (this map only prettifies known codes, it never invents one).",
     "0002": "avr-x-2016"
   },
   "readonly": {

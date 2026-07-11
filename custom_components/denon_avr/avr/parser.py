@@ -104,12 +104,14 @@ def parse_device_info(
     device = discovery.device
     device.model_name = (root.findtext("ModelName") or "").strip() or None
     device.mac_address = _format_mac(root.findtext("MacAddress"))
-    # Derive the hardware type from the receiver's generation code using the
-    # profile's code -> name map (grammar, not hardcoded). Unmapped codes leave
-    # the hardware type unset rather than guessing.
+    # The receiver reports its generation as a numeric code (Gen); map it to the
+    # friendly name the official integration uses when we know it, and otherwise
+    # fall back to the raw code from the device. That keeps the hardware type
+    # populated for any receiver, known or not, always sourced from the equipment
+    # (the map only prettifies the label; it never invents one).
     gen = (root.findtext("Gen") or "").strip()
-    if gen and generations:
-        device.hardware_type = generations.get(gen)
+    if gen:
+        device.hardware_type = (generations or {}).get(gen) or gen
     zones_text = root.findtext("DeviceZones")
     if zones_text and zones_text.strip().isdigit():
         device.zone_count = max(1, int(zones_text.strip()))
