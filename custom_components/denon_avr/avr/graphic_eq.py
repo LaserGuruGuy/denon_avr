@@ -46,6 +46,10 @@ def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
     if selection:
         state.speaker_selection = selection
 
+    each = root.findtext("SelectableSpeaker/Each")
+    if each:
+        state.selectable = each.strip()
+
     adjust = root.find("AdjustEQ")
     if adjust is None:
         return state
@@ -59,6 +63,33 @@ def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
         if raw.lstrip("-").isdigit():
             state.bands[tag] = int(raw) / divisor
     return state
+
+
+def channel_options(
+    grammar: dict[str, Any], speaker_selection: str | None, selectable: str
+) -> list[tuple[int, str]]:
+    """Return the adjustable channels as (index, label) for the current mode.
+
+    In "All" mode there is a single curve. In "Left / Right" and "Each" modes the
+    index is the ``opt1`` value used to read/write that channel; the label comes
+    from the matching fixed map, and only channels flagged enabled in the
+    ``selectable`` string are offered.
+    """
+
+    if speaker_selection == "3":  # All - one shared curve
+        return [(0, "All")]
+    key = "channels_each" if speaker_selection == "2" else "channels_lr"
+    labels = grammar.get(key, [])
+    enable = grammar.get("channel_enable", "3")
+    options = [
+        (index, labels[index])
+        for index, flag in enumerate(selectable)
+        if flag == enable and index < len(labels)
+    ]
+    # Fall back to the first channel so the select always has a valid option.
+    if not options and labels:
+        options = [(0, labels[0])]
+    return options
 
 
 def _wrap(root_tag: str, inner: str) -> str:

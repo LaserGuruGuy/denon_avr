@@ -65,6 +65,9 @@ class DenonAvrDevice:
         # and written together by the Apply action, because the receiver only
         # accepts a full band block, not a single band.
         self._eq_pending: dict[str, float] = {}
+        # The graphic-EQ channel currently being read/edited (the config API's
+        # 'opt1' index); the read returns this channel's own curve.
+        self._eq_channel = 0
         self._telnet = TelnetClient(
             host,
             on_line=self._handle_line,
@@ -506,9 +509,12 @@ class DenonAvrDevice:
 
         if not self.eq_supported:
             return
+        # Read the currently-selected channel's own curve (opt1 = channel index).
+        param = self._eq_grammar.get("channel_read_param", "opt1")
         xml = await self._webconfig.async_get(
             self._eq_grammar.get("config_section", "audio"),
             int(self._eq_grammar.get("config_type", 0)),
+            {param: str(self._eq_channel), "opt2": "0"},
         )
         if xml is None:
             return
@@ -551,9 +557,24 @@ class DenonAvrDevice:
             return
         bands = dict(self._state.graphic_eq.bands)
         bands.update(self._eq_pending)
-        channel = self._state.graphic_eq.channel_index or 0
-        await self._eq_set(graphic_eq.adjust_payload(self._eq_grammar, channel, bands))
+        await self._eq_set(
+            graphic_eq.adjust_payload(self._eq_grammar, self._eq_channel, bands)
+        )
         self._eq_pending.clear()
+
+    @property
+    def eq_channel(self) -> int:
+        """The graphic-EQ channel index currently selected for read/edit."""
+
+        return self._eq_channel
+
+    async def async_set_eq_channel(self, index: int) -> None:
+        """Switch the channel being read/edited and load its own curve."""
+
+        self._eq_channel = index
+        # Staged edits belong to the previous channel; drop them on a switch.
+        self._eq_pending.clear()
+        await self.async_refresh_graphic_eq()
 
     async def async_set_eq_speaker_selection(self, code: str) -> None:
         await self._eq_set(

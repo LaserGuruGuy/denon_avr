@@ -262,6 +262,7 @@ on/off). They are read and written through the receiver's setup interface on
 **HTTPS port 10443**, which is non-disruptive (no calibration session):
 
 - **read:** `GET /ajax/<section>/get_config?type=<id>` → an XML document
+  (graphic EQ adds `&opt1=<channel-index>&opt2=0` to read a specific channel)
 - **write:** `GET /ajax/<section>/set_config?type=<id>&data=<url-encoded XML>`
   (the setup UI issues this as a GET; a POST is rejected with HTTP 400). A band
   write must carry the **whole `AdjustEQ` block** (`Channel` + all bands).
@@ -293,12 +294,14 @@ A band write sends the whole block `<GraphicEQ><AdjustEQ><Channel>N</Channel>`
 `<Eq63Hz>…</Eq63Hz>…<Eq16kHz>…</Eq16kHz></AdjustEQ></GraphicEQ>` (a partial block
 is rejected). `<SpeakerSelection>`, `<CurveCopy>1</CurveCopy>` and `<SetDefaults>`
 are sent on their own. Editing requires
-MultEQ **off** and the graphic EQ **enabled**. `get_config` only ever reads back
-one channel (no working per-channel read), so per-channel ("Each") editing is not
-exposed; the "All" speaker-selection mode (single curve) is fully controllable.
-Coverage: `[x]` — a discovery-gated **EQ sub-device** (on/off switch,
-speaker-selection select, one number per band, Apply + Copy-Curve buttons; bands
-stage locally and Apply writes the whole block). The band frequencies and dB range are a fixed
+MultEQ **off** and the graphic EQ **enabled**. Each channel has its own curve,
+read with `get_config?type=10&opt1=<channel-index>&opt2=0`; the enabled channels
+come from the `SelectableSpeaker/Each` flags (`3` = enabled) and their labels
+depend on the speaker-selection mode (L/R pairs vs individual). Coverage: `[x]` —
+a discovery-gated **EQ sub-device** (on/off switch, speaker-selection select,
+channel select, one number per band, Apply + Copy-Curve buttons; bands stage
+locally and Apply writes the whole block for the selected channel). The band
+frequencies and dB range are a fixed
 constant hardcoded in the profile (not fetched, so the entity structure is robust
 if the setup interface changes); only the live per-band values use this API.
 

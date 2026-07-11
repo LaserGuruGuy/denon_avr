@@ -40,14 +40,23 @@ class WebConfigClient:
         self._session = session
         self._base = f"https://{host}:{port}"
 
-    async def async_get(self, section: str, type_id: int) -> str | None:
-        """GET one config group as raw XML text, or None on any failure."""
+    async def async_get(
+        self, section: str, type_id: int, extra: dict[str, str] | None = None
+    ) -> str | None:
+        """GET one config group as raw XML text, or None on any failure.
+
+        ``extra`` adds query parameters, e.g. ``{"opt1": "1", "opt2": "0"}`` to
+        select the graphic-EQ channel to read.
+        """
 
         url = f"{self._base}/ajax/{section}/get_config"
+        params = {"type": str(type_id)}
+        if extra:
+            params.update(extra)
         try:
             async with self._session.get(
                 url,
-                params={"type": str(type_id)},
+                params=params,
                 ssl=False,
                 timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT),
             ) as response:

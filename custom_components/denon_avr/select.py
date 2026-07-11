@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .avr import graphic_eq
 from .avr.profile import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
@@ -59,12 +60,12 @@ async def async_setup_entry(
         channels = profile.group_channels(group)
         enabled = (not configured) or any(c in configured for c in channels)
         entities.append(DenonAvrSpeakerSize(coordinator, group, channels, enabled))
-    # Manual graphic-EQ speaker-selection mode, on the EQ sub-device, when the
-    # receiver has a graphic EQ this profile can drive. There is deliberately no
-    # per-channel select: the config API only ever reads back one channel, so a
-    # channel picker cannot show a channel's own curve and would just revert.
+    # Manual graphic-EQ selects, on the EQ sub-device, when the receiver has a
+    # graphic EQ this profile can drive: the speaker-selection mode and the
+    # channel being adjusted (read per-channel via the config API's opt1 index).
     if coordinator.device.eq_supported:
         entities.append(DenonAvrEqSpeakerSelection(coordinator))
+        entities.append(DenonAvrEqChannel(coordinator))
     async_add_entities(entities)
 
 
@@ -314,3 +315,41 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
         code = self._by_label.get(option)
         if code:
             await self.coordinator.device.async_set_eq_speaker_selection(code)
+
+
+class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
+    """Graphic-EQ channel being read and adjusted.
+
+    Each channel has its own curve, read via the config API's channel index
+    (opt1); switching the channel loads that channel's own bands. The available
+    channels and their labels depend on the speaker-selection mode (one shared
+    curve in 'All', L/R pairs, or individual channels in 'Each').
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "select_eq_channel", sub_device="eq")
+        self._attr_name = "Channel"
+        self._grammar = coordinator.device.eq_grammar
+
+    def _options(self) -> list[tuple[int, str]]:
+        eq = self.coordinator.data.graphic_eq
+        return graphic_eq.channel_options(
+            self._grammar, eq.speaker_selection, eq.selectable
+        )
+
+    @property
+    def options(self) -> list[str]:
+        return [label for _, label in self._options()]
+
+    @property
+    def current_option(self) -> str | None:
+        index = self.coordinator.device.eq_channel
+        return next((label for i, label in self._options() if i == index), None)
+
+    async def async_select_option(self, option: str) -> None:
+        for index, label in self._options():
+            if label == option:
+                await self.coordinator.device.async_set_eq_channel(index)
+                return

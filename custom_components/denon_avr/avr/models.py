@@ -211,6 +211,9 @@ class GraphicEqState:
     speaker_selection: str | None = None
     channel_index: int | None = None
     bands: dict[str, float] = field(default_factory=dict)
+    # Per-index enable flags for the adjustable channels (SelectableSpeaker),
+    # one character per channel index ("3" = enabled). Drives the channel list.
+    selectable: str = ""
 
 
 @dataclass
