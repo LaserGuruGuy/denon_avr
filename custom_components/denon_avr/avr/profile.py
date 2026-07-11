@@ -36,6 +36,18 @@ class ControlSpec:
         return self._data.get("scope", "feature")
 
     @property
+    def group(self) -> str | None:
+        """The command family this control belongs to.
+
+        One of the profile's command groups (power, volume, source, surround,
+        audyssey, tone, audio, speaker, video, system). Purely a classification
+        for organising the growing control set; it does not affect the wire
+        protocol.
+        """
+
+        return self._data.get("group")
+
+    @property
     def zone(self) -> str | None:
         """The zone this control belongs to, if any."""
 
@@ -190,6 +202,11 @@ class ProtocolProfile:
         """Return all control specs with the given scope."""
 
         return [spec for spec in self.controls.values() if spec.scope == scope]
+
+    def controls_by_group(self, group: str) -> list[ControlSpec]:
+        """Return all control specs classified under the given command group."""
+
+        return [spec for spec in self.controls.values() if spec.group == group]
 
     def feature_controls(self) -> list[ControlSpec]:
         """Return all control specs that are gated by a receiver feature."""

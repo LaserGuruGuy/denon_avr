@@ -243,6 +243,7 @@
   },
   "controls": {
     "system_power": {
+      "group": "power",
       "scope": "core",
       "kind": "power",
       "query": "PW?",
@@ -252,6 +253,7 @@
       "doc": "System standby power. Distinct from the main zone power."
     },
     "main_power": {
+      "group": "power",
       "scope": "core",
       "zone": "main",
       "kind": "onoff",
@@ -263,6 +265,7 @@
       "doc": "Main zone power. Also on the media player; exposed as a switch too. State comes from the ZM event (mirrored into values)."
     },
     "main_volume": {
+      "group": "volume",
       "scope": "core",
       "zone": "main",
       "kind": "volume",
@@ -274,6 +277,7 @@
       "doc": "Master volume. Two/three digit half step scale, 80 == 0 dB reference."
     },
     "main_mute": {
+      "group": "volume",
       "scope": "core",
       "zone": "main",
       "kind": "onoff",
@@ -285,6 +289,7 @@
       "doc": "Main zone mute. Also on the media player; exposed as a switch too with a speaker/mute icon. State comes from the MU event (mirrored into values)."
     },
     "main_source": {
+      "group": "source",
       "scope": "core",
       "zone": "main",
       "kind": "token",
@@ -293,6 +298,7 @@
       "doc": "Main zone input source. Codes and names are discovered via SSFUN/SSSOD."
     },
     "sound_mode": {
+      "group": "surround",
       "scope": "core",
       "kind": "token",
       "query": "MS?",
@@ -300,6 +306,7 @@
       "doc": "Surround / sound mode. Selectable values are learned from what the receiver reports."
     },
     "video_select": {
+      "group": "source",
       "scope": "core",
       "kind": "token",
       "query": "SV?",
@@ -307,6 +314,7 @@
       "doc": "Video select source ('SVOFF' when disabled)."
     },
     "bass": {
+      "group": "tone",
       "scope": "feature",
       "feature": "Bass",
       "kind": "level",
@@ -315,6 +323,7 @@
       "doc": "Tone control bass. Half step level, 50 == 0 dB."
     },
     "treble": {
+      "group": "tone",
       "scope": "feature",
       "feature": "Treble",
       "kind": "level",
@@ -323,6 +332,7 @@
       "doc": "Tone control treble. Half step level, 50 == 0 dB."
     },
     "tone_control": {
+      "group": "tone",
       "scope": "feature",
       "feature": "ToneControl",
       "kind": "onoff",
@@ -333,6 +343,7 @@
       "doc": "Tone control enable."
     },
     "dynamic_compression": {
+      "group": "audio",
       "scope": "feature",
       "feature": "DynamicCompression",
       "kind": "enum",
@@ -342,6 +353,7 @@
       "doc": "Dynamic range compression."
     },
     "lfe": {
+      "group": "audio",
       "scope": "feature",
       "feature": "LFE",
       "kind": "signed_int",
@@ -353,6 +365,7 @@
       "doc": "LFE level, 0 down to -10 dB. The receiver does not publish this range (its LFE block is empty), so the protocol defined range is given here as a fallback."
     },
     "dynamic_eq": {
+      "group": "audyssey",
       "scope": "feature",
       "feature": "DynamicEq",
       "kind": "onoff",
@@ -363,6 +376,7 @@
       "doc": "Dynamic EQ."
     },
     "dynamic_volume": {
+      "group": "audyssey",
       "scope": "feature",
       "feature": "DynamicVolume",
       "kind": "enum",
@@ -372,6 +386,7 @@
       "doc": "Dynamic Volume."
     },
     "reference_level_offset": {
+      "group": "audyssey",
       "scope": "feature",
       "feature": "RefLevOffset",
       "kind": "enum",
@@ -381,6 +396,7 @@
       "doc": "Reference level offset in dB."
     },
     "loudness_management": {
+      "group": "tone",
       "scope": "feature",
       "feature": "Loudness",
       "kind": "onoff",
@@ -391,6 +407,7 @@
       "doc": "Loudness management."
     },
     "cinema_eq": {
+      "group": "surround",
       "scope": "feature",
       "feature": "CinemaEq",
       "kind": "onoff",
@@ -401,6 +418,7 @@
       "doc": "Cinema EQ. Note the embedded '.' in the wire token."
     },
     "multeq": {
+      "group": "audyssey",
       "scope": "feature",
       "feature": "MultEq",
       "kind": "enum",
@@ -410,6 +428,7 @@
       "doc": "MultEQ room correction mode."
     },
     "restorer": {
+      "group": "audio",
       "scope": "feature",
       "feature": "Restorer",
       "kind": "enum",
@@ -419,6 +438,7 @@
       "doc": "Restorer (compressed audio restoration)."
     },
     "subwoofer_switch": {
+      "group": "speaker",
       "scope": "feature",
       "feature": "SubwooferLevel",
       "kind": "onoff",
@@ -429,6 +449,7 @@
       "doc": "Subwoofer level adjustment enable."
     },
     "subwoofer_level": {
+      "group": "speaker",
       "scope": "feature",
       "feature": "SubwooferLevel",
       "kind": "level",
@@ -437,6 +458,7 @@
       "doc": "Subwoofer level, half step, 50 == 0 dB. The dB range is discovered from the receiver's SubwooferLevel block."
     },
     "volume_scale": {
+      "group": "volume",
       "scope": "core",
       "kind": "enum",
       "query": "SSVCTZMA ?",
@@ -447,6 +469,7 @@
       "doc": "Master volume display scale: Relative (dB around 0, e.g. -79.5..+18.0) or Absolute (0..98). SSVCTZMADIS (verified live). Core-scoped, no FuncName, parsed explicitly."
     },
     "volume_limit": {
+      "group": "volume",
       "scope": "core",
       "kind": "enum",
       "query": "SSVCTZMA ?",
@@ -457,6 +480,7 @@
       "doc": "Maximum master volume limit. SSVCTZMALIM; the numeric values are the master-volume scale (060=-20 dB, 070=-10 dB, 080=0 dB). Verified live. Core-scoped, no FuncName, parsed explicitly."
     },
     "muting_level": {
+      "group": "volume",
       "scope": "core",
       "kind": "enum",
       "query": "SSVCTZMA ?",
@@ -467,6 +491,7 @@
       "doc": "Attenuation applied when muted: Full or -40 dB. SSVCTZMAMLV (MUT / 040; -20 dB is not offered on this model). Verified live. Core-scoped, no FuncName, parsed explicitly."
     },
     "all_zone_stereo": {
+      "group": "surround",
       "scope": "core",
       "kind": "onoff",
       "query": "MNZST ?",
@@ -478,6 +503,7 @@
       "doc": "All Zone Stereo: play the main zone audio in stereo across every zone. Set via 'MNZST ON|OFF' (verified live). Core-scoped (no Deviceinfo FuncName), parsed explicitly. Its own 'MNZST ?' query returns nothing, so the on/off state is derived from the sound mode (MS reports 'ALL ZONE STEREO' when active, verified live) - this gives a known state (single toggle, not two buttons) from the resync MS? onwards; the MNZST echo/push updates it immediately on change."
     },
     "subwoofer_mode": {
+      "group": "speaker",
       "scope": "core",
       "kind": "enum",
       "query": "SSSWM ?",
@@ -488,6 +514,7 @@
       "doc": "Subwoofer mode: LFE only, or LFE + Main (the mains' low frequencies are also sent to the subwoofer). Verified live read/write via 'SSSWM <token>'. Core-scoped: it has no Deviceinfo FuncName, so it is always queried and parsed explicitly; labels are given here as there is no device option list."
     },
     "sleep_timer": {
+      "group": "system",
       "scope": "feature",
       "feature": "SleepTimer",
       "kind": "minutes",
@@ -500,6 +527,7 @@
       "doc": "Sleep timer in minutes ('OFF' when disabled). The receiver does not publish a range (its SleepTimer block is empty), so the protocol defined range is given here as a fallback."
     },
     "eco_mode": {
+      "group": "system",
       "scope": "feature",
       "feature": "ECO",
       "kind": "enum",
@@ -509,6 +537,7 @@
       "doc": "ECO power mode."
     },
     "speaker_virtualizer": {
+      "group": "surround",
       "scope": "feature",
       "feature": "SpeakerVirtualizer",
       "kind": "onoff",
@@ -519,6 +548,7 @@
       "doc": "Speaker Virtualizer (Dolby/DTS virtual height/surround)."
     },
     "center_spread": {
+      "group": "surround",
       "scope": "feature",
       "feature": "CenterSpread",
       "kind": "onoff",
@@ -529,6 +559,7 @@
       "doc": "Center Spread (Dolby Surround upmixer)."
     },
     "dts_neural_x": {
+      "group": "surround",
       "scope": "feature",
       "feature": "DTSNeuralX",
       "kind": "onoff",
@@ -539,6 +570,7 @@
       "doc": "DTS Neural:X upmixer. Verified live (PSNEURAL ON/OFF). Only applies to compatible content."
     },
     "low_frequency_containment": {
+      "group": "audyssey",
       "scope": "feature",
       "feature": "AudysseyLfc",
       "kind": "onoff",
@@ -549,6 +581,7 @@
       "doc": "Low Frequency Containment. Verified live (PSLFC ON/OFF)."
     },
     "effect_level": {
+      "group": "surround",
       "scope": "feature",
       "feature": "EffectLevel",
       "kind": "integer",
@@ -561,6 +594,7 @@
       "doc": "DSP effect level (matrix/DSP sound modes). Verified live (PSEFF). The receiver publishes only step/default, so 0-15 is the protocol fallback range. Only applies in DSP modes."
     },
     "containment_amount": {
+      "group": "audyssey",
       "scope": "feature",
       "feature": "ContainmentAmount",
       "kind": "integer",
@@ -573,6 +607,7 @@
       "doc": "LFC containment amount. Verified live (PSCNTAMT). The receiver publishes only step/default, so 0-7 is the protocol fallback range. Applies when LFC is on."
     },
     "audio_delay": {
+      "group": "audio",
       "scope": "feature",
       "feature": "AudioDelay",
       "kind": "integer",
@@ -586,6 +621,7 @@
       "doc": "Audio delay in milliseconds. The receiver does not publish a range, so the protocol range (0-200 ms) is used as a fallback."
     },
     "dialog_control": {
+      "group": "surround",
       "scope": "feature",
       "feature": "DialogControl",
       "kind": "integer",
@@ -598,6 +634,7 @@
       "doc": "Dialog Control level 0-6. The receiver publishes only the step and default, so the 0-6 range is the protocol fallback."
     },
     "dimmer": {
+      "group": "system",
       "scope": "feature",
       "feature": "FrontDisplay",
       "kind": "enum",
@@ -608,6 +645,7 @@
       "doc": "Front panel display brightness. Wire token for Dark is DAR (verified live; 'DRK' is rejected). Labels come from the device when published, otherwise these."
     },
     "video_mode": {
+      "group": "video",
       "scope": "feature",
       "feature": "VideoMode",
       "kind": "enum",
@@ -617,6 +655,7 @@
       "doc": "Video processing mode. Wire values verified live (AUTO/GAME/MOVI); labels come from Deviceinfo. Only changeable with an active video signal."
     },
     "hdmi_video_output": {
+      "group": "video",
       "scope": "feature",
       "feature": "HdmiVideoOut",
       "kind": "enum",
@@ -626,6 +665,7 @@
       "doc": "HDMI monitor output selection. Wire values verified live (AUTO/1/2)."
     },
     "aspect_ratio": {
+      "group": "video",
       "scope": "feature",
       "feature": "AspectRatio",
       "kind": "enum",
@@ -635,6 +675,7 @@
       "doc": "Video aspect ratio. Wire values verified live (FUL=16:9, NRM=4:3)."
     },
     "hdmi_audio_out": {
+      "group": "video",
       "scope": "feature",
       "feature": "HdmiAudioOut",
       "kind": "enum",
@@ -645,6 +686,7 @@
       "doc": "HDMI audio output routing: AMP (the receiver decodes/plays the audio) or TV (HDMI audio passed through to the TV, muting the receiver). Note the trailing space in the prefix ('VSAUDIO <value>'). Read/write verified live via an /ajax cross-check (AMP<->TV flips the receiver's HDMIAudioOut). Labels come from the device when it publishes them, otherwise these."
     },
     "resolution_hdmi": {
+      "group": "video",
       "scope": "feature",
       "feature": "ResolutionHdmi",
       "kind": "enum",
@@ -655,6 +697,7 @@
       "doc": "HDMI output resolution (scaler). Wire tokens from the Denon control protocol (VSSCH<token>); AUTO/48P/10I/72P/10P/10P24/4K verified live read/write. Only settable when Video Conversion is on and the IP scaler is on HDMI (the receiver otherwise rejects it); this is the ResolutionHDMI field the web Output Settings page gates the same way. 'VSSC' (analog) is a separate, hidden path and is not exposed."
     },
     "input_mode": {
+      "group": "source",
       "scope": "feature",
       "feature": "InputMode",
       "kind": "enum",
@@ -664,6 +707,7 @@
       "doc": "Audio input mode for the current source (how audio is received). This is the eARC/ARC selector for the TV Audio source. EARC verified live (the source stayed locked to the active eARC signal, so the other values could not be cycle-verified); the rest are the documented Denon SD tokens. Order matches the Deviceinfo Input Mode list."
     },
     "channel_level": {
+      "group": "speaker",
       "scope": "feature",
       "feature": "ChannelLevel",
       "kind": "channel_set",
