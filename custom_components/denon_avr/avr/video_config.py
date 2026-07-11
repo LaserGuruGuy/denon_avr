@@ -170,6 +170,23 @@ class VideoConfigController:
                 "display": display,
                 "options": options,
             }
+        elif control.get("value_list"):
+            # A nested field with the current <Value> plus a device <List> of the
+            # allowed <Value> ids (amp-assign Floor Layout / Height); labels for
+            # those ids come from the control's static options map.
+            value = (element.findtext("Value") or "").strip()
+            container = element.find("List")
+            allowed = (
+                [(v.text or "").strip() for v in container.findall("Value")]
+                if container is not None
+                else []
+            )
+            fields[control["id"]] = {
+                "value": value,
+                "display": display,
+                "options": None,
+                "value_list": allowed,
+            }
         else:
             field = {
                 "value": (element.text or "").strip(),
@@ -209,6 +226,10 @@ class VideoConfigController:
         if field and field.get("options"):
             return field["options"]
         control = self._control(control_id) or {}
+        if field is not None and field.get("value_list") is not None:
+            # Options are the device-allowed ids, labelled from the static map.
+            label_map = control.get("options", {})
+            return {v: label_map.get(v, v) for v in field["value_list"]}
         amptype_options = control.get("amptype_options")
         if amptype_options is not None and field is not None:
             # Device-driven: pick the mode list for the receiver's queried
@@ -228,15 +249,20 @@ class VideoConfigController:
         control = self._control(control_id)
         if not self.supported or control is None:
             return
-        # The setup UI sends ONLY the field element (via xmlWrap), never the menu
-        # root - the ``type`` parameter already selects the menu. Wrapping in the
-        # root tag makes the receiver reject the write (HTTP 501).
+        # Most sections send ONLY the field element (the ``type`` selects the
+        # menu); wrapping in the menu root then makes the receiver reject the
+        # write (HTTP 501). The speakers amp-assign menu is the exception - it
+        # requires the field wrapped in its root tag (grammar ``wrap_root``);
+        # sending it bare returns HTTP 500. Verified live per section.
         tag = control["tag"]
         if control.get("dynamic"):
             field = control.get("field", "Source")
             payload = f"<{tag}><{field}>{wire}</{field}></{tag}>"
         else:
             payload = f"<{tag}>{wire}</{tag}>"
+        root = self._grammar.get("menus", {}).get(str(control["type"]))
+        if self._grammar.get("wrap_root") and root:
+            payload = f"<{root}>{payload}</{root}>"
         await self._webconfig.async_set(self._section, int(control["type"]), payload)
         # Re-read so state reflects exactly what the receiver applied.
         await self.refresh()

@@ -129,6 +129,7 @@
     "speakers_web": {
       "doc": "Speaker-setup settings with no telnet token, read/written via the /ajax speakers config API. Amp Assign (AssignMode, config type=2) is DEVICE-DRIVEN: the valid modes depend on the receiver's queried AmpType, so the option list is keyed by AmpType in amptype_options (extracted from the setup UI's getAmpAssignList, covering every Denon/Marantz amp type - not X3600H-specific). Read type=2 gives AmpType (selects the list) + AssignMode (current value); set is a field-only /ajax write <AssignMode>N</AssignMode>. Values are numeric AssignMode ids; labels are the receiver's own (e.g. 6='7.1ch + Front B').",
       "config_section": "speakers",
+      "wrap_root": true,
       "menus": {"2": "AmpAssign"},
       "controls": [
         {"id": "amp_assign", "type": 2, "tag": "AssignMode", "amptype_tag": "AmpType", "kind": "select", "name": "Amp Assign",
@@ -146,7 +147,11 @@
            "13": [["7", "13.1ch (Bi-Amp)"], ["6", "13.1ch + Front B"], ["16", "Custom"]],
            "14": [["1", "9.1ch"], ["2", "7.1ch + ZONE2"], ["7", "7.1ch (Bi-Amp)"], ["14", "5.1ch (Bi-Amp) + ZONE2"], ["6", "7.1ch + Front B"], ["17", "Pre Amplifier"]],
            "15": [["1", "9.1ch"], ["2", "7.1ch + ZONE2"], ["3", "7.1ch + ZONE3"], ["13", "5.1ch + ZONE2/3"], ["4", "7.1ch + ZONE2/3-MONO"], ["7", "7.1ch (Bi-Amp)"], ["14", "5.1ch (Bi-Amp) + ZONE2"], ["6", "7.1ch + Front B"], ["17", "Pre Amplifier"]]
-         }}
+         }},
+        {"id": "floor_layout", "type": 2, "tag": "FloorLayout", "kind": "select", "value_list": true, "name": "Floor Layout",
+         "options": {"1": "5ch", "2": "5ch & SB", "3": "5ch & FW", "4": "5ch & SB & FW"}},
+        {"id": "height_speaker", "type": 2, "tag": "HeightSpeaker", "kind": "select", "value_list": true, "name": "Height Speakers",
+         "options": {"1": "Height None / Dolby None", "2": "Height None / Dolby 2ch", "3": "Height None / Dolby 4ch", "4": "Height None / Dolby 6ch", "5": "Height 2ch / Dolby None", "6": "Height 2ch / Dolby 2ch", "7": "Height 2ch / Dolby 4ch", "8": "Height 4ch / Dolby None", "9": "Height 4ch / Dolby 2ch", "10": "Height 5ch / Dolby None", "11": "Height 5ch / Dolby 2ch", "12": "Height 6ch / Dolby None", "13": "Height 6ch / Dolby 2ch", "14": "Height 7ch / Dolby None", "15": "Height 8ch / Dolby None"}}
       ]
     }
   },
@@ -665,6 +670,17 @@
       "labels": ["Front A", "Front B", "A + B"],
       "name": "Front Speaker",
       "doc": "Front speaker terminal selection (Denon PSFRONT SPA/SPB/A+B). NOTE the query is 'PSFRONT?' with NO space (unlike other PS controls); the set is 'PSFRONT <token>' with a space. Only applies when Amp Assign is set to Front B; the receiver reports/accepts it only in that mode, so the state may be unknown otherwise. Verified live: read via 'PSFRONT?' and set 'PSFRONT A+B' echoed."
+    },
+    "lpf_for_lfe": {
+      "group": "speaker",
+      "scope": "core",
+      "kind": "enum",
+      "query": "SSLFL ?",
+      "prefix": "SSLFL ",
+      "values": ["080", "090", "100", "110", "120", "150", "180", "200", "250"],
+      "labels": ["80 Hz", "90 Hz", "100 Hz", "110 Hz", "120 Hz", "150 Hz", "180 Hz", "200 Hz", "250 Hz"],
+      "name": "LPF for LFE",
+      "doc": "Low-pass filter for the LFE channel (Denon SSLFL, 3-digit Hz, query 'SSLFL ?' WITH space). Verified live read/write (080<->090, reversible). The frequency set is the standard LFE LPF range, confirmed by the /ajax speakers type=17 SelectableValue list (80..250 Hz)."
     },
     "sleep_timer": {
       "group": "system",
