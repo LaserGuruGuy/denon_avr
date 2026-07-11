@@ -218,6 +218,10 @@ class GraphicEqController:
         self._on_update()
 
     async def apply(self) -> None:
+        # Never write a full block from nothing: without a prior read every band
+        # would default to 0 and silently flatten the curve.
+        if not self.state.bands and not self._pending:
+            return
         bands = dict(self.state.bands)
         bands.update(self._pending)
         await self._apply_payload(adjust_payload(self._grammar, self._channel, bands))

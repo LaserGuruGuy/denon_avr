@@ -299,8 +299,10 @@ read with `get_config?type=10&opt1=<channel-index>&opt2=0`; the enabled channels
 come from the `SelectableSpeaker/Each` flags (`3` = enabled) and their labels
 depend on the speaker-selection mode (L/R pairs vs individual). Coverage: `[x]` —
 a discovery-gated **EQ sub-device** (on/off switch, speaker-selection select,
-channel select, one number per band, Apply + Copy-Curve buttons; bands stage
-locally and Apply writes the whole block for the selected channel). The band
+channel select, one number per band, and Apply / Copy-Curve / Default buttons;
+bands stage locally and Apply writes the whole block for the selected channel).
+`<CurveCopy>1</CurveCopy>` copies the reference curve, `<SetDefaults>1</SetDefaults>`
+resets to flat. The band
 frequencies and dB range are a fixed
 constant hardcoded in the profile (not fetched, so the entity structure is robust
 if the setup interface changes); only the live per-band values use this API.

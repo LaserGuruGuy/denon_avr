@@ -88,8 +88,9 @@ Notes:
   speaker‑selection mode (L/R · Each · All), the channel being adjusted, and one
   slider per band (63 Hz … 16 kHz). Selecting a channel loads that channel's own
   curve; the sliders **stage** it and **Apply** writes the whole band block to
-  the receiver at once. A **Copy Curve** button seeds the manual EQ from the
-  reference curve. See the equaliser card recipe below.
+  the receiver at once. **Copy Curve** seeds the manual EQ from the reference
+  curve, and **Default** resets the channel to flat. See the equaliser card
+  recipe below.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
   mode info, sound mode, volume (dB), and the current amp assignment.
 - **Binary sensor**: telnet connectivity.
@@ -122,6 +123,7 @@ cards:
       - select.avr_x3600h_eq_channel
       - button.avr_x3600h_apply
       - button.avr_x3600h_copy_curve
+      - button.avr_x3600h_default
   - type: custom:mixer-card
     faders:
       - entity_id: number.avr_x3600h_eq_63_hz
