@@ -7,6 +7,7 @@ others so a change to one channel cannot affect the rest:
 * goform      - the goform HTTP API (port 8080): discovery + reconciliation poll
 * upnp        - the UPnP/AIOS device description (port 60006): firmware + serial
 * tcp_client  - the length-framed JSON protocol (port 1256), setup/status reads
+* heos        - the HEOS CLI (port 1255): now-playing media and album art
 
 Each transport knows only its own wire format and endpoint (it owns its own port
 and paths); none of them knows the protocol grammar (that lives in the profile
@@ -16,12 +17,14 @@ and parser) or Home Assistant.
 from __future__ import annotations
 
 from .goform import GoformClient
+from .heos import HeosClient
 from .tcp_client import TcpClient
 from .telnet import TelnetClient, async_probe
 from .upnp import UpnpClient
 
 __all__ = [
     "GoformClient",
+    "HeosClient",
     "TcpClient",
     "TelnetClient",
     "UpnpClient",

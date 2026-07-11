@@ -12,6 +12,7 @@ from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
+    MediaType,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -98,9 +99,17 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
             | MediaPlayerEntityFeature.VOLUME_MUTE
             | MediaPlayerEntityFeature.SELECT_SOURCE
         )
-        # Only the main zone carries the surround / sound mode.
+        # Only the main zone carries the surround / sound mode and the network
+        # transport controls (HEOS drives the whole receiver, i.e. the main zone).
         if zone.is_main:
-            features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
+            features |= (
+                MediaPlayerEntityFeature.SELECT_SOUND_MODE
+                | MediaPlayerEntityFeature.PLAY
+                | MediaPlayerEntityFeature.PAUSE
+                | MediaPlayerEntityFeature.STOP
+                | MediaPlayerEntityFeature.NEXT_TRACK
+                | MediaPlayerEntityFeature.PREVIOUS_TRACK
+            )
         self._attr_supported_features = features
 
     # State ----------------------------------------------------------------
@@ -110,11 +119,30 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
         return self.coordinator.data.zone(self._zone.id)
 
     @property
+    def _now_playing(self):
+        """HEOS now-playing, only meaningful for the main zone."""
+
+        if not self._zone.is_main:
+            return None
+        return self.coordinator.data.now_playing
+
+    @property
     def state(self) -> MediaPlayerState | None:
         power = self._zone_state.power
         if power is None:
             return None
-        return MediaPlayerState.ON if power else MediaPlayerState.OFF
+        if not power:
+            return MediaPlayerState.OFF
+        # When a network source is playing, reflect the transport state so the
+        # card shows play/pause; otherwise the receiver is simply on.
+        now = self._now_playing
+        if now and now.active:
+            return (
+                MediaPlayerState.PAUSED
+                if now.state == "pause"
+                else MediaPlayerState.PLAYING
+            )
+        return MediaPlayerState.ON
 
     @property
     def volume_level(self) -> float | None:
@@ -192,6 +220,35 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
             modes.append(current)
         return modes or None
 
+    # Now-playing media (network sources, via HEOS) ------------------------
+
+    @property
+    def media_content_type(self) -> str | None:
+        now = self._now_playing
+        return MediaType.MUSIC if now and now.active else None
+
+    @property
+    def media_image_url(self) -> str | None:
+        now = self._now_playing
+        if now and now.active and now.image_url:
+            return now.image_url
+        return None
+
+    @property
+    def media_title(self) -> str | None:
+        now = self._now_playing
+        return now.title if now and now.active else None
+
+    @property
+    def media_artist(self) -> str | None:
+        now = self._now_playing
+        return now.artist if now and now.active else None
+
+    @property
+    def media_album_name(self) -> str | None:
+        now = self._now_playing
+        return now.album if now and now.active else None
+
     # Commands -------------------------------------------------------------
 
     async def async_turn_on(self) -> None:
@@ -234,3 +291,18 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
 
     async def async_select_sound_mode(self, sound_mode: str) -> None:
         await self._device.async_select_sound_mode(sound_mode)
+
+    async def async_media_play(self) -> None:
+        await self._device.async_media_play()
+
+    async def async_media_pause(self) -> None:
+        await self._device.async_media_pause()
+
+    async def async_media_stop(self) -> None:
+        await self._device.async_media_stop()
+
+    async def async_media_next_track(self) -> None:
+        await self._device.async_media_next()
+
+    async def async_media_previous_track(self) -> None:
+        await self._device.async_media_previous()

@@ -21,11 +21,12 @@ from collections.abc import Callable
 import aiohttp
 
 from .codec import encode_half_step
-from .models import AvrState, Discovery
+from .models import AvrState, Discovery, NowPlaying
 from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
 from .transport import (
     GoformClient,
+    HeosClient,
     TcpClient,
     TelnetClient,
     UpnpClient,
@@ -60,6 +61,9 @@ class DenonAvrDevice:
             on_connected=self._resynchronise,
             on_availability=self._handle_availability,
         )
+        # Auxiliary HEOS channel for network now-playing media and album art.
+        # Isolated from control: if it never connects, only now-playing is absent.
+        self._heos = HeosClient(host, on_update=self._handle_now_playing)
 
         self._update_callback: Callable[[], None] | None = None
         self._update_handle: asyncio.TimerHandle | None = None
@@ -275,6 +279,8 @@ class DenonAvrDevice:
         """Start the telnet transport (which triggers the first resync)."""
 
         await self._telnet.async_start()
+        # Best effort; the HEOS channel is auxiliary and self-heals on its own.
+        await self._heos.async_start()
 
     async def async_await_ready(self, timeout: float = 8.0) -> None:
         """Wait, best effort, until the initial resync has populated state.
@@ -311,6 +317,7 @@ class DenonAvrDevice:
             task.cancel()
         self._pending_tasks.clear()
         await self._telnet.async_stop()
+        await self._heos.async_stop()
 
     async def async_poll(self) -> None:
         """HTTP reconciliation poll, used by the coordinator as a safety net.
@@ -360,6 +367,12 @@ class DenonAvrDevice:
             on = group.get("on")
             if on and line.startswith(tuple(on)):
                 self._schedule_refresh(group_id)
+
+    def _handle_now_playing(self, snapshot: dict) -> None:
+        """Apply a HEOS now-playing snapshot and notify listeners."""
+
+        self._state.now_playing = NowPlaying(**snapshot)
+        self._schedule_update()
 
     def _handle_availability(self, available: bool) -> None:
         """React to the telnet link going up or down."""
@@ -443,6 +456,23 @@ class DenonAvrDevice:
 
     async def _send(self, command: str) -> None:
         await self._telnet.async_send(command)
+
+    # Network media transport, routed to the HEOS channel. No-ops when HEOS is
+    # not connected or no network source is playing.
+    async def async_media_play(self) -> None:
+        await self._heos.async_play()
+
+    async def async_media_pause(self) -> None:
+        await self._heos.async_pause()
+
+    async def async_media_stop(self) -> None:
+        await self._heos.async_stop_playback()
+
+    async def async_media_next(self) -> None:
+        await self._heos.async_next()
+
+    async def async_media_previous(self) -> None:
+        await self._heos.async_previous()
 
     def _zone(self, zone_id: str):
         """Return the discovered ZoneDescriptor for a zone id, if any."""

@@ -175,6 +175,29 @@ class ZoneState:
 
 
 @dataclass
+class NowPlaying:
+    """Now-playing media on the receiver's network player, from the HEOS CLI.
+
+    Populated only while a network/streaming source is active; hardware inputs
+    (TV, CD, ...) leave it empty. `state` is the HEOS transport state
+    ('play' / 'pause' / 'stop'); `media_type` is 'song' or 'station'.
+    """
+
+    state: str | None = None
+    media_type: str | None = None
+    title: str | None = None
+    artist: str | None = None
+    album: str | None = None
+    image_url: str | None = None
+
+    @property
+    def active(self) -> bool:
+        """True when the network player is actually playing or paused."""
+
+        return self.state in ("play", "pause")
+
+
+@dataclass
 class AvrState:
     """Complete volatile state of the receiver as parsed from telnet events.
 
@@ -210,6 +233,8 @@ class AvrState:
     # groups report LAR/SMA (Large/Small) or the absent token; the count groups
     # (subwoofer, surround back) report presence/count tokens instead.
     speaker_sizes: dict[str, str] = field(default_factory=dict)
+    # Now-playing media for network sources, from the HEOS CLI (see transport).
+    now_playing: NowPlaying = field(default_factory=NowPlaying)
 
     def zone(self, zone_id: str) -> ZoneState:
         """Return the ZoneState for a zone id, creating it on first access."""
