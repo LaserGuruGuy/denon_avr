@@ -290,11 +290,26 @@ class TelnetParser:
         self._opsmlall_groups_pending: dict[str, list[str]] = {}
         # Precompute the generic feature and read only matchers, longest prefix
         # first so that specific tokens win over shorter ones.
+        # Feature controls decode generically from their prefix. Core enum/on-off
+        # settings that have no FuncName gate (volume scale/limit, muting level,
+        # all-zone stereo, subwoofer mode) decode the same way, so they join the
+        # generic matcher instead of each needing a bespoke dispatch branch. The
+        # overloaded core controls (power/volume/mute/source/sound mode) keep
+        # their explicit handling and are excluded here (kind or zone bound).
         self._feature_matchers = sorted(
             (
                 (spec.prefix, spec)
                 for spec in profile.controls.values()
-                if spec.scope == "feature" and spec.prefix and spec.kind != "channel_set"
+                if spec.prefix
+                and spec.kind != "channel_set"
+                and (
+                    spec.scope == "feature"
+                    or (
+                        spec.scope == "core"
+                        and spec.kind in ("enum", "onoff")
+                        and not spec.zone
+                    )
+                )
             ),
             key=lambda item: len(item[0]),
             reverse=True,
@@ -379,25 +394,9 @@ class TelnetParser:
             return self._set_quick_select_name(line[8:])
         if line.startswith("SSSPC"):
             return self._set_speaker_config(line[5:], state)
-        if line.startswith("SSSWM"):
-            # Subwoofer mode: a core enum with no FuncName, decoded like a feature.
-            spec = self._profile.control("subwoofer_mode")
-            return self._set_feature(spec, line[5:], state) if spec else False
-        if line.startswith("MNZST"):
-            # All Zone Stereo: a core on/off with no FuncName, decoded like a feature.
-            spec = self._profile.control("all_zone_stereo")
-            return self._set_feature(spec, line[5:], state) if spec else False
-        if line.startswith("SSVCTZMA"):
-            # Volume settings (scale/limit/muting level) - core enums, no FuncName.
-            for sub, cid in (
-                ("DIS", "volume_scale"),
-                ("LIM", "volume_limit"),
-                ("MLV", "muting_level"),
-            ):
-                if line.startswith("SSVCTZMA" + sub):
-                    spec = self._profile.control(cid)
-                    return self._set_feature(spec, line[8 + len(sub):], state) if spec else False
-            return False
+        # SSSWM (subwoofer mode), MNZST (all-zone stereo) and SSVCTZMA* (volume
+        # scale/limit, muting level) are core settings with no FuncName gate;
+        # they now decode through the generic feature matcher below.
         if line.startswith("OPSMLALL"):
             return self._set_sound_mode_list(line[8:], state=state)
         if line.startswith("OPSML"):
