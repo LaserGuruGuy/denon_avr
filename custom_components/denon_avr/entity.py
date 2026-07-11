@@ -24,6 +24,7 @@ from .coordinator import DenonAvrCoordinator
 SUB_DEVICE_NAMES = {
     "audio": "Audio",
     "video": "Video",
+    "picture": "Picture",
     "speakers": "Speakers",
     "eq": "Graphic EQ",
 }

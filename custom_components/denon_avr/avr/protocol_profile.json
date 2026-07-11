@@ -775,6 +775,7 @@
     },
     "picture_mode": {
       "group": "video",
+      "subdevice": "picture",
       "scope": "feature",
       "feature": "PictureMode",
       "kind": "enum",
@@ -787,6 +788,7 @@
     },
     "contrast": {
       "group": "video",
+      "subdevice": "picture",
       "scope": "feature",
       "feature": "PictureAdjust",
       "kind": "centered",
@@ -801,6 +803,7 @@
     },
     "brightness": {
       "group": "video",
+      "subdevice": "picture",
       "scope": "feature",
       "feature": "PictureAdjust",
       "kind": "centered",
@@ -815,6 +818,7 @@
     },
     "saturation": {
       "group": "video",
+      "subdevice": "picture",
       "scope": "feature",
       "feature": "PictureAdjust",
       "kind": "centered",
@@ -829,6 +833,7 @@
     },
     "enhancer": {
       "group": "video",
+      "subdevice": "picture",
       "scope": "feature",
       "feature": "PictureAdjust",
       "kind": "integer",
@@ -842,6 +847,7 @@
     },
     "noise_reduction": {
       "group": "video",
+      "subdevice": "picture",
       "scope": "feature",
       "feature": "PictureAdjust",
       "kind": "enum",
