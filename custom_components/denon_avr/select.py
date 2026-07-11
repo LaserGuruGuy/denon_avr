@@ -66,6 +66,16 @@ async def async_setup_entry(
     if coordinator.device.graphic_eq.supported:
         entities.append(DenonAvrEqSpeakerSelection(coordinator))
         entities.append(DenonAvrEqChannel(coordinator))
+    # Multi-option video setup menu items (HDMI power-off, pass-through source,
+    # OSD, 4K/TV format) read/written over the /ajax config API, on the Video
+    # sub-device. Only those the receiver advertises are created.
+    video = coordinator.device.video_config
+    if video.supported:
+        entities.extend(
+            DenonAvrVideoSelect(coordinator, control)
+            for control in video.controls()
+            if control.get("kind") == "select" and video.present(control["id"])
+        )
     async_add_entities(entities)
 
 
@@ -366,4 +376,42 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
         for index, label in self._options():
             if label == option:
                 await self.coordinator.device.graphic_eq.set_channel(index)
+                return
+
+
+class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
+    """A multi-option video setup item, backed by the /ajax video controller.
+
+    Its options and current value come from the receiver via the config API
+    (device.video_config); a grayed-out item (e.g. Pass Through Source until
+    HDMI Pass Through is on) reports itself unavailable rather than settable.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator, control: dict) -> None:
+        super().__init__(coordinator, f"select_{control['id']}", sub_device="video")
+        self._id = control["id"]
+        self._attr_name = control.get("name")
+
+    @property
+    def _video(self):
+        return self.coordinator.device.video_config
+
+    @property
+    def available(self) -> bool:
+        return super().available and self._video.available(self._id)
+
+    @property
+    def options(self) -> list[str]:
+        return list(self._video.options(self._id).values())
+
+    @property
+    def current_option(self) -> str | None:
+        return self._video.options(self._id).get(self._video.value(self._id))
+
+    async def async_select_option(self, option: str) -> None:
+        for wire, label in self._video.options(self._id).items():
+            if label == option:
+                await self._video.async_set(self._id, wire)
                 return

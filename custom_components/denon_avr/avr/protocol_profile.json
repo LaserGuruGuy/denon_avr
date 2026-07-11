@@ -101,6 +101,30 @@
       "channel_enable": "3",
       "channels_lr": ["Front", "Center", "Surround", "Surround Back", "Front Wide", "Front Height", "Top Front", "Top Middle", "Top Rear", "Surround Height", "Top Surround", "Rear Height", "Front Dolby", "Surround Dolby", "Back Dolby", "Surround Back 1", "Center Height"],
       "channels_each": ["Front L", "Front R", "Center", "Surround L", "Surround R", "Surround Back L", "Surround Back R", "Surround Back", "Front Wide L", "Front Wide R", "Front Height L", "Front Height R", "Top Front L", "Top Front R", "Top Middle L", "Top Middle R", "Top Rear L", "Top Rear R", "Surround Height L", "Surround Height R", "Top Surround", "Rear Height L", "Front Dolby L", "Front Dolby R", "Rear Height R", "Surround Dolby L", "Surround Dolby R", "Back Dolby L", "Back Dolby R", "Center Height"]
+    },
+    "video_web": {
+      "doc": "Video setup menu settings that have NO telnet token, read/written via the setup config API (/ajax/video/{get,set}_config). type=1 is the availability map; each control names its config type and XML tag. On/off wire values are Denon's SETTING_ON=1/SETTING_OFF=2 except OSD Info which uses VIDEO_SETTING On=1/Off=0. Option maps + the pass-through source values are the receiver's own (from the setup UI).",
+      "config_section": "video",
+      "availability_type": 1,
+      "features": {"PictureAdjust": "PictureAdjust"},
+      "menus": {"3": "HDMISetup", "7": "OnScreenDisplay", "8": "FourKSignalFormat", "9": "TVFormat"},
+      "pass_through_values": {"Last": "1", "HDMI1": "2", "HDMI2": "3", "HDMI3": "4", "HDMI4": "5", "HDMI5": "6", "HDMI6": "7", "HDMI7": "8", "Front": "9"},
+      "controls": [
+        {"id": "hdmi_control", "type": 3, "tag": "HDMIControl", "kind": "switch", "on": "1", "off": "2", "name": "HDMI Control"},
+        {"id": "arc", "type": 3, "tag": "ARC", "kind": "switch", "on": "1", "off": "2", "name": "ARC"},
+        {"id": "tv_audio_switching", "type": 3, "tag": "TVAudioSwitching", "kind": "switch", "on": "1", "off": "2", "name": "TV Audio Switching"},
+        {"id": "hdmi_power_off_control", "type": 3, "tag": "PowerOffControl", "kind": "select", "options": {"1": "All", "2": "Video", "3": "Off"}, "name": "HDMI Power Off Control"},
+        {"id": "hdmi_power_saving", "type": 3, "tag": "PowerSaving", "kind": "switch", "on": "1", "off": "2", "name": "HDMI Power Saving"},
+        {"id": "smart_menu", "type": 3, "tag": "SmartMenu", "kind": "switch", "on": "1", "off": "2", "name": "Smart Menu"},
+        {"id": "hdmi_pass_through", "type": 3, "tag": "HDMIPassThrough", "kind": "switch", "on": "1", "off": "2", "name": "HDMI Pass Through"},
+        {"id": "pass_through_source", "type": 3, "tag": "PassThroughSource", "field": "Source", "list": "List", "dynamic": true, "kind": "select", "name": "Pass Through Source"},
+        {"id": "rc_select", "type": 3, "tag": "RCSelect", "kind": "select", "options": {"1": "Power On + Source", "2": "Source Select Only"}, "name": "RC Select"},
+        {"id": "osd_volume", "type": 7, "tag": "Volume", "kind": "select", "options": {"1": "Bottom", "2": "Top", "3": "Off"}, "name": "On-Screen Volume"},
+        {"id": "osd_info", "type": 7, "tag": "Info", "kind": "switch", "on": "1", "off": "0", "name": "On-Screen Info"},
+        {"id": "osd_now_playing", "type": 7, "tag": "NowPlaying", "kind": "select", "options": {"1": "Always On", "2": "Auto Off"}, "name": "Now Playing Display"},
+        {"id": "hdmi_signal_format", "type": 8, "tag": "Format", "kind": "select", "options": {"1": "Standard", "2": "Enhanced", "3": "Custom", "4": "8K Enhanced"}, "name": "4K Signal Format"},
+        {"id": "tv_format", "type": 9, "tag": "TVFormat", "kind": "select", "options": {"1": "NTSC", "2": "PAL"}, "name": "TV Format"}
+      ]
     }
   },
   "speakers": {
@@ -760,6 +784,72 @@
       "values": ["OFF", "STD", "MOV", "VVD", "STM", "CTM", "DAY", "NGT"],
       "labels": ["Off", "Standard", "Movie", "Vivid", "Stream", "Custom", "ISF Day", "ISF Night"],
       "doc": "Picture mode (Denon protocol PV<mode>). Tokens from the official protocol doc. The 'PV' prefix is shared with the video-adjust settings (PVBR/PVCN/...), so exact_enum makes this control claim only the picture-mode value tokens. Device reports PVSTM (Stream)."
+    },
+    "contrast": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "PictureAdjust",
+      "kind": "centered",
+      "query": "PVCN ?",
+      "prefix": "PVCN ",
+      "center": 50,
+      "width": 3,
+      "min": -50,
+      "max": 50,
+      "step": 1,
+      "doc": "Picture contrast (Denon PVCN). 3-digit wire, 050 == 0, range -50..+50. Availability comes from the /ajax PictureAdjust menu (feature injected at discovery); writes require an active HDMI video signal."
+    },
+    "brightness": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "PictureAdjust",
+      "kind": "centered",
+      "query": "PVBR ?",
+      "prefix": "PVBR ",
+      "center": 50,
+      "width": 3,
+      "min": -50,
+      "max": 50,
+      "step": 1,
+      "doc": "Picture brightness (Denon PVBR). 3-digit wire, 050 == 0, range -50..+50."
+    },
+    "saturation": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "PictureAdjust",
+      "kind": "centered",
+      "query": "PVST ?",
+      "prefix": "PVST ",
+      "center": 50,
+      "width": 3,
+      "min": -50,
+      "max": 50,
+      "step": 1,
+      "doc": "Picture saturation/chroma (Denon PVST). 3-digit wire, 050 == 0, range -50..+50. The trailing space distinguishes 'PVST ' from the picture-mode tokens PVSTD/PVSTM."
+    },
+    "enhancer": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "PictureAdjust",
+      "kind": "integer",
+      "query": "PVENH ?",
+      "prefix": "PVENH ",
+      "width": 2,
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "doc": "Picture enhancer (Denon PVENH). 2-digit wire, range 00..12."
+    },
+    "noise_reduction": {
+      "group": "video",
+      "scope": "feature",
+      "feature": "PictureAdjust",
+      "kind": "enum",
+      "query": "PVDNR ?",
+      "prefix": "PVDNR ",
+      "values": ["OFF", "LOW", "MID", "HI"],
+      "labels": ["Off", "Low", "Medium", "High"],
+      "doc": "Picture noise reduction (Denon PVDNR OFF/LOW/MID/HI)."
     },
     "hdmi_video_output": {
       "group": "video",

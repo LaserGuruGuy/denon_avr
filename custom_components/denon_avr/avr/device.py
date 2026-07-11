@@ -20,11 +20,11 @@ from collections.abc import Callable
 
 import aiohttp
 
-from .codec import encode_half_step
+from .codec import encode_centered, encode_half_step
 from .models import AvrState, Discovery, NowPlaying
 from .parser import TelnetParser, parse_device_info, parse_upnp_description
 from .profile import ProtocolProfile, load_profile
-from . import graphic_eq
+from . import graphic_eq, video_config
 from .transport import (
     GoformClient,
     HeosClient,
@@ -66,6 +66,13 @@ class DenonAvrDevice:
             self._webconfig,
             self._profile.grammar.get("graphic_eq", {}),
             lambda: self._discovery.supports("GraphicEQ"),
+            self._schedule_update,
+        )
+        # Video setup menus that have no telnet token (HDMI setup/CEC, ARC, OSD,
+        # 4K signal format, TV format), read/written via the same config API.
+        self._video_config = video_config.VideoConfigController(
+            self._webconfig,
+            self._profile.grammar.get("video_web", {}),
             self._schedule_update,
         )
         self._telnet = TelnetClient(
@@ -212,6 +219,11 @@ class DenonAvrDevice:
         # does not expose) over the length-framed TCP status channel. Best effort
         # and non-disruptive (a plain status query, no calibration session).
         self._discovery.amp_assign = await self._async_read_amp_assign()
+        # Read the video setup config availability + values (over the /ajax API),
+        # and inject the menus that are present as discovery features so the
+        # telnet picture controls (gated on "PictureAdjust") are built at setup.
+        await self._video_config.discover()
+        self._discovery.features |= self._video_config.feature_flags()
         # The authoritative source list comes from the telnet SSFUN/SSSOD
         # introspection (correct codes, names and visibility). Keep the Deviceinfo
         # source list only as a fallback for models without that introspection.
@@ -353,6 +365,9 @@ class DenonAvrDevice:
         # Refresh the manual graphic EQ per-band values (non-disruptive; a no-op
         # unless the receiver advertises a graphic EQ this profile can drive).
         await self._graphic_eq.refresh()
+        # Refresh the video setup menu values (non-disruptive; no-op unless the
+        # receiver advertises a video config API this profile can drive).
+        await self._video_config.refresh()
 
     # Telnet callbacks -----------------------------------------------------
 
@@ -490,6 +505,12 @@ class DenonAvrDevice:
         """The manual graphic-EQ subsystem (read/edit/apply). See GraphicEqController."""
 
         return self._graphic_eq
+
+    @property
+    def video_config(self) -> video_config.VideoConfigController:
+        """The /ajax video setup subsystem (HDMI setup, OSD, TV/4K format)."""
+
+        return self._video_config
 
     def _zone(self, zone_id: str):
         """Return the discovered ZoneDescriptor for a zone id, if any."""
@@ -798,6 +819,10 @@ class DenonAvrDevice:
         if kind == "level":
             raw = self._profile.level_reference + float(value)  # type: ignore[arg-type]
             return encode_half_step(raw)
+        if kind == "centered":
+            # Fixed-width integer offset around a centre (picture controls).
+            width = int(spec.get("width", 3))
+            return encode_centered(float(value), int(spec.get("center", 0)), width)
         if kind == "signed_int":
             return str(int(value))  # type: ignore[arg-type]
         if kind == "integer":

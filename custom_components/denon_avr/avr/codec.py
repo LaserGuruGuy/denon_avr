@@ -45,3 +45,24 @@ def encode_half_step(value: float) -> str:
     if has_half:
         return f"{whole:02d}5"
     return f"{whole:02d}"
+
+
+def decode_centered(token: str, center: int) -> int | None:
+    """Decode a fixed-width integer token that is offset around a center point.
+
+    The picture controls encode their value as a plain, zero-padded integer that
+    is centred on a fixed point (for example contrast '050' with centre 50 means
+    0, '000' means -50, '100' means +50). Unlike the half step scale, all three
+    digits are data. Returns None when the token is not numeric.
+    """
+
+    token = token.strip()
+    if not token.isdigit():
+        return None
+    return int(token) - center
+
+
+def encode_centered(value: float, center: int, width: int) -> str:
+    """Encode a centred value back to its fixed-width wire integer (see above)."""
+
+    return str(int(round(value)) + center).zfill(width)

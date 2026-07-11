@@ -28,12 +28,22 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     discovery = coordinator.device.discovery
-    entities = [
+    entities: list[SwitchEntity] = [
         DenonAvrSwitch(coordinator, spec)
         for spec in coordinator.device.profile.controls.values()
         if spec.kind == "onoff"
         and (spec.scope != "feature" or discovery.supports(spec.feature or ""))
     ]
+    # On/off video setup menu items (HDMI Control/CEC, ARC, TV audio switching,
+    # power saving, smart menu, pass-through, OSD info), read/written over the
+    # /ajax config API, on the Video sub-device. Only advertised items appear.
+    video = coordinator.device.video_config
+    if video.supported:
+        entities.extend(
+            DenonAvrVideoSwitch(coordinator, control)
+            for control in video.controls()
+            if control.get("kind") == "switch" and video.present(control["id"])
+        )
     async_add_entities(entities)
 
 
@@ -73,3 +83,39 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self.coordinator.device.async_set_control(self._spec.id, False)
+
+
+class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
+    """An on/off video setup item, backed by the /ajax video controller.
+
+    Its state comes from the receiver via the config API (device.video_config);
+    a grayed-out item (e.g. ARC until HDMI Control is on) reports itself
+    unavailable rather than settable.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator, control: dict) -> None:
+        super().__init__(coordinator, f"switch_{control['id']}", sub_device="video")
+        self._id = control["id"]
+        self._on = control["on"]
+        self._off = control["off"]
+        self._attr_name = control.get("name")
+
+    @property
+    def _video(self):
+        return self.coordinator.device.video_config
+
+    @property
+    def available(self) -> bool:
+        return super().available and self._video.available(self._id)
+
+    @property
+    def is_on(self) -> bool:
+        return self._video.value(self._id) == self._on
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self._video.async_set(self._id, self._on)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self._video.async_set(self._id, self._off)

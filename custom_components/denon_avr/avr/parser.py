@@ -18,7 +18,7 @@ import logging
 import re
 import xml.etree.ElementTree as ET
 
-from .codec import decode_half_step
+from .codec import decode_centered, decode_half_step
 from .models import (
     AvrState,
     ChannelDescriptor,
@@ -731,6 +731,11 @@ class TelnetParser:
             if value is None:
                 return False
             state.values[spec.id] = value - self._profile.level_reference
+        elif kind == "centered":
+            value = decode_centered(remainder, int(spec.get("center", 0)))
+            if value is None:
+                return False
+            state.values[spec.id] = value
         elif kind in ("signed_int", "integer"):
             try:
                 state.values[spec.id] = int(remainder)
