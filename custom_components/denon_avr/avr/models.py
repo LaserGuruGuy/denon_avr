@@ -94,16 +94,11 @@ class Discovery:
     # the derived set of configured channel codes. Both come from the receiver.
     speaker_config: dict[str, set[str]] = field(default_factory=dict)
     configured_channels: set[str] = field(default_factory=set)
-    # Available sound mode display names, discovered from the receiver's OPSML
-    # list. The wire token used to select a mode is not the same as its display
-    # name for every mode, so it is learned by correlation and stored here
-    # (display name -> MS wire token).
     # All modes the receiver currently offers across every genre group (from
     # OPSMLALL), rebuilt per response in the receiver's own order. This is the
     # flat "all modes" list for the media player. Note it is signal dependent:
     # the receiver only lists modes applicable to the current audio signal.
     all_sound_modes: list[str] = field(default_factory=list)
-    sound_mode_wire: dict[str, str] = field(default_factory=dict)
     # Sound modes grouped by the receiver's genre code (from OPSMLALL), and the
     # display name per genre (correlated with the Deviceinfo genre list). This
     # lets us expose one select per group in addition to the flat list.

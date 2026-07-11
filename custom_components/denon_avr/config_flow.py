@@ -15,12 +15,9 @@ from urllib.parse import urlparse
 import voluptuous as vol
 
 from homeassistant.config_entries import (
-    ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
 )
-from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
 
@@ -28,8 +25,6 @@ from .avr import DenonAvrDevice
 from .avr.profile import load_profile
 from .const import (
     CONF_HOST,
-    CONF_SOUND_MODE_LEARNING,
-    DEFAULT_SOUND_MODE_LEARNING,
     DOMAIN,
 )
 
@@ -42,13 +37,6 @@ class DenonAvrConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Denon AVR."""
 
     VERSION = 1
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        """Return the options flow for the "Configure" button."""
-
-        return DenonAvrOptionsFlow()
 
     def __init__(self) -> None:
         self._host: str | None = None
@@ -156,22 +144,3 @@ class DenonAvrConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-
-class DenonAvrOptionsFlow(OptionsFlow):
-    """Options for a configured Denon AVR (the "Configure" dialog)."""
-
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Manage the integration options."""
-
-        if user_input is not None:
-            return self.async_create_entry(data=user_input)
-
-        current = self.config_entry.options.get(
-            CONF_SOUND_MODE_LEARNING, DEFAULT_SOUND_MODE_LEARNING
-        )
-        schema = vol.Schema(
-            {vol.Required(CONF_SOUND_MODE_LEARNING, default=current): bool}
-        )
-        return self.async_show_form(step_id="init", data_schema=schema)

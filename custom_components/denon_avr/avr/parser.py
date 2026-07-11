@@ -464,11 +464,6 @@ class TelnetParser:
         # mirror it here to give the All Zone Stereo switch a known on/off state
         # (its own MNZST '?' query returns nothing; MS? is answered on resync).
         state.values["all_zone_stereo"] = remainder == "ALL ZONE STEREO"
-        # If we already know the current mode's display name, learn the mapping
-        # from display name to wire token so selection can use the right token.
-        display = state.values.get("sound_mode_display")
-        if isinstance(display, str):
-            self._discovery.sound_mode_wire[display] = remainder
         return True
 
     def _set_sound_mode_list(self, remainder: str, state: AvrState) -> bool:
@@ -532,14 +527,6 @@ class TelnetParser:
         # the user selected, which can differ from the resolved MS mode.
         if digits and digits[-1] == "1":
             state.values["sound_mode_display"] = name
-            # Do NOT learn a wire token for "Auto": it is a meta mode whose wire
-            # is always "AUTO", but MS reports the RESOLVED mode (e.g. Stereo).
-            # Learning here would map Auto -> the resolved token and break its
-            # selection. Concrete modes (Direct, Dolby Audio-…) report their own
-            # token, so learning stays correct for them.
-            wire = state.values.get("sound_mode")
-            if isinstance(wire, str) and name.strip().lower() != "auto":
-                self._discovery.sound_mode_wire[name] = wire
         return True
 
     def _set_channel(self, remainder: str, target: dict[str, float]) -> bool:

@@ -51,15 +51,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> 
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _apply_channel_defaults(hass, entry, coordinator)
-    # Reload when the options (e.g. sound mode learning) change so they take effect.
-    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     return True
-
-
-async def _async_reload_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> None:
-    """Reload the config entry when its options change."""
-
-    await hass.config_entries.async_reload(entry.entry_id)
 
 
 def _apply_channel_defaults(

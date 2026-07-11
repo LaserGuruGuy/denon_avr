@@ -23,7 +23,7 @@
     "labels so a mismatch can never cause a wrong command to be sent."
   ],
   "sound_mode_wire_overrides": {
-    "doc": "Deterministic display-name -> MS wire token map for modes whose wire token differs from the upper-cased display name. These tokens were observed live from the receiver (it reports them via MS). For every other mode the upper-cased display name is used. This is the robust base; adaptive learning (optional) can add more at runtime.",
+    "doc": "Deterministic display-name -> MS wire token map for modes whose wire token differs from the upper-cased display name. These tokens were observed live from the receiver (it reports them via MS). For every other mode the upper-cased display name is used.",
     "Multi Ch Stereo": "MCH STEREO",
     "Dolby Audio - Dolby Surround": "DOLBY AUDIO-DSUR"
   },

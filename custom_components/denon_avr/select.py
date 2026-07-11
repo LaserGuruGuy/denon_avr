@@ -139,9 +139,10 @@ class DenonAvrSoundModeSelect(DenonAvrEntity, SelectEntity):
     """Lists and selects the sound modes within the active genre group.
 
     The modes come from the receiver (OPSMLALL) for the currently active group.
-    Selecting a mode uses the learned wire token, so the value sent may differ
-    from what the receiver reports back as the active mode (which is expected on
-    Denon, for example 'Dolby Audio - Dolby Surround').
+    Selecting a mode sends the wire token (a deterministic profile override when
+    it differs, else the upper-cased name), which may differ from what the
+    receiver reports back as the active mode (expected on Denon, for example
+    'Dolby Audio - Dolby Surround').
     """
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:

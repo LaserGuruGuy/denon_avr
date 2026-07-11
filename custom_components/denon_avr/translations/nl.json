@@ -30,19 +30,6 @@
       "reconfigure_successful": "Het IP-adres is bijgewerkt."
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Denon AVR-opties",
-        "data": {
-          "sound_mode_learning": "Adaptief sound mode leren"
-        },
-        "data_description": {
-          "sound_mode_learning": "Leer sound mode-commando's tijdens gebruik van de receiver. Uit (aanbevolen) gebruikt vaste commando-tokens; zet alleen aan als een specifieke sound mode niet schakelt."
-        }
-      }
-    }
-  },
   "entity": {
     "binary_sensor": {
       "connectivity": { "name": "Verbinding" }

@@ -94,11 +94,6 @@ class DenonAvrDevice:
         self._refresh_groups = self._profile.refresh_groups
         self._refresh_scheduled: set[str] = set()
         self._available = False
-        # Adaptive sound mode wire learning. Off by default for predictability;
-        # the coordinator sets this from the config entry option. When off, wire
-        # tokens are resolved deterministically (profile override, then the
-        # upper cased display name).
-        self.learning_enabled = False
         # Deviceinfo derived source list, used only if telnet introspection
         # yields no sources (see async_discover / async_await_ready).
         self._fallback_sources: list = []
@@ -603,7 +598,7 @@ class DenonAvrDevice:
 
         The wire token is often not the plain display name (for example
         'Dolby Audio - Dolby Surround' is sent as 'DOLBY AUDIO-DSUR'). Use the
-        token learned by correlation when known, otherwise fall back to the
+        deterministic profile override when the token differs, otherwise the
         upper cased display name, which works for the simple modes.
         """
 
@@ -616,14 +611,10 @@ class DenonAvrDevice:
     def _resolve_sound_mode_wire(self, name: str) -> str:
         """Resolve the MS wire token for a sound mode display name.
 
-        Order: an adaptively learned token (only when learning is enabled), then
-        the deterministic profile override, then the upper cased display name.
+        Order: the deterministic profile override, then the upper cased display
+        name (which works for the simple modes).
         """
 
-        if self.learning_enabled:
-            learned = self._discovery.sound_mode_wire.get(name)
-            if learned:
-                return learned
         override = self._profile.sound_mode_wire_overrides.get(name)
         if override:
             return override

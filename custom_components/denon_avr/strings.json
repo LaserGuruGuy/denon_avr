@@ -30,19 +30,6 @@
       "reconfigure_successful": "The IP address was updated."
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Denon AVR options",
-        "data": {
-          "sound_mode_learning": "Adaptive sound mode learning"
-        },
-        "data_description": {
-          "sound_mode_learning": "Learn sound mode commands from the receiver at runtime. Off (recommended) uses deterministic command tokens; turn on only if a specific sound mode does not switch."
-        }
-      }
-    }
-  },
   "entity": {
     "binary_sensor": {
       "connectivity": { "name": "Connectivity" }
