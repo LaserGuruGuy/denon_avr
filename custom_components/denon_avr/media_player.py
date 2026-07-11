@@ -20,6 +20,48 @@ from .avr.models import ZoneDescriptor
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
 
+# An icon-style picture of the selected input, shown when there is no album art
+# to display. Keyed by the receiver's wire source code (what the state holds);
+# a keyword fallback matches the display name too so renamed sources still map.
+_SOURCE_ICONS = {
+    "TV": "mdi:television",
+    "CD": "mdi:disc",
+    "DVD": "mdi:disc-player",
+    "BD": "mdi:disc-player",
+    "TUNER": "mdi:radio",
+    "PHONO": "mdi:record-player",
+    "GAME": "mdi:controller-classic",
+    "SAT/CBL": "mdi:satellite-variant",
+    "MPLAY": "mdi:cast-audio",
+    "NET": "mdi:cast-audio",
+    "BT": "mdi:bluetooth",
+    "AUX1": "mdi:audio-input-rca",
+    "AUX2": "mdi:audio-input-rca",
+    "USB/IPOD": "mdi:usb",
+}
+_SOURCE_ICON_KEYWORDS = (
+    ("blu", "mdi:disc-player"),
+    ("dvd", "mdi:disc-player"),
+    ("cd", "mdi:disc"),
+    ("tv", "mdi:television"),
+    ("tuner", "mdi:radio"),
+    ("radio", "mdi:radio"),
+    ("phono", "mdi:record-player"),
+    ("game", "mdi:controller-classic"),
+    ("sat", "mdi:satellite-variant"),
+    ("cbl", "mdi:satellite-variant"),
+    ("cable", "mdi:satellite-variant"),
+    ("bluet", "mdi:bluetooth"),
+    ("heos", "mdi:cast-audio"),
+    ("net", "mdi:cast-audio"),
+    ("media", "mdi:cast-audio"),
+    ("usb", "mdi:usb"),
+    ("ipod", "mdi:usb"),
+    ("aux", "mdi:audio-input-rca"),
+    ("airplay", "mdi:apple"),
+    ("spotify", "mdi:spotify"),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -95,6 +137,29 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
         if code is None:
             return None
         return self._device.discovery.source_name(code) or code
+
+    @property
+    def icon(self) -> str | None:
+        """Icon-style picture of the selected input.
+
+        HA shows the album art (media image) when one is available; when there
+        is none - a hardware input, or an idle network source - the entity icon
+        reflects the selected input instead. Match the wire code first, then
+        fall back to a keyword match on the display name so a renamed source
+        (e.g. "Chromecast" on the NET input) still gets a sensible icon.
+        """
+
+        code = self._zone_state.source
+        if not code:
+            return None
+        key = code.strip().upper()
+        if key in _SOURCE_ICONS:
+            return _SOURCE_ICONS[key]
+        name = (self._device.discovery.source_name(code) or code).lower()
+        for keyword, icon in _SOURCE_ICON_KEYWORDS:
+            if keyword in name or keyword in key.lower():
+                return icon
+        return None
 
     @property
     def source_list(self) -> list[str]:
