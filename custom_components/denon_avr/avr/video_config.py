@@ -73,9 +73,6 @@ class VideoConfigController:
                 return control
         return None
 
-    def _menu_root_tag(self, type_id: object) -> str | None:
-        return self._grammar.get("menus", {}).get(str(type_id))
-
     # Discovery / availability -------------------------------------------
 
     def feature_flags(self) -> set[str]:
@@ -205,15 +202,15 @@ class VideoConfigController:
         control = self._control(control_id)
         if not self.supported or control is None:
             return
-        root_tag = self._menu_root_tag(control["type"])
+        # The setup UI sends ONLY the field element (via xmlWrap), never the menu
+        # root - the ``type`` parameter already selects the menu. Wrapping in the
+        # root tag makes the receiver reject the write (HTTP 501).
         tag = control["tag"]
-        if tag == root_tag:
-            payload = f"<{root_tag}>{wire}</{root_tag}>"
-        elif control.get("dynamic"):
+        if control.get("dynamic"):
             field = control.get("field", "Source")
-            payload = f"<{root_tag}><{tag}><{field}>{wire}</{field}></{tag}></{root_tag}>"
+            payload = f"<{tag}><{field}>{wire}</{field}></{tag}>"
         else:
-            payload = f"<{root_tag}><{tag}>{wire}</{tag}></{root_tag}>"
+            payload = f"<{tag}>{wire}</{tag}>"
         await self._webconfig.async_set(self._section, int(control["type"]), payload)
         # Re-read so state reflects exactly what the receiver applied.
         await self.refresh()
