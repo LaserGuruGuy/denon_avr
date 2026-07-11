@@ -51,7 +51,7 @@ ports. Nothing needs to be opened towards the internet.
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
 | **1256/tcp** | Length‑framed JSON | Read once at setup for the amp assignment (a plain, non‑disruptive status read) | Optional (degrades gracefully) |
 | **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources | Optional (degrades gracefully) |
-| **10443/tcp** | HTTPS (setup config) | Manual graphic‑EQ per‑band values read/write (non‑disruptive; self‑signed cert) | Optional (graphic EQ only) |
+| **10443/tcp** | HTTPS (setup config) | Graphic‑EQ per‑band values and the Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) read/write — settings with no telnet token (non‑disruptive; self‑signed cert) | Optional (graphic EQ + video setup) |
 
 Notes:
 
@@ -67,9 +67,12 @@ Settings are organised into **sub‑devices that mirror the receiver's own setup
 menus**, so a large control set stays tidy instead of crowding one page. The main
 receiver device keeps the day‑to‑day controls (player, power, source, sound mode,
 quick select, input mode, front‑display dimmer); the **Audio**, **Video**,
-**Speakers** and **Graphic EQ** sub‑devices each carry their own part of the
-setup. The lists below are grouped by entity type; each entity lands on the
-sub‑device its setting belongs to.
+**Picture**, **Speakers** and **Graphic EQ** sub‑devices each carry their own
+part of the setup. **Picture** holds the image‑quality tuning (a coherent group,
+split off from Video like the Graphic EQ is split off from Audio); **Video** holds
+the output/connectivity settings (video mode, HDMI setup, on‑screen display, TV/4K
+signal format). The lists below are grouped by entity type; each entity lands on
+the sub‑device its setting belongs to.
 
 - **Media player** per zone (main + zone 2 where present): power, volume, mute,
   source selection, and (main zone) sound mode. On the main zone, network sources
@@ -83,15 +86,19 @@ sub‑device its setting belongs to.
   Monitor Out, HDMI Audio Out (Amp/TV), HDMI Resolution, Aspect Ratio, Input Mode
   (ARC/eARC/…), Quick Select, Subwoofer Mode (LFE / LFE+Main), Room Size, Volume
   Scale, Volume Limit, Muting Level, a per speaker group crossover frequency (Hz),
-  and a per speaker group size (Large/Small) — each only when the receiver
-  advertises it.
+  and a per speaker group size (Large/Small). On **Video**: HDMI Power‑Off Control,
+  Pass‑Through Source, RC Select, On‑Screen Volume position, Now‑Playing display,
+  4K Signal Format, TV Format (NTSC/PAL). On **Picture**: Noise Reduction. Each
+  only when the receiver advertises it.
 - **Switches**: Main Power, Main Mute, Tone Control, Dynamic EQ, Loudness
   Management, Cinema EQ, Subwoofer, Speaker Virtualizer, Center Spread,
   DTS Neural:X, Low Frequency Containment (LFC), Graphic EQ, Auto Lip Sync,
-  All Zone Stereo.
+  All Zone Stereo, and — on **Video** — HDMI Control (CEC), ARC/eARC, TV Audio
+  Switching, HDMI Power Saving, Smart Menu, HDMI Pass‑Through, On‑Screen Info.
 - **Numbers**: Bass, Treble, Subwoofer Level, LFE, Dialog Control, Center Level
-  Adjust, Audio Delay, Effect Level, Containment Amount, Sleep Timer, and per
-  channel volume trim and speaker distance (m) for each configured speaker.
+  Adjust, Audio Delay, Effect Level, Containment Amount, Sleep Timer, per channel
+  volume trim and speaker distance (m) for each configured speaker, and — on
+  **Picture** — Contrast, Brightness, Saturation, Enhancer.
 - **Graphic EQ** (a sub‑device, when the receiver has one): the on/off, a
   speaker‑selection mode (L/R · Each · All), the channel being adjusted, and one
   slider per band (63 Hz … 16 kHz). Selecting a channel loads that channel's own
