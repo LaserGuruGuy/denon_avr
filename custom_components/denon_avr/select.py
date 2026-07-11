@@ -65,6 +65,9 @@ async def async_setup_entry(
         channels = profile.group_channels(group)
         enabled = (not configured) or any(c in configured for c in channels)
         entities.append(DenonAvrSpeakerSize(coordinator, group, channels, enabled))
+    # Number of subwoofers, when the receiver reports a subwoofer config (SWF).
+    if "SWF" in coordinator.data.speaker_sizes:
+        entities.append(DenonAvrSubwooferCount(coordinator))
     # Manual graphic-EQ selects, on the EQ sub-device, when the receiver has a
     # graphic EQ this profile can drive: the speaker-selection mode and the
     # channel being adjusted (read per-channel via the config API's opt1 index).
@@ -265,24 +268,30 @@ class DenonAvrCrossoverSpeakerSelection(DenonAvrEntity, SelectEntity):
     """
 
     _attr_entity_category = EntityCategory.CONFIG
-    _LABELS = {"IDV": "Individual", "ALL": "All"}
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(
             coordinator, "select_crossover_speaker_selection", sub_device="speakers"
         )
         self._attr_name = "Crossover Speaker Selection"
-        self._attr_options = ["Individual", "All"]
+        # Wire tokens -> labels come from the profile grammar (kept out of this
+        # HA layer like every other enum's tokens).
+        self._labels = coordinator.device.profile.crossover.get(
+            "speaker_selection", {"IDV": "Individual", "ALL": "All"}
+        )
+        self._attr_options = list(self._labels.values())
 
     @property
     def current_option(self) -> str | None:
-        return self._LABELS.get(
+        return self._labels.get(
             self.coordinator.data.values.get("crossover_speaker_selection")
         )
 
     async def async_select_option(self, option: str) -> None:
-        mode = "ALL" if option == "All" else "IDV"
-        await self.coordinator.device.async_set_crossover_mode(mode)
+        for token, label in self._labels.items():
+            if label == option:
+                await self.coordinator.device.async_set_crossover_mode(token)
+                return
 
 
 class DenonAvrCrossoverAll(DenonAvrEntity, SelectEntity):
@@ -355,6 +364,36 @@ class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
         token = self._label_to_token.get(option)
         if token:
             await self.coordinator.device.async_set_speaker_size(self._group, token)
+
+
+class DenonAvrSubwooferCount(DenonAvrEntity, SelectEntity):
+    """Number of subwoofers the receiver is configured for (None / 1 / 2).
+
+    A telnet count group in the SSSPC speaker config (SSSPCSWF NON/1SP/2SP),
+    settable like a speaker size. The range is the standard 0-2 subwoofers of
+    this AVR class; a flagship supporting more would extend the token map.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "select_subwoofer_count", sub_device="speakers")
+        self._attr_name = "Subwoofers"
+        # Wire tokens -> labels from the profile grammar, not hardcoded here.
+        self._labels = coordinator.device.profile.speakers.get(
+            "subwoofer_count", {"NON": "None", "1SP": "1", "2SP": "2"}
+        )
+        self._attr_options = list(self._labels.values())
+        self._label_to_token = {v: k for k, v in self._labels.items()}
+
+    @property
+    def current_option(self) -> str | None:
+        return self._labels.get(self.coordinator.data.speaker_sizes.get("SWF"))
+
+    async def async_select_option(self, option: str) -> None:
+        token = self._label_to_token.get(option)
+        if token:
+            await self.coordinator.device.async_set_speaker_size("SWF", token)
 
 
 class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):

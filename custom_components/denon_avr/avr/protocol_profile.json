@@ -50,6 +50,7 @@
       "unit": "m"
     },
     "crossover": {
+      "speaker_selection": {"IDV": "Individual", "ALL": "All"},
       "doc": [
         "Speaker crossover grammar. Per speaker group the wire value is the",
         "frequency in Hz, zero padded to 'width' digits (e.g. '080' = 80 Hz).",
@@ -165,6 +166,7 @@
     ],
     "absent_token": "NON",
     "double_token": "2SP",
+    "subwoofer_count": {"NON": "None", "1SP": "1", "2SP": "2"},
     "sizes": {
       "doc": "Speaker size wire tokens for the regular (non-count) groups, exposed as a select. LAR=Large, SMA=Small; the absent_token (NON) means no speaker. The count groups (subwoofer, surround back) report presence/count tokens instead and are not size-selectable. Set via 'SSSPC<GROUP> <token>' (verified live: read -> set -> restore).",
       "options": {"LAR": "Large", "SMA": "Small"}
