@@ -26,7 +26,9 @@ class DeviceInfo:
     """Static device identity, discovered from the receiver."""
 
     model_name: str | None = None
-    manufacturer: str = "Denon"
+    # Read from the UPnP description (Denon or Marantz); the HA layer falls back
+    # to "Denon" for display when the description is unavailable.
+    manufacturer: str | None = None
     mac_address: str | None = None
     serial_number: str | None = None
     firmware_version: str | None = None

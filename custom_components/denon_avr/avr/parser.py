@@ -46,6 +46,7 @@ def _format_mac(raw: str | None) -> str | None:
 # firmware and serial go on the device card; the AIOS (HEOS network module)
 # version and build revision are captured for diagnostics.
 _UPNP_TAGS: dict[str, str] = {
+    "manufacturer": "manufacturer",
     "serialNumber": "serial_number",
     "firmware_version": "firmware_version",
     "modelNumber": "network_module_version",
@@ -102,7 +103,9 @@ def parse_device_info(
         return discovery
 
     device = discovery.device
-    device.model_name = (root.findtext("ModelName") or "").strip() or None
+    # Some models report a region-variant marker '*' in the name; strip it, as
+    # the official integration does, so the model reads cleanly.
+    device.model_name = (root.findtext("ModelName") or "").strip().replace("*", "") or None
     device.mac_address = _format_mac(root.findtext("MacAddress"))
     # Classify the receiver type (the device's hardware version) the way the
     # official library does: an AVR-X family device reached over the 8080

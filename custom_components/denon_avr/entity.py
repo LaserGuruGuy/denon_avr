@@ -34,8 +34,13 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
         super().__init__(coordinator)
         self._device = coordinator.device
         device_info = self._device.discovery.device
-        # Prefer the MAC as the stable identifier; fall back to the host.
-        identifier = device_info.mac_address or self._device.host
+        # Prefer the MAC as the stable identifier; then the serial number (also
+        # stable), and only as a last resort the host, which can change.
+        identifier = (
+            device_info.mac_address
+            or device_info.serial_number
+            or self._device.host
+        )
         self._attr_unique_id = f"{identifier}_{key}"
         if sub_device:
             # A logical sub-device linked to the main receiver via via_device.
@@ -43,7 +48,7 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
             self._attr_device_info = DeviceInfo(
                 identifiers={(DOMAIN, f"{identifier}_{sub_device}")},
                 via_device=(DOMAIN, identifier),
-                manufacturer=device_info.manufacturer,
+                manufacturer=device_info.manufacturer or "Denon",
                 model=device_info.model_name,
                 name=f"{device_info.model_name or 'Denon AVR'} {suffix}",
             )
@@ -56,7 +61,7 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
         self._attr_device_info = DeviceInfo(
             connections=connections,
             identifiers={(DOMAIN, identifier)},
-            manufacturer=device_info.manufacturer,
+            manufacturer=device_info.manufacturer or "Denon",
             model=device_info.model_name,
             name=device_info.model_name or "Denon AVR",
             sw_version=device_info.firmware_version,
