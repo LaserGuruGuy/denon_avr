@@ -211,6 +211,45 @@ def parse_device_info(
         if scale:
             discovery.volume = scale
 
+    # Manual graphic-EQ capability: the band frequencies (EQBand), the dB range
+    # (EQAdjustDB) and the speaker-selection options (SpeakerSelection), all read
+    # from the receiver's GraphicEQ block. The per-band values themselves come
+    # from the setup-interface config API, not here. Device specific, so
+    # discovered rather than stored in the profile.
+    geq = root.find(".//GraphicEQ")
+    if geq is not None:
+        info: dict = {}
+        band_list = geq.find("EQBand/List")
+        labels = (
+            [
+                (value.findtext("DispName") or "").strip()
+                for value in band_list.findall("Value")
+            ]
+            if band_list is not None
+            else []
+        )
+        labels = [label for label in labels if label]
+        if labels:
+            info["band_labels"] = labels
+        adjust = geq.find("EQAdjustDB")
+        if adjust is not None:
+            for key, tag in (("min", "MinValue"), ("max", "MaxValue"), ("step", "StepValue")):
+                num = _num(adjust, tag)
+                if num is not None:
+                    info[key] = num
+        selection: dict[str, str] = {}
+        sel_list = geq.find("SpeakerSelection/List")
+        if sel_list is not None:
+            for value in sel_list.findall("Value"):
+                code = (value.findtext("CmdNo") or "").strip()
+                label = (value.findtext("DispName") or "").strip()
+                if code and label:
+                    selection[code] = label
+        if selection:
+            info["speaker_selection"] = selection
+        if info:
+            discovery.graphic_eq = info
+
     # Fallback source list from the InputSource tree (used only when the telnet
     # SSFUN/SSSOD introspection is unavailable). The path leaf is the name.
     for source in root.iter("Source"):

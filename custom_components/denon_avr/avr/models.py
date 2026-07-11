@@ -127,6 +127,11 @@ class Discovery:
     # 'reference' is the absolute value that equals 0.0 dB, 'step' the increment,
     # 'absolute_max' the highest absolute value. Empty when not published.
     volume: dict[str, float] = field(default_factory=dict)
+    # Manual graphic-EQ capability, discovered from the receiver's GraphicEQ
+    # block: {"band_labels": [...], "min"/"max"/"step": dB, "speaker_selection":
+    # {code: label}}. The per-band values live off the setup-interface config
+    # API, not here. Empty when the model has no graphic EQ.
+    graphic_eq: dict = field(default_factory=dict)
 
     def supports(self, function_name: str) -> bool:
         """Return True when the receiver advertises the given capability."""
