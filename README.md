@@ -1,11 +1,14 @@
 # Denon AVR
 
-A local Home Assistant integration for Denon (HEOS generation) AV receivers such
-as the AVR-X3600H. It talks to the receiver directly over the network and adapts
-itself to what the connected receiver advertises — receiver capabilities are not
-hardcoded.
+[![GitHub Release][releases-shield]][releases]
+[![Maintainer][maintainer-shield]][maintainer]
+[![HACS Custom][hacs-shield]][hacs-url]
 
-## Design principles
+This is a HACS custom integration for Denon (HEOS generation) AV receivers such
+as the AVR-X3600H.
+
+
+## Features
 
 - **Own, dependency free client.** Minimal external dependency.
 - **Everything discovered from the device.** Model name, MAC, zones, input
@@ -23,13 +26,16 @@ hardcoded.
 
 ## Installation
 
-### HACS (custom repository)
-1. HACS → Integrations → three dots → Custom repositories.
-2. Add this repository, category "Integration".
-3. Install "Denon AVR" and restart Home Assistant.
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=LaserGuruGuy&repository=denon_avr&category=integration)
+
+1. Install [HACS](https://hacs.xyz/) if you haven't already
+2. HACS → Integrations → three dots → Custom repositories.
+3. Add this repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories), category "Integration".
+4. Install integration "Denon AVR".
+5. Restart Home Assistant.
 
 ### Manual
-Copy the `denon_avr` folder into `<config>/custom_components/` and restart.
+Copy the `denon_avr` folder into `<config>/custom_components/` and restart Home Assistant.
 
 ## Configuration
 
@@ -44,14 +50,14 @@ towards the receiver (server). To let the two communicate through a router or
 VLAN firewall, allow the Home Assistant host to reach the receiver on these
 ports. Nothing needs to be opened towards the internet.
 
-| Port | Protocol | Purpose | Ordinality |
-|------|----------|---------|------------|
-| **23/tcp** | Telnet | Primary control channel and real‑time push: power, volume, mute, source, sound modes and all state updates | **Required** |
-| **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`) | **Required** |
-| **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
-| **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional (auto‑discovery only) |
-| **1256/tcp** | Length‑framed JSON | Not currently used (reserved for a future Audyssey/calibration read path) | Unused |
-| **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources | Optional (degrades gracefully) |
+| Port | Protocol | Purpose                                                                                                                                                                               | Ordinality |
+|------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| **23/tcp** | Telnet | Primary control channel and real‑time push: power, volume, mute, source, sound modes and all state updates                                                                            | **Required** |
+| **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`)                                                                                                          | **Required** |
+| **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number                                                                                                          | Optional (degrades gracefully) |
+| **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN                                                                                                                                        | Optional (auto‑discovery only) |
+| **1256/tcp** | Length‑framed JSON | Not currently used (reserved for future use)                                                                                                                                          | Unused |
+| **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources                                                                                                      | Optional (degrades gracefully) |
 | **10443/tcp** | HTTPS (setup config) | Graphic‑EQ per‑band values, the Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) and Amp Assign — settings with no telnet token, read/write (non‑disruptive; self‑signed cert) | Optional (graphic EQ + video + amp assign) |
 
 Notes:
@@ -64,7 +70,7 @@ Notes:
 
 ## What you get
 
-Settings are organised into **sub‑devices that mirror the receiver's own setup
+Settings are organized into **sub‑devices that mirror the receiver's own setup
 menus**, so a large control set stays tidy instead of crowding one page. The main
 receiver device keeps the day‑to‑day controls (player, power, source, sound mode,
 quick select, input mode, front‑display dimmer); the **Audio**, **Video**,
@@ -111,7 +117,7 @@ the sub‑device its setting belongs to.
   slider per band (63 Hz … 16 kHz). Selecting a channel loads that channel's own
   curve; the sliders **stage** it and **Apply** writes the whole band block to
   the receiver at once. **Copy Curve** seeds the manual EQ from the reference
-  curve, and **Default** resets the channel to flat. See the equaliser card
+  curve, and **Default** resets the channel to flat. See the equalizer card
   recipe below.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
   mode info, sound mode, and volume (dB).
@@ -127,7 +133,7 @@ is read over telnet; the selectable frequencies are the fixed Denon
 crossover grid (a protocol constant, verified live), the same as every other
 enum's values.
 
-### Graphic equaliser card
+### Graphic equalizer card
 
 The graphic EQ is exposed as plain entities (one number per band, plus the
 speaker‑selection and channel selects), so any card can drive it. For a proper
@@ -168,26 +174,30 @@ to match yours.
 
 - Some parameters only apply to certain signals or sound modes (for example
   Dynamic Compression needs a Dolby/DTS bitstream, Video Mode needs an active
-  video signal). The receiver rejects changes that do not apply to the current
-  context; this is expected Denon behaviour, not an integration bug.
+  video signal, Equalizer settings can not be altered when MultEQ is not Off).
+  The receiver rejects changes that do not apply to the current
+  context; this is expected Denon behavior, not an integration bug.
 - Speaker distances and crossovers are supported over telnet (read/write). Other
   advanced one time setup settings that the receiver exposes only through its web
   UI's configuration API (full speaker layout, HDMI Control/CEC, per input
   assignment, some zone defaults) are not implemented.
 - Room correction calibration remains a job for the receiver's own setup tooling.
 
-## Tested with
+## Testing
 
-Protocol behaviour was verified live against the following. Other Denon/Marantz
-HEOS generation receivers should work as the integration adapts to whatever the
-device reports, but only this combination has been exercised end to end.
+Protocol behavior was verified live against the following.
 
-| Component | Version |
-|-----------|---------|
-| Receiver | Denon AVR-X3600H (hardware generation `avr-x-2016`) |
-| Receiver firmware | 3.88.614 |
-| Home Assistant Core | 2026.7.0 |
-| Python | 3.13 |
+| Component                    | Version |
+|------------------------------|---------|
+| Receiver                     | Denon AVR-X3600H |
+| Receiver hardware generation | `avr-x-2016` |
+| Receiver firmware            | 3.88.614 |
+| Home Assistant Core          | 2026.7.0 |
+| Python                       | 3.13 |
+
+Other Denon/Marantz HEOS generation receivers should work as the integration
+adapts to whatever the device reports, but only this combination has been
+exercised end to end.
 
 ## Credits
 
@@ -215,7 +225,7 @@ not imply any affiliation or endorsement.
 - **Dolby**, **Dolby Audio**, **Dolby Surround**, and **Dolby Atmos** are
   trademarks of Dolby Laboratories, Inc. — <https://www.dolby.com>
 - **DTS**, **DTS Neural:X**, and **DTS Virtual:X** are trademarks of DTS, Inc.,
-  an Xperi company — <https://dts.com>
+  a Xperi company — <https://dts.com>
 - **HDMI**, the HDMI logo, and **High‑Definition Multimedia Interface** are
   trademarks of HDMI Licensing Administrator, Inc. — <https://www.hdmi.org>
 - **Home Assistant** and the Home Assistant logo are trademarks of the Open Home
@@ -224,3 +234,10 @@ not imply any affiliation or endorsement.
 
 Any other product or company names mentioned are the trademarks of their
 respective owners.
+
+[releases-shield]: https://img.shields.io/github/v/release/LaserGuruGuy/denon_avr.svg?style=for-the-badge
+[releases]: https://github.com/LaserGuruGuy/denon_avr/releases/
+[maintainer-shield]: https://img.shields.io/badge/maintainer-LaserGuruGuy-blue.svg?style=for-the-badge
+[maintainer]: https://github.com/LaserGuruGuy
+[hacs-shield]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge
+[hacs-url]: https://github.com/LaserGuruGuy/denon_avr
