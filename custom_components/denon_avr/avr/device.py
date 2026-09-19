@@ -118,6 +118,13 @@ class DenonAvrDevice:
         return self._host
 
     @property
+    def identifier(self) -> str:
+        """Stable device identifier: MAC, else serial number, else host."""
+
+        device = self._discovery.device
+        return device.mac_address or device.serial_number or self._host
+
+    @property
     def discovery(self) -> Discovery:
         return self._discovery
 

@@ -11,10 +11,11 @@ import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from .avr.profile import load_profile
-from .const import CONF_HOST, PLATFORMS
+from .const import CONF_HOST, DOMAIN, PLATFORMS
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,9 +50,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> 
         raise
 
     entry.runtime_data = coordinator
+    # Register the main receiver device up front so the logical sub-devices
+    # (Audio/Video/Speakers/…) can link to it by id via `via_device_id`; the old
+    # `via_device` identifier tuple is deprecated (removed in HA 2027.8.0).
+    _register_main_device(hass, entry, coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _apply_channel_defaults(hass, entry, coordinator)
     return True
+
+
+def _register_main_device(
+    hass: HomeAssistant,
+    entry: DenonAvrConfigEntry,
+    coordinator: DenonAvrCoordinator,
+) -> None:
+    """Create/refresh the main receiver device and record its registry id."""
+
+    device = coordinator.device.discovery.device
+    connections = set()
+    if device.mac_address:
+        connections.add((CONNECTION_NETWORK_MAC, device.mac_address))
+    entry_device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        connections=connections,
+        identifiers={(DOMAIN, coordinator.device.identifier)},
+        manufacturer=device.manufacturer or "Denon",
+        model=device.model_name,
+        name=device.model_name or "Denon AVR",
+        sw_version=device.firmware_version,
+        hw_version=device.hardware_type,
+        serial_number=device.serial_number,
+        configuration_url=f"https://{coordinator.device.host}:10443/",
+    )
+    coordinator.main_device_id = entry_device.id
 
 
 def _apply_channel_defaults(

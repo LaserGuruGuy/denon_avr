@@ -50,15 +50,20 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
         )
         self._attr_unique_id = f"{identifier}_{key}"
         if sub_device:
-            # A logical sub-device linked to the main receiver via via_device.
+            # A logical sub-device linked to the main receiver by its registry id
+            # (via_device_id); the deprecated via_device identifier tuple is
+            # removed in HA 2027.8.0. The main device is registered up front in
+            # __init__ so its id is available here.
             suffix = SUB_DEVICE_NAMES.get(sub_device, sub_device)
-            self._attr_device_info = DeviceInfo(
+            info = DeviceInfo(
                 identifiers={(DOMAIN, f"{identifier}_{sub_device}")},
-                via_device=(DOMAIN, identifier),
                 manufacturer=device_info.manufacturer or "Denon",
                 model=device_info.model_name,
                 name=f"{device_info.model_name or 'Denon AVR'} {suffix}",
             )
+            if coordinator.main_device_id:
+                info["via_device_id"] = coordinator.main_device_id
+            self._attr_device_info = info
             return
         # Expose the MAC as a device connection (the standard HA convention for
         # network devices) so the device registry can de-duplicate it.

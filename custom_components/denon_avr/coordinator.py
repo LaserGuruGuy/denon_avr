@@ -42,6 +42,9 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
         session = async_get_clientsession(hass)
         self.device = DenonAvrDevice(session, host)
         self.device.register_update_callback(self._handle_device_update)
+        # Registry id of the main receiver device, set once at setup so the
+        # sub-devices can link to it via `via_device_id` (HA 2026.8+).
+        self.main_device_id: str | None = None
 
     async def async_setup(self) -> None:
         """Discover the receiver and start the telnet transport.
