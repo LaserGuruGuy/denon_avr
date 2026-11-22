@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from .helpers import control_sub_device, has_subwoofer_setup
+from .helpers import control_sub_device, has_speaker_layout, has_subwoofer_setup
 
 NUMBER_KINDS = frozenset({"level", "signed_int", "minutes", "integer", "centered"})
 
@@ -85,6 +85,11 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
 
     def group_enabled(group: str) -> bool:
         return (not configured) or any(c in configured for c in profile.group_channels(group))
+
+    # button (staged speaker layout) ---------------------------------------------
+    if has_speaker_layout(device) and device.speaker_config.collection("speaker_layout_assign"):
+        add(EntityEntry("button", "speaker_layout_apply", "button_speaker_layout_apply", "speakers"))
+        add(EntityEntry("button", "speaker_layout_discard", "button_speaker_layout_discard", "speakers"))
 
     # binary_sensor ------------------------------------------------------------
     add(EntityEntry("binary_sensor", "connectivity", "binary_sensor_connectivity"))
@@ -161,6 +166,9 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
         if items or f"select_current_{cid}" in known_keys:
             add(EntityEntry("select", "current_input_setting", f"select_current_{cid}", "video",
                             params={"collection": cid}))
+    # Speaker layout assign mode (Web Control): staged select + Apply / Discard.
+    if has_speaker_layout(device) and device.speaker_config.collection("speaker_layout_assign"):
+        add(EntityEntry("select", "speaker_layout_assign", "select_speaker_layout_assign", "speakers"))
     for attr, sub in (("video_config", "video"), ("speaker_config", "speakers")):
         section = getattr(device, attr)
         if not section.supported:

@@ -273,6 +273,35 @@
             "name": "Slot"
           }
         }
+      },
+      "speaker_layout_assign": {
+        "name": "Speaker layout (staged)",
+        "state": {
+          "9_1ch": "9.1ch",
+          "7_1ch_zone2": "7.1ch + ZONE2",
+          "7_1ch_zone3": "7.1ch + ZONE3",
+          "7_1ch_zone2_3_mono": "7.1ch + ZONE2/3-MONO",
+          "7_1ch_front_b": "7.1ch + Front B",
+          "7_1ch_bi_amp": "7.1ch (Bi-Amp)",
+          "11_1ch": "11.1ch",
+          "5_1ch_zone2_3": "5.1ch + ZONE2/3",
+          "5_1ch_bi_amp_zone2": "5.1ch (Bi-Amp) + ZONE2",
+          "5_1ch_full_bi_amp": "5.1ch Full Bi-Amp",
+          "custom": "Custom",
+          "preamplifier": "Pre-amplifier",
+          "5_1ch_front_lcr_bi_amp": "5.1ch (Front LCR Bi-Amp)"
+        },
+        "state_attributes": {
+          "pending": {
+            "name": "Change pending"
+          },
+          "receiver_mode": {
+            "name": "Mode on the receiver"
+          },
+          "remeasure_room_correction": {
+            "name": "Re-measure room correction"
+          }
+        }
       }
     },
     "switch": {
@@ -396,6 +425,12 @@
       },
       "eq_default": {
         "name": "Default"
+      },
+      "speaker_layout_apply": {
+        "name": "Apply speaker layout"
+      },
+      "speaker_layout_discard": {
+        "name": "Discard speaker layout change"
       }
     }
   },
@@ -422,6 +457,12 @@
   "exceptions": {
     "input_option_refused": {
       "message": "The receiver does not allow {option} for {input} right now."
+    },
+    "speaker_layout_refused": {
+      "message": "The receiver does not allow speaker layout {option}."
+    },
+    "speaker_layout_not_applied": {
+      "message": "The receiver did not accept the speaker layout change."
     }
   }
 }

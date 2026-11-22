@@ -12,6 +12,7 @@ calls are best effort and no-ops when the receiver has no such section.
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+import asyncio
 from collections.abc import Callable
 from typing import Any
 
@@ -242,14 +243,19 @@ class WebConfigSectionController:
         spec = self._collection_spec(collection_id) or {}
         return spec.get("option_keys", {}).get(option, f"option_{option}")
 
-    async def async_set_item(self, collection_id: str, slot: str, option: str) -> bool:
+    async def async_set_item(
+        self, collection_id: str, slot: str, option: str, *, staged_apply: bool = False
+    ) -> bool:
         """Write one item's option. Refused (False, nothing sent) unless the receiver
-        reports the item as settable and allows that option for it."""
+        reports the item as settable and allows that option for it. Collections
+        declared ``writable: "staged"`` (speaker layout) are only written by an
+        explicit, confirmed apply (``staged_apply=True``)."""
 
         spec = self._collection_spec(collection_id)
         item = self._collections.get(collection_id, {}).get(slot)
-        if spec is None or not spec.get("writable", True):
-            return False        # e.g. speaker layout: read-only until a staged apply exists
+        writable = spec.get("writable", True) if spec is not None else False
+        if spec is None or writable is False or (writable == "staged" and not staged_apply):
+            return False
         if item is None or not item.availability.settable or option not in item.options:
             return False
         ok = await self._webconfig.async_set(
@@ -269,3 +275,57 @@ class WebConfigSectionController:
         (the caller then falls back to the profile's protocol constant)."""
 
         return self._value_lists.get(list_id)
+
+
+class StagedChanges:
+    """Edits to a staged collection (speaker layout), kept locally until applied.
+
+    Nothing reaches the receiver until ``async_apply``; the caller (the UI) asks
+    the user to confirm first. Each staged option is checked against what the
+    receiver allows for that item when it is staged, and again when applied.
+    """
+
+    def __init__(self, section: WebConfigSectionController, collection_id: str) -> None:
+        self._section = section
+        self._collection = collection_id
+        self._pending: dict[str, str] = {}
+
+    @property
+    def pending(self) -> dict[str, str]:
+        return dict(self._pending)
+
+    def stage(self, slot: str, option: str) -> bool:
+        item = self._section.collection(self._collection).get(slot)
+        if item is None or not item.availability.settable or option not in item.options:
+            return False
+        if option == item.value:
+            self._pending.pop(slot, None)
+        else:
+            self._pending[slot] = option
+        return True
+
+    def discard(self) -> None:
+        self._pending.clear()
+
+    async def async_apply(self) -> dict[str, bool]:
+        """Write every staged item, then verify it: the receiver rebuilds the
+        layout after a change (its own UI re-reads after about 2 s), so wait, re-read
+        and count an item as accepted only when the receiver now reports the value.
+        Returns slot -> accepted."""
+
+        pending = dict(self._pending)
+        self._pending.clear()
+        sent = {}
+        for slot, option in pending.items():
+            sent[slot] = await self._section.async_set_item(
+                self._collection, slot, option, staged_apply=True
+            )
+        if any(sent.values()):
+            spec = self._section._collection_spec(self._collection) or {}
+            await asyncio.sleep(float(spec.get("apply_settle_seconds", 2.0)))
+            await self._section.refresh()
+        items = self._section.collection(self._collection)
+        return {
+            slot: sent[slot] and items.get(slot) is not None and items[slot].value == option
+            for slot, option in pending.items()
+        }

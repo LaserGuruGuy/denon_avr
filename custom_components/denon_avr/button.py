@@ -10,9 +10,11 @@ from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .const import DOMAIN
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity, setup_catalogue_platform
 
@@ -29,6 +31,8 @@ async def async_setup_entry(
         "eq_apply": lambda e: DenonAvrEqApply(coordinator),
         "eq_curve_copy": lambda e: DenonAvrEqCurveCopy(coordinator),
         "eq_set_defaults": lambda e: DenonAvrEqSetDefaults(coordinator),
+        "speaker_layout_apply": lambda e: DenonAvrSpeakerLayoutApply(coordinator),
+        "speaker_layout_discard": lambda e: DenonAvrSpeakerLayoutDiscard(coordinator),
     }
     setup_catalogue_platform(coordinator, "button", factories, async_add_entities)
 
@@ -86,3 +90,49 @@ class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.device.graphic_eq.set_defaults()
+
+
+class DenonAvrSpeakerLayoutApply(DenonAvrEntity, ButtonEntity):
+    """Write the staged speaker layout to the receiver (the confirming step).
+
+    Changing the speaker layout re-assigns the amplifier channels; after it the
+    receiver's room correction (Audyssey / Dirac) may need a new measurement.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _web_backed = True
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "button_speaker_layout_apply", sub_device="speakers")
+        self._attr_translation_key = "speaker_layout_apply"
+
+    @property
+    def available(self) -> bool:
+        return super().available and bool(self.coordinator.device.speaker_layout.pending)
+
+    async def async_press(self) -> None:
+        try:
+            results = await self.coordinator.device.speaker_layout.async_apply()
+        finally:
+            self.coordinator.async_update_listeners()
+        if not all(results.values()):
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="speaker_layout_not_applied")
+
+
+class DenonAvrSpeakerLayoutDiscard(DenonAvrEntity, ButtonEntity):
+    """Drop the staged speaker layout change; nothing is sent to the receiver."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _web_backed = True
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "button_speaker_layout_discard", sub_device="speakers")
+        self._attr_translation_key = "speaker_layout_discard"
+
+    @property
+    def available(self) -> bool:
+        return super().available and bool(self.coordinator.device.speaker_layout.pending)
+
+    async def async_press(self) -> None:
+        self.coordinator.device.speaker_layout.discard()
+        self.coordinator.async_update_listeners()

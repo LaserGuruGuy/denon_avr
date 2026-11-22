@@ -45,3 +45,16 @@ def test_every_sub_device_has_a_translated_name(lang):
     names = next(n.value for n in ast.walk(tree) if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "SUB_DEVICE_NAMES")
     subs = {k.value for k in names.keys}
     assert subs <= set(LANGS[lang]["device"]), subs - set(LANGS[lang]["device"])
+
+
+def test_languages_have_the_same_keys():
+    def keys(node, prefix=""):
+        if isinstance(node, dict):
+            out = set()
+            for k, v in node.items():
+                out |= keys(v, f"{prefix}.{k}")
+            return out
+        return {prefix}
+    reference = keys(LANGS["en"])
+    for lang, data in LANGS.items():
+        assert keys(data) == reference, (lang, sorted(keys(data) ^ reference)[:10])

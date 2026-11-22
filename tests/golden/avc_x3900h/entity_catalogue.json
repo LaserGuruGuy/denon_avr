@@ -1,6 +1,20 @@
 [
  {
   "enabled": true,
+  "key": "button_speaker_layout_apply",
+  "kind": "speaker_layout_apply",
+  "platform": "button",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "button_speaker_layout_discard",
+  "kind": "speaker_layout_discard",
+  "platform": "button",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
   "key": "binary_sensor_connectivity",
   "kind": "connectivity",
   "platform": "binary_sensor",
@@ -1048,6 +1062,13 @@
   "kind": "current_input_setting",
   "platform": "select",
   "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_speaker_layout_assign",
+  "kind": "speaker_layout_assign",
+  "platform": "select",
+  "sub_device": "speakers"
  },
  {
   "enabled": true,

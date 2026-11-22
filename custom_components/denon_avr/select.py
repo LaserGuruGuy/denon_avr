@@ -51,6 +51,7 @@ async def async_setup_entry(
         "subwoofer_count": lambda e: DenonAvrSubwooferCount(coordinator),
         "eq_speaker_selection": lambda e: DenonAvrEqSpeakerSelection(coordinator),
         "eq_channel": lambda e: DenonAvrEqChannel(coordinator),
+        "speaker_layout_assign": lambda e: DenonAvrSpeakerLayoutAssign(coordinator),
         "input_setting": lambda e: DenonAvrInputSetting(coordinator, e.params["collection"], e.params["slot"]),
         "current_input_setting": lambda e: DenonAvrCurrentInputSetting(coordinator, e.params["collection"]),
         "web_select": lambda e: DenonAvrVideoSelect(
@@ -643,3 +644,76 @@ class DenonAvrCurrentInputSetting(_CollectionSelect):
     def extra_state_attributes(self) -> dict[str, object]:
         item = self._item()
         return {"input": item.name if item is not None else None, "slot": item.slot if item is not None else None}
+
+
+class DenonAvrSpeakerLayoutAssign(DenonAvrEntity, SelectEntity):
+    """Speaker layout assign mode (Web Control), STAGED: choosing an option only
+    prepares it; nothing is written until "Apply speaker layout" is pressed.
+
+    The options are the modes this receiver allows (its own list), shown with
+    the translated amplifier-mode keys. While a change is staged the select
+    shows the staged mode and the ``pending`` attribute says so.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _web_backed = True
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "select_speaker_layout_assign", sub_device="speakers")
+        self._attr_translation_key = "speaker_layout_assign"
+        self._keys = coordinator.device.profile.grammar.get("speakers_web", {}).get("amp_modes", {}).get("keys", {})
+
+    def _key(self, mode: str) -> str:
+        key = self._keys.get(mode, f"mode_{mode}")
+        # Two ids with the same key in this receiver's list (e.g. 12 and 18 both
+        # "11_1ch"): fall back to the raw id so every option stays distinct.
+        item = self._item()
+        if item is not None and sum(1 for m in item.options if self._keys.get(m) == key) > 1:
+            return f"mode_{mode}"
+        return key
+
+    def _item(self):
+        return self.coordinator.device.speaker_config.collection("speaker_layout_assign").get("1")
+
+    @property
+    def available(self) -> bool:
+        item = self._item()
+        return super().available and item is not None and item.availability.settable
+
+    @property
+    def options(self) -> list[str]:
+        item = self._item()
+        return [self._key(m) for m in item.options] if item is not None else []
+
+    @property
+    def current_option(self) -> str | None:
+        item = self._item()
+        if item is None:
+            return None
+        mode = self.coordinator.device.speaker_layout.pending.get("1", item.value)
+        key = self._key(mode)
+        return key if key in self.options else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        item = self._item()
+        pending = self.coordinator.device.speaker_layout.pending.get("1")
+        return {
+            "pending": pending is not None,
+            "receiver_mode": self._key(item.value) if item is not None and item.value else None,
+            # After a layout change the room correction (Audyssey / Dirac) must be
+            # measured again (owner's manual).
+            "remeasure_room_correction": True,
+        }
+
+    async def async_select_option(self, option: str) -> None:
+        item = self._item()
+        mode = next((m for m in (item.options if item else ()) if self._key(m) == option), None)
+        if mode is None or not self.coordinator.device.speaker_layout.stage("1", mode):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="speaker_layout_refused",
+                translation_placeholders={"option": option},
+            )
+        # Also the Apply / Discard buttons, whose availability follows the pending change.
+        self.coordinator.async_update_listeners()

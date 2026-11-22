@@ -22,7 +22,7 @@ from .services.discovery import DiscoveryService
 from .services.graphic_eq import GraphicEqController
 from .services.runtime import BackgroundTasks, UpdateNotifier
 from .services.sync import StateSync
-from .services.webconfig_doc import WebConfigSectionController
+from .services.webconfig_doc import StagedChanges, WebConfigSectionController
 from .transport import (
     GoformClient,
     HeosClient,
@@ -60,6 +60,7 @@ class DenonAvrDevice:
         )
         self._video_config = WebConfigSectionController(self._webconfig, grammar.get("video_web", {}), notify)
         self._speaker_config = WebConfigSectionController(self._webconfig, grammar.get("speakers_web", {}), notify)
+        self._speaker_layout = StagedChanges(self._speaker_config, "speaker_layout_assign")
 
         # The persistent telnet connection is the CommandSink. Its callbacks are
         # bound late because the services that handle them need the sink first.
@@ -186,6 +187,13 @@ class DenonAvrDevice:
         if endpoint is None:
             return None
         return {"scheme": endpoint.scheme, "port": endpoint.port, "source": endpoint.source}
+
+    @property
+    def speaker_layout(self) -> StagedChanges:
+        """Staged edits of the Web Control speaker layout assign mode; nothing is
+        written until ``async_apply`` (after the user confirmed)."""
+
+        return self._speaker_layout
 
     @property
     def graphic_eq(self) -> GraphicEqController:

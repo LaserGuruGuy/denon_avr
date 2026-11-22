@@ -164,7 +164,12 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
     sub-device names via HA device translations, graphic EQ gated on the receiver's audio menu
     availability (X3600H: grayed). Open: issues/exceptions sections, translated option keys for
     Full Range/None, crossover/size names via placeholders, current input from globals type 7.
-  - [ ] 5f speaker layout staged + Apply (code and tests only, no live write)
+  - [~] 5f (code done, review pending) speaker layout assign mode staged: select only stages, Apply /
+    Discard buttons, library refuses direct writes (writable: staged), write shape from the bundle
+    (Config element with the position index, also for the assign mode item 1 - from the bundle,
+    not yet live), apply verifies by re-reading after 2 s. No live write done. Open: assign ids
+    5/8/9/10/11 have no key yet (mode_<id>); Custom (16) needs CustomSettings (type 2) - not modelled;
+    keys may differ per AmpType (bundle labels switch on AmpType) -> verify against the manual/live.
   - [ ] 5g diagnostics counters (triggers, notifies, polls, last web read per document)
 - [ ] step 6: telnet parity (SPPR select, PSSP:, VSSCH OFF, Z2 sub-commands); 7 live verification; 8 docs, 1.2.0; 9 push
 - later (from the step-2 review): HA-layer pyflakes warnings (select.py:225, const.py:12, sensor.py:19);

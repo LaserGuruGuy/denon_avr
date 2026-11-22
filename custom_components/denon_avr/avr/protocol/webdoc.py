@@ -241,7 +241,7 @@ def build_collection_payload(spec: dict[str, Any], slot: str, wire: str) -> str:
     ``type`` selects the document). Values and the key are XML-escaped.
     """
 
-    tag = spec["value_field"]
+    tag = spec.get("write_field", spec["value_field"])
     key_attr = spec.get("key_attr", "index")
     attr = escape(slot, {'"': "&quot;"})
     return f'<{tag} {key_attr}="{attr}">{escape(wire)}</{tag}>'

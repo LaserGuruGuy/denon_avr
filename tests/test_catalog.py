@@ -109,7 +109,7 @@ async def test_inputs_sub_device(make_device):
     assert all(e.enabled_default for e in inputs)                               # display 2/3: shown
     current = {e.key for e in entries if e.kind == "current_input_setting"}
     assert current == {"select_current_input_signal_format", "select_current_input_hdcp"}
-    assert not any("speaker_layout" in e.key for e in entries)                  # read-only collections: no select
+    assert not any(e.key.startswith("select_input_") and "speaker_layout" in e.key for e in entries)  # staged: no direct per-item select
     _c2, _d2, legacy = await _catalogue(make_device, "avr_x3600h")
     assert not [e for e in legacy if e.sub_device == "inputs"]                  # legacy: no per-input documents
 
@@ -133,3 +133,11 @@ async def test_upgrade_of_the_live_x3900h_registry(make_device):
         "number_channel_trim_SBL", "number_channel_trim_SBR",
         "number_channel_distance_SBL", "number_channel_distance_SBR", "select_crossover_SBK",
     }
+
+
+async def test_staged_speaker_layout_entities(make_device):
+    _catalog, _dev, entries = await _catalogue(make_device, "avc_x3900h")
+    keys = {e.key for e in entries}
+    assert {"select_speaker_layout_assign", "button_speaker_layout_apply", "button_speaker_layout_discard"} <= keys
+    _c, _d, legacy = await _catalogue(make_device, "avr_x3600h")
+    assert not {e.key for e in legacy} & {"select_speaker_layout_assign", "button_speaker_layout_apply"}

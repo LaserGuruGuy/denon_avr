@@ -71,7 +71,7 @@ async def test_legacy_receiver_has_no_per_input_collections(make_device):
     assert dev.video_config.collection("input_hdcp") == {}
 
 
-async def test_speaker_layout_is_read_only(make_device):
+async def test_speaker_layout_is_not_written_directly(make_device):
     dev, session, _telnet, _fx = make_device("avc_x3900h")
     await dev.async_discover()
     assign = dev.speaker_config.collection("speaker_layout_assign")
@@ -88,3 +88,50 @@ def test_value_lists_come_from_the_receiver():
     new = parse_value_list(spec, parse_xml(conftest.FixtureSet("avc_x3900h").file("ajax_speakers_6.xml")))
     old = parse_value_list(spec, parse_xml(conftest.FixtureSet("avr_x3600h").file("ajax_speakers_6.xml")))
     assert new[:4] == ("0", "40", "60", "70") and "70" not in old and "0" not in old
+
+
+async def test_speaker_layout_is_staged_and_applied_only_explicitly(make_device, monkeypatch):
+    import avr.services.webconfig_doc as wd
+
+    async def no_wait(_s):
+        return None
+
+    monkeypatch.setattr(wd.asyncio, "sleep", no_wait)
+    dev, session, _telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    layout = dev.speaker_layout
+    before = len(session.requests)
+    assert layout.stage("1", "17") is True                     # Preamplifier, allowed by the receiver
+    assert layout.stage("1", "99") is False                    # not in the receiver's list
+    assert layout.pending == {"1": "17"}
+    assert not [r for r in session.requests[before:] if "set_config" in r["url"]]   # nothing sent yet
+    assert await dev.speaker_config.async_set_item("speaker_layout_assign", "1", "17") is False  # no direct write
+    layout.discard()
+    assert layout.pending == {}
+    layout.stage("1", "17")
+    results = await layout.async_apply()
+    writes = [r["url"] for r in session.requests[before:] if "set_config" in r["url"]]
+    # The recorded receiver document does not change, so the apply is NOT confirmed:
+    # success is only reported when the receiver shows the new mode after the write.
+    assert results == {"1": False}
+    assert writes == ["http://192.0.2.10:11080/ajax/speakers/set_config?type=15&data=%3CConfig%20index%3D%221%22%3E17%3C%2FConfig%3E"]
+    assert layout.pending == {}
+
+
+async def test_speaker_layout_apply_confirmed_when_the_receiver_shows_it(make_device, monkeypatch):
+    import avr.services.webconfig_doc as wd
+
+    async def no_wait(_s):
+        return None
+
+    monkeypatch.setattr(wd.asyncio, "sleep", no_wait)
+    dev, session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    dev.speaker_layout.stage("1", "17")
+    original = type(fx).file
+    changed = original(fx, "ajax_speakers_15.xml").replace(
+        '<Item index="1" display="3"><Value>6</Value>', '<Item index="1" display="3"><Value>17</Value>', 1
+    )
+    monkeypatch.setattr(type(fx), "file", lambda self, n: changed if n == "ajax_speakers_15.xml" else original(self, n))
+    assert await dev.speaker_layout.async_apply() == {"1": True}
+    assert dev.speaker_config.collection("speaker_layout_assign")["1"].value == "17"
