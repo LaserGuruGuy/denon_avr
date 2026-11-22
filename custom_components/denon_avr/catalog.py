@@ -63,8 +63,15 @@ def channel_codes(device) -> list[str]:
     return codes
 
 
-def build(device) -> list[EntityEntry]:
-    """Every entity for this receiver, in a stable order (platform by platform)."""
+def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[EntityEntry]:
+    """Every entity for this receiver, in a stable order (platform by platform).
+
+    ``known_keys`` are the keys Home Assistant already has for this receiver
+    (its entity registry). An entity the receiver does not mention right now
+    (silence is not absence, e.g. a web menu hidden in the current setup) but that
+    exists in the registry is still created, so it stays (unavailable) instead of
+    disappearing after a restart.
+    """
 
     profile = device.profile
     discovery = device.discovery
@@ -98,8 +105,9 @@ def build(device) -> list[EntityEntry]:
             add(EntityEntry("number", "control", f"number_{spec.id}", control_sub_device(spec), params={"spec": spec}))
     for code in channel_codes(device):
         enabled = (not configured) or code in configured
-        add(EntityEntry("number", "channel_trim", f"number_channel_trim_{code}", "speakers", enabled, {"code": code}))
-        add(EntityEntry("number", "channel_distance", f"number_channel_distance_{code}", "speakers", enabled, {"code": code}))
+        params = {"code": code, "channels": [code]}
+        add(EntityEntry("number", "channel_trim", f"number_channel_trim_{code}", "speakers", enabled, params))
+        add(EntityEntry("number", "channel_distance", f"number_channel_distance_{code}", "speakers", enabled, params))
     if device.graphic_eq.supported:
         grammar = device.graphic_eq.grammar
         from .avr import eq_band_tag   # local: keeps the module import surface small
@@ -114,19 +122,21 @@ def build(device) -> list[EntityEntry]:
     if discovery.sound_mode_genres:
         add(EntityEntry("select", "sound_mode_group", "select_sound_mode_group"))
         add(EntityEntry("select", "sound_mode", "select_sound_mode"))
-    if discovery.quick_select_names:
+    if discovery.quick_select_names or "select_quick_select" in known_keys:
         add(EntityEntry("select", "quick_select", "select_quick_select"))
-    for group in sorted(state.crossovers):
+    crossover_groups = set(state.crossovers) | _known_groups(known_keys, "select_crossover_", profile)
+    for group in sorted(crossover_groups):
         add(EntityEntry("select", "crossover", f"select_crossover_{group}", "speakers", group_enabled(group),
                         {"group": group, "channels": profile.group_channels(group)}))
     if state.crossovers:
         add(EntityEntry("select", "crossover_speaker_selection", "select_crossover_speaker_selection", "speakers"))
         add(EntityEntry("select", "crossover_all", "select_crossover_all", "speakers"))
     size_groups = profile.speakers.get("groups", {})
-    for group in sorted(g for g in state.speaker_sizes if g in size_groups):
+    known_sizes = _known_groups(known_keys, "select_speaker_size_", profile)
+    for group in sorted(g for g in set(state.speaker_sizes) | known_sizes if g in size_groups):
         add(EntityEntry("select", "speaker_size", f"select_speaker_size_{group}", "speakers", group_enabled(group),
                         {"group": group, "channels": profile.group_channels(group)}))
-    if "SWF" in state.speaker_sizes:
+    if "SWF" in state.speaker_sizes or "select_subwoofer_count" in known_keys:
         add(EntityEntry("select", "subwoofer_count", "select_subwoofer_count", "speakers"))
     if device.graphic_eq.supported:
         add(EntityEntry("select", "eq_speaker_selection", "select_eq_speaker_selection", "eq"))
@@ -136,7 +146,8 @@ def build(device) -> list[EntityEntry]:
         if not section.supported:
             continue
         for control in section.controls():
-            if control.get("kind") == "select" and section.present(control["id"]):
+            known = f"select_{control['id']}" in known_keys
+            if control.get("kind") == "select" and (section.present(control["id"]) or known):
                 add(EntityEntry("select", "web_select", f"select_{control['id']}", sub,
                                 params={"control": control, "controller_attr": attr}))
 
@@ -149,7 +160,7 @@ def build(device) -> list[EntityEntry]:
         # Amplifier assign mode incl. "pre-amplifier only" (read-only, diagnostic).
         has_amp_select = device.speaker_config.present("amp_assign")
         add(EntityEntry("sensor", "amp_mode", "sensor_amp_mode", "speakers", not has_amp_select))
-        if has_subwoofer_setup(device):
+        if has_subwoofer_setup(device) or "sensor_subwoofer_mode" in known_keys:
             # Web Control subwoofer setup; unavailable while the receiver hides it.
             add(EntityEntry("sensor", "subwoofer_setup", "sensor_subwoofer_mode", "speakers", params={"which": "mode"}))
             add(EntityEntry("sensor", "subwoofer_setup", "sensor_subwoofer_layout", "speakers", params={"which": "layout"}))
@@ -161,10 +172,29 @@ def build(device) -> list[EntityEntry]:
     video = device.video_config
     if video.supported:
         for control in video.controls():
-            if control.get("kind") == "switch" and video.present(control["id"]):
+            known = f"switch_{control['id']}" in known_keys
+            if control.get("kind") == "switch" and (video.present(control["id"]) or known):
                 add(EntityEntry("switch", "web_switch", f"switch_{control['id']}", "video", params={"control": control}))
     return entries
 
 
-def for_platform(device, platform: str) -> list[EntityEntry]:
-    return [entry for entry in build(device) if entry.platform == platform]
+def for_platform(
+    device, platform: str, known_keys: frozenset[str] | set[str] = frozenset()
+) -> list[EntityEntry]:
+    return [entry for entry in build(device, known_keys) if entry.platform == platform]
+
+
+def _known_groups(known_keys, prefix: str, profile) -> set[str]:
+    """Speaker groups that have a registry entry with this key prefix."""
+
+    groups = set(profile.speakers.get("groups", {})) | set(profile.speakers.get("count_groups", {}))
+    found = {key[len(prefix):] for key in known_keys if key.startswith(prefix)}
+    return {g for g in found if g in groups}
+
+
+def keys_to_enable(entries: list[EntityEntry], disabled_by_integration: set[str]) -> set[str]:
+    """Keys the integration itself disabled earlier that the receiver's current
+    setup now uses (e.g. a second subwoofer was switched on). Entities the USER
+    disabled are never in ``disabled_by_integration`` and so are never touched."""
+
+    return {e.key for e in entries if e.enabled_default and e.key in disabled_by_integration}

@@ -14,7 +14,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 
 
 async def async_setup_entry(
@@ -30,7 +30,7 @@ async def async_setup_entry(
         "eq_curve_copy": lambda e: DenonAvrEqCurveCopy(coordinator),
         "eq_set_defaults": lambda e: DenonAvrEqSetDefaults(coordinator),
     }
-    async_add_entities(catalogue_entities(coordinator, "button", factories))
+    setup_catalogue_platform(coordinator, "button", factories, async_add_entities)
 
 
 class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
@@ -39,6 +39,8 @@ class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
     The band sliders stage their values locally (the receiver accepts only a
     full band block, not a single band); pressing this applies the whole curve.
     """
+
+    _web_backed = True   # setup web interface, not telnet
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:content-save"
@@ -54,6 +56,8 @@ class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
 class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):
     """Copy the reference curve into the manual graphic EQ as a starting point."""
 
+    _web_backed = True   # setup web interface, not telnet
+
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:content-copy"
 
@@ -67,6 +71,8 @@ class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):
 
 class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
     """Reset the manual graphic EQ to its defaults (a flat curve)."""
+
+    _web_backed = True   # setup web interface, not telnet
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:restore"

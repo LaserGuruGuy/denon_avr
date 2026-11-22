@@ -170,6 +170,15 @@ class DenonAvrDevice:
         return f"{endpoint.base_url}/" if endpoint is not None else None
 
     @property
+    def web_reachable(self) -> bool | None:
+        """Whether the setup web interface answered its last request (None: not tried).
+
+        Web-backed entities follow this instead of the telnet link, so they stay
+        usable when only telnet is down, and turn unavailable when only the web is."""
+
+        return self._webconfig.reachable
+
+    @property
     def setup_interface(self) -> dict[str, object] | None:
         """How the setup web interface was located (diagnostics; no host)."""
 

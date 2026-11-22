@@ -19,7 +19,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ZoneDescriptor
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 
 # An icon-style picture of the selected input, shown when there is no album art
 # to display. Keyed by the receiver's wire source code (what the state holds);
@@ -73,7 +73,7 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {"zone": lambda e: DenonAvrMediaPlayer(coordinator, e.params["zone"])}
-    async_add_entities(catalogue_entities(coordinator, "media_player", factories))
+    setup_catalogue_platform(coordinator, "media_player", factories, async_add_entities)
 
 
 class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):

@@ -156,7 +156,7 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
     from the 5b review: quick select entity from Deviceinfo QuickSelect when SSQSNZMA is silent
     (X3900H), subwoofer count labels from by_count (1-4), size selects only where a size token is
     reported, crossover options from the device value list (incl. 0 = Full), LPF 70/070
-  - [ ] 5d (most important remaining "silence is not absence" item) availability per channel (telnet vs last good web read), dynamic entities, registry restore of
+  - [~] 5d CODE DONE, ARCHITECT REVIEW PENDING (commit marked so): availability per channel (telnet vs last good web read), dynamic entities, registry restore of
     temporarily hidden entities, retry of the first web discovery; replaces _apply_channel_defaults
   - [ ] 5e Inputs sub-device, current input (immediate via SI), i18n (state keys, {input}, device
     translation_key, issues, exceptions); graphic EQ onto the audio availability map

@@ -15,7 +15,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import control_sub_device
 
 
@@ -31,7 +31,7 @@ async def async_setup_entry(
         "control": lambda e: DenonAvrSwitch(coordinator, e.params["spec"]),
         "web_switch": lambda e: DenonAvrVideoSwitch(coordinator, e.params["control"]),
     }
-    async_add_entities(catalogue_entities(coordinator, "switch", factories))
+    setup_catalogue_platform(coordinator, "switch", factories, async_add_entities)
 
 
 class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
@@ -75,6 +75,8 @@ class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
     a grayed-out item (e.g. ARC until HDMI Control is on) reports itself
     unavailable rather than settable.
     """
+
+    _web_backed = True   # setup web interface, not telnet
 
     _attr_entity_category = EntityCategory.CONFIG
 

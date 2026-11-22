@@ -19,7 +19,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import AvrState
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import amp_mode, is_preamplifier, subwoofer_setup
 
 
@@ -38,7 +38,7 @@ async def async_setup_entry(
         "amp_mode": lambda e: DenonAvrAmpModeSensor(coordinator),
         "subwoofer_setup": lambda e: DenonAvrSubwooferSetupSensor(coordinator, e.params["which"]),
     }
-    async_add_entities(catalogue_entities(coordinator, "sensor", factories))
+    setup_catalogue_platform(coordinator, "sensor", factories, async_add_entities)
 
 
 class DenonAvrReadonlySensor(DenonAvrEntity, SensorEntity):

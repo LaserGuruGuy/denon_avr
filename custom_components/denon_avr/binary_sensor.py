@@ -16,7 +16,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 
 
 async def async_setup_entry(
@@ -28,7 +28,7 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {"connectivity": lambda e: DenonAvrConnectivitySensor(coordinator)}
-    async_add_entities(catalogue_entities(coordinator, "binary_sensor", factories))
+    setup_catalogue_platform(coordinator, "binary_sensor", factories, async_add_entities)
 
 
 class DenonAvrConnectivitySensor(DenonAvrEntity, BinarySensorEntity):

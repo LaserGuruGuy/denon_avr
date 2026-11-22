@@ -39,6 +39,9 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
     """Base class providing device info and availability for all entities."""
 
     _attr_has_entity_name = True
+    # Set by subclasses / the catalogue (see available).
+    _web_backed: bool = False
+    _required_channels: tuple[str, ...] = ()
 
     def __init__(
         self, coordinator: DenonAvrCoordinator, key: str, sub_device: str | None = None
@@ -88,28 +91,67 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
 
     @property
     def available(self) -> bool:
-        """Entities are available only while the telnet link is up."""
+        """Availability per channel, following the user's setup.
 
-        return super().available and self.coordinator.available
+        * Telnet-backed entities (the default) need the telnet link.
+        * Web-backed entities (``_web_backed``) need the setup web interface
+          instead, so they stay usable when only telnet is down.
+        * Entities for specific speaker channels (``_required_channels``, set from
+          the catalogue) are unavailable while none of those channels is in the
+          receiver's current speaker setup; they are never removed.
+        """
+
+        if not super().available:
+            return False
+        if self._web_backed:
+            link = self.coordinator.device.web_reachable is not False
+        else:
+            link = self.coordinator.available
+        if not link:
+            return False
+        if self._required_channels:
+            configured = self.coordinator.device.discovery.configured_channels
+            if configured and not any(c in configured for c in self._required_channels):
+                return False
+        return True
 
 
-def catalogue_entities(coordinator, platform: str, factories: dict) -> list:
+def catalogue_entities(coordinator, platform: str, factories: dict, entries=None) -> list:
     """Entities for one platform, as the catalogue lists them.
 
     The catalogue is the single source of every unique_id: an entity whose own
     key differs from its catalogue entry gets the catalogue key (and a warning),
-    so the id recorded in the registries can never drift silently.
+    so the id recorded in the registries can never drift silently. Entry params
+    ``channels`` become the entity's required channels (availability).
     """
 
     device = coordinator.device
     info = device.discovery.device
     identifier = catalog.device_identifier(info.mac_address, info.serial_number, device.host)
+    if entries is None:
+        entries = catalog.for_platform(device, platform, coordinator.known_keys)
     entities = []
-    for entry in catalog.for_platform(device, platform):
+    for entry in entries:
         entity = factories[entry.kind](entry)
         expected = catalog.unique_id(identifier, entry.key)
         if entity.unique_id != expected:
             _LOGGER.warning("Entity key %s differs from the catalogue %s; using the catalogue", entity.unique_id, expected)
             entity._attr_unique_id = expected
+        channels = entry.params.get("channels")
+        if channels:
+            entity._required_channels = tuple(channels)
         entities.append(entity)
+        coordinator.created_keys.add(entry.key)
     return entities
+
+
+def setup_catalogue_platform(coordinator, platform: str, factories: dict, async_add_entities) -> None:
+    """Add a platform's entities now, and remember how to add more later.
+
+    When the receiver reports a new capability after setup (a web menu that
+    appears, a speaker group that starts reporting), the coordinator adds the new
+    catalogue entries through the stored callback, without a reload.
+    """
+
+    coordinator.platforms[platform] = (factories, async_add_entities)
+    async_add_entities(catalogue_entities(coordinator, platform, factories))

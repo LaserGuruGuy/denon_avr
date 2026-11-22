@@ -65,3 +65,33 @@ async def test_catalogue_snapshot(make_device):
             {"platform": e.platform, "kind": e.kind, "key": e.key, "sub_device": e.sub_device, "enabled": e.enabled_default}
             for e in entries
         ])
+
+
+async def test_known_entities_are_kept_when_the_receiver_is_silent(make_device, monkeypatch):
+    """Silence is not absence: a web control hidden in the current setup, or a speaker
+    group that did not answer, keeps its entity when Home Assistant already has it."""
+    catalog, dev, entries = await _catalogue(make_device, "avc_x3900h")
+    keys = {e.key for e in entries}
+    assert "select_tv_format" not in keys                      # TVFormat display=1 on the X3900H
+    known = {"select_tv_format", "select_crossover_FRH", "select_speaker_size_SUD", "select_crossover_NOPE"}
+    restored = {e.key: e for e in catalog.build(dev, known)}
+    assert {"select_tv_format", "select_crossover_FRH", "select_speaker_size_SUD"} <= set(restored)
+    assert "select_crossover_NOPE" not in restored            # not a speaker group: ignored
+    assert restored["select_crossover_FRH"].params["channels"] == ["FHL", "FHR"]
+
+
+async def test_integration_disabled_entities_are_re_enabled_when_used(make_device):
+    catalog, dev, entries = await _catalogue(make_device, "avc_x3900h")
+    # SW2 is disabled by the integration (one subwoofer); C is configured
+    disabled = {"number_channel_trim_SW2", "number_channel_trim_C"}
+    assert catalog.keys_to_enable(entries, disabled) == {"number_channel_trim_C"}
+    dev.discovery.configured_channels = set(dev.discovery.configured_channels) | {"SW2"}   # a 2nd sub
+    entries = catalog.build(dev)
+    assert catalog.keys_to_enable(entries, disabled) == {"number_channel_trim_SW2", "number_channel_trim_C"}
+
+
+async def test_channel_entities_carry_their_required_channels(make_device):
+    _catalog, _dev, entries = await _catalogue(make_device, "avr_x3600h")
+    by_key = {e.key: e for e in entries}
+    assert by_key["number_channel_trim_SW2"].params["channels"] == ["SW2"]
+    assert by_key["select_crossover_FRO"].params["channels"] == ["FL", "FR"]

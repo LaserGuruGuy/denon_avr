@@ -21,7 +21,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec, eq_band_tag
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import control_sub_device
 
 # The control kinds that map to a number entity.
@@ -46,7 +46,7 @@ async def async_setup_entry(
         "channel_distance": lambda e: DenonAvrChannelDistance(coordinator, e.params["code"], e.enabled_default),
         "eq_band": lambda e: DenonAvrEqBand(coordinator, e.params["label"]),
     }
-    async_add_entities(catalogue_entities(coordinator, "number", factories))
+    setup_catalogue_platform(coordinator, "number", factories, async_add_entities)
 
 
 class DenonAvrNumber(DenonAvrEntity, NumberEntity):
@@ -177,6 +177,8 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
     (or to all/LR depending on the speaker-selection mode). Read and written via
     the setup config API; the range comes from the fixed graphic-EQ grammar.
     """
+
+    _web_backed = True   # setup web interface, not telnet
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_native_unit_of_measurement = "dB"

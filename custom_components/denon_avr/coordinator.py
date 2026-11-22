@@ -45,6 +45,12 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
         # Registry id of the main receiver device, set once at setup so the
         # sub-devices can link to it via `via_device_id` (HA 2026.8+).
         self.main_device_id: str | None = None
+        # Entity catalogue bookkeeping (see entity.setup_catalogue_platform):
+        # keys Home Assistant already had for this receiver, keys created in this
+        # run, and per platform the factories + add callback for later additions.
+        self.known_keys: set[str] = set()
+        self.created_keys: set[str] = set()
+        self.platforms: dict[str, tuple[dict, object]] = {}
 
     async def async_setup(self) -> None:
         """Discover the receiver and start the telnet transport.

@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec, eq_channel_options
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity, catalogue_entities
+from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import (
     control_sub_device,
     crossover_from_label,
@@ -54,7 +54,7 @@ async def async_setup_entry(
             sub_device=e.sub_device,
         ),
     }
-    async_add_entities(catalogue_entities(coordinator, "select", factories))
+    setup_catalogue_platform(coordinator, "select", factories, async_add_entities)
 
 
 class DenonAvrSelect(DenonAvrEntity, SelectEntity):
@@ -414,6 +414,8 @@ class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):
 class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
     """Graphic-EQ speaker selection: one curve for all, the L/R pair, or each."""
 
+    _web_backed = True   # setup web interface, not telnet
+
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
@@ -445,6 +447,8 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
     channels and their labels depend on the speaker-selection mode (one shared
     curve in 'All', L/R pairs, or individual channels in 'Each').
     """
+
+    _web_backed = True   # setup web interface, not telnet
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -488,6 +492,8 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
     (device.video_config); a grayed-out item (e.g. Pass Through Source until
     HDMI Pass Through is on) reports itself unavailable rather than settable.
     """
+
+    _web_backed = True   # setup web interface, not telnet
 
     _attr_entity_category = EntityCategory.CONFIG
 

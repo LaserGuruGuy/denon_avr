@@ -53,6 +53,16 @@ class WebConfigClient:
         # a slow discovery never holds up requests on an already known endpoint.
         self._request_lock = asyncio.Lock()
         self._discovery_lock = asyncio.Lock()
+        # Outcome of the last request at the transport level: True = the
+        # interface answered (any HTTP status), False = it did not / none found,
+        # None = not tried yet.
+        self._reachable: bool | None = None
+
+    @property
+    def reachable(self) -> bool | None:
+        """Whether the setup web interface answered the last request."""
+
+        return self._reachable
 
     @property
     def endpoint(self) -> WebEndpoint | None:
@@ -98,6 +108,7 @@ class WebConfigClient:
         query = "&".join(f"{key}={quote(str(value), safe='')}" for key, value in params.items())
         endpoint = await self._ensure_endpoint()
         if endpoint is None:
+            self._reachable = False
             return None
         url = f"{endpoint.base_url}{path}?{query}"
         async with self._request_lock:
@@ -105,12 +116,14 @@ class WebConfigClient:
                 async with self._session.get(
                     url, ssl=False, timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
                 ) as response:
+                    self._reachable = True
                     if response.status != 200:
                         _LOGGER.debug("%s returned HTTP %s", path, response.status)
                         return None
                     return await response.text()
             except (aiohttp.ClientError, asyncio.TimeoutError) as err:
                 _LOGGER.debug("GET %s failed: %s", path, err)
+                self._reachable = False
                 self._invalidate(endpoint)
                 return None
 
