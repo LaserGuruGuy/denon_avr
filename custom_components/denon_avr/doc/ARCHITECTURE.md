@@ -65,6 +65,21 @@ serialises the requests, and after a transport failure locates it again, at most
 Which settings exist is then decided by the receiver's own availability documents, never by the model.
 The device link in HA (`configuration_url`) is the located interface.
 
+## Setup web documents (protocol/webdoc.py)
+
+- **Availability in one place** (`models.Availability`), read the way the receiver's own Web Control
+  app reads it: `display` 2, 3 and 4 are shown; 3 and 4 are active (settable); 2 is shown but
+  disabled; anything else (1 = not applicable) is not shown. `gray` is not a lock but a reason code
+  the UI uses only for a disabled item to pick its explanation. Documents of menus reported as not
+  applicable are not read. The availability map is re-read on every poll, so items follow the user's
+  setup. Each document is fetched at most once per pass. A failed read keeps the last values.
+- **Per-input collections** (`collections` in the profile): one element per input slot, keyed by the
+  receiver's own index (stable across renames). Allowed options come per item from the receiver
+  (conditional options, or the item's own list). A write is refused unless the receiver reports the
+  item as settable and allows that option. Collections can be declared read-only (`writable: false`).
+- **Device value lists** (`value_lists`): capability lists such as the crossover grid or LPF values.
+  The setting itself stays on telnet; the profile constant is only the fallback.
+
 ## Safety net
 
 `tests/` holds characterization goldens of the end-to-end behaviour, recorded from real, redacted

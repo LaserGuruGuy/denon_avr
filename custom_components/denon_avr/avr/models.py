@@ -209,6 +209,60 @@ class GraphicEqState:
     selectable: str = ""
 
 
+# Availability flags of the setup web interface (``display`` attribute / value),
+# as the receiver's own Web Control app interprets them.
+DISPLAY_NOT_APPLICABLE = 1   # hidden by the receiver: not applicable now
+DISPLAY_GRAYED = 2           # shown, disabled
+DISPLAY_SELECTABLE = 3       # shown, active
+DISPLAY_ACTIVE_ALT = 4       # shown, active (rendered like 3 by the app)
+_SHOWN = frozenset({DISPLAY_GRAYED, DISPLAY_SELECTABLE, DISPLAY_ACTIVE_ALT})
+_ACTIVE = frozenset({DISPLAY_SELECTABLE, DISPLAY_ACTIVE_ALT})
+
+
+@dataclass(frozen=True)
+class Availability:
+    """What the receiver reports about one setup item.
+
+    Mirrors the receiver's own UI: ``display`` 2, 3 or 4 is shown (anything else,
+    e.g. 1 = not applicable, is not); 3 and 4 are active (settable), 2 is shown
+    but disabled. ``gray`` is not a flag but a REASON code the UI uses only for a
+    disabled item (display 2) to pick its explanation text.
+    """
+
+    display: int = DISPLAY_SELECTABLE
+    gray: str = "0"
+
+    @property
+    def present(self) -> bool:
+        return self.display in _SHOWN
+
+    @property
+    def settable(self) -> bool:
+        return self.display in _ACTIVE
+
+    @property
+    def gray_reason(self) -> str | None:
+        if self.display == DISPLAY_GRAYED and self.gray not in ("", "0"):
+            return self.gray
+        return None
+
+
+@dataclass(frozen=True)
+class CollectionItem:
+    """One entry of a per-input (or per-slot) setup collection.
+
+    ``slot`` is the receiver's own index for the input (stable across renames),
+    ``name`` the user's current name for it, ``value`` the current option id and
+    ``options`` the option ids the receiver allows for THIS input.
+    """
+
+    slot: str
+    name: str
+    value: str
+    options: tuple[str, ...]
+    availability: Availability
+
+
 @dataclass
 class AvrState:
     """Complete volatile state of the receiver as parsed from telnet events.

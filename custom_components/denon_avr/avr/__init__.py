@@ -9,8 +9,10 @@ from __future__ import annotations
 
 from .device import DenonAvrDevice
 from .models import (
+    Availability,
     AvrState,
     ChannelDescriptor,
+    CollectionItem,
     DeviceInfo,
     Discovery,
     SourceDescriptor,
@@ -22,8 +24,10 @@ from .protocol.eq_doc import channel_options as eq_channel_options
 from .protocol.profile import ControlSpec, ProtocolProfile, load_profile
 
 __all__ = [
+    "Availability",
     "AvrState",
     "ChannelDescriptor",
+    "CollectionItem",
     "ControlSpec",
     "DenonAvrDevice",
     "DeviceInfo",

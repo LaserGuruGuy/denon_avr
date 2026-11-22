@@ -5,19 +5,31 @@ No I/O and no state: the orchestration (which documents to read, when, and the
 write-then-reread) lives in services.webconfig_doc. Every id, type, tag and option
 map comes from the profile's grammar section (video_web, speakers_web).
 
-Menu ``display`` flags mirror the setup UI: 1 = not available (hidden), 2 = grayed
-(present but not settable in the current state), 3 = selectable.
+Availability semantics live in ONE place, :class:`~..models.Availability`, as the
+receiver's own UI reads them: ``display`` 2/3/4 shown, 3/4 active, 2 disabled;
+``gray`` is only the reason text code of a disabled item. Per-input collections (one element
+per input slot, keyed by the receiver's own index) are described generically by
+the profile's ``collections`` entries.
 """
 
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 from typing import Any
+from xml.sax.saxutils import escape
 
-# Per-field display flags used by the setup config API.
-NOT_AVAILABLE = 1
-GRAYOUT = 2
-SELECTABLE = 3
+from ..models import (
+    DISPLAY_GRAYED,
+    DISPLAY_NOT_APPLICABLE,
+    DISPLAY_SELECTABLE,
+    Availability,
+    CollectionItem,
+)
+
+# Kept names for the display flags (see models.Availability).
+NOT_AVAILABLE = DISPLAY_NOT_APPLICABLE
+GRAYOUT = DISPLAY_GRAYED
+SELECTABLE = DISPLAY_SELECTABLE
 
 
 def parse_xml(xml_text: str | None) -> ET.Element | None:
@@ -36,10 +48,19 @@ def to_int(text: str | None, default: int = 0) -> int:
         return default
 
 
-def parse_availability(root: ET.Element) -> dict[str, int]:
-    """A listSetupMenu document as {menu tag: display flag}."""
+def parse_availability(root: ET.Element) -> dict[str, Availability]:
+    """A listSetupMenu document as {menu tag: Availability} (display = element text)."""
 
-    return {child.tag: to_int(child.text, NOT_AVAILABLE) for child in root}
+    return {
+        child.tag: Availability(to_int(child.text, NOT_AVAILABLE), child.get("gray", "0"))
+        for child in root
+    }
+
+
+def field_availability(field: dict[str, Any]) -> Availability:
+    """The Availability of a parsed control field."""
+
+    return Availability(field["display"], field.get("gray", "0"))
 
 
 def parse_control(
@@ -53,6 +74,7 @@ def parse_control(
         fields[control["id"]] = {
             "value": (root.text or "").strip(),
             "display": to_int(root.get("display"), SELECTABLE),
+            "gray": root.get("gray", "0"),
             "options": None,
         }
         return
@@ -60,6 +82,7 @@ def parse_control(
     if element is None:
         return
     display = to_int(element.get("display"), SELECTABLE)
+    gray = element.get("gray", "0")
     if control.get("dynamic"):
         # A device-supplied source list (Pass Through Source): the selected
         # value is in <field>, the offered items are the <list> children keyed
@@ -76,6 +99,7 @@ def parse_control(
         fields[control["id"]] = {
             "value": value,
             "display": display,
+            "gray": gray,
             "options": options,
         }
     elif control.get("value_list"):
@@ -92,6 +116,7 @@ def parse_control(
         fields[control["id"]] = {
             "value": value,
             "display": display,
+            "gray": gray,
             "options": None,
             "value_list": allowed,
         }
@@ -99,6 +124,7 @@ def parse_control(
         field = {
             "value": (element.text or "").strip(),
             "display": display,
+            "gray": gray,
             "options": None,
         }
         # Amp assign: the valid option list depends on the receiver's amp
@@ -151,3 +177,86 @@ def build_set_payload(grammar: dict[str, Any], control: dict[str, Any], wire: st
     if grammar.get("wrap_root") and root:
         payload = f"<{root}>{payload}</{root}>"
     return payload
+
+
+# Per-input collections ------------------------------------------------------
+
+
+def _allowed_options(spec: dict[str, Any], item: ET.Element) -> tuple[str, ...]:
+    """The option ids this item allows.
+
+    ``options_from``: the item's own device-supplied list (e.g. ``List/Value``).
+    Otherwise the profile's base list, plus conditional ones whose condition (a
+    sibling field equal to a value) the receiver reports for this item.
+    """
+
+    if "options_from" in spec:
+        return tuple(
+            (v.text or "").strip() for v in item.findall(spec["options_from"]) if (v.text or "").strip()
+        )
+    allowed = []
+    conditional = spec.get("conditional_options", {})
+    for option in spec.get("options", []):
+        rule = conditional.get(option)
+        if rule and (item.findtext(rule["field"]) or "").strip() != rule["equals"]:
+            continue
+        allowed.append(option)
+    return tuple(allowed)
+
+
+def parse_collection(spec: dict[str, Any], root: ET.Element) -> dict[str, CollectionItem]:
+    """A per-input document as {slot: CollectionItem}, in the receiver's order."""
+
+    if root.tag != spec["root"]:
+        return {}
+    key_attr = spec.get("key_attr", "index")
+    items: dict[str, CollectionItem] = {}
+    for element in root.findall(spec.get("item", "Source")):
+        slot = (element.get(key_attr) or "").strip()
+        value = element.find(spec["value_field"])
+        if not slot or value is None:
+            continue     # items without this field belong to another collection / are absent
+        # Availability: the item's own flags, or those of a sub-element that carries
+        # the setting (``availability_from``); the stricter of the two applies.
+        own = Availability(to_int(element.get("display"), SELECTABLE), element.get("gray", "0"))
+        sub = element.find(spec["availability_from"]) if "availability_from" in spec else None
+        if sub is not None:
+            inner = Availability(to_int(sub.get("display"), SELECTABLE), sub.get("gray", "0"))
+            # The stricter one applies: not shown beats disabled beats active.
+            own = min((own, inner), key=lambda a: (a.present, a.settable))
+        items[slot] = CollectionItem(
+            slot=slot,
+            name=(element.findtext(spec.get("name_field", "Name")) or "").strip(),
+            value=(value.text or "").strip(),
+            options=_allowed_options(spec, element),
+            availability=own,
+        )
+    return items
+
+
+def build_collection_payload(spec: dict[str, Any], slot: str, wire: str) -> str:
+    """Write payload for one item: ``<ValueField index="slot">wire</ValueField>``.
+
+    The shape the receiver's own setup UI sends (no root element; the config
+    ``type`` selects the document). Values and the key are XML-escaped.
+    """
+
+    tag = spec["value_field"]
+    key_attr = spec.get("key_attr", "index")
+    attr = escape(slot, {'"': "&quot;"})
+    return f'<{tag} {key_attr}="{attr}">{escape(wire)}</{tag}>'
+
+
+# Device-supplied value lists -------------------------------------------------
+
+
+def parse_value_list(spec: dict[str, Any], root: ET.Element) -> tuple[str, ...] | None:
+    """The values the receiver offers for a setting (e.g. its crossover grid), in its
+    order; None when the document does not carry the list."""
+
+    if root.tag != spec["root"]:
+        return None
+    container = root.find(spec.get("path", "SelectableValue/List"))
+    if container is None:
+        return None
+    return tuple((item.text or "").strip() for item in container if (item.text or "").strip())

@@ -152,6 +152,9 @@ async def test_web_subsystems(make_device, fixture):
                 for c in ids
             },
             "feature_flags": ctl.feature_flags() if hasattr(ctl, "feature_flags") else None,
+            "availability": ctl.availability_map(),
+            "collections": {spec["id"]: ctl.collection(spec["id"]) for spec in ctl.collection_specs()},
+            "value_lists": {spec["id"]: ctl.value_list(spec["id"]) for spec in ctl.value_list_specs()},
         }
     eq = dev.graphic_eq
     view["graphic_eq"] = {"supported": eq.supported}

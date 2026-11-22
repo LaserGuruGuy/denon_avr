@@ -3,6 +3,92 @@
   "supported": true
  },
  "speaker_config": {
+  "availability": {
+   "AdvancedSetup": {
+    "display": 0,
+    "gray": "0"
+   },
+   "AmpAssign": {
+    "display": 3,
+    "gray": "0"
+   },
+   "Bass": {
+    "display": 3,
+    "gray": "0"
+   },
+   "Crossovers": {
+    "display": 3,
+    "gray": "0"
+   },
+   "DiracLiveSetup": {
+    "display": 1,
+    "gray": "0"
+   },
+   "DiracLiveSetupRC": {
+    "display": 1,
+    "gray": "0"
+   },
+   "Distances": {
+    "display": 3,
+    "gray": "0"
+   },
+   "FrontSpeaker": {
+    "display": 3,
+    "gray": "0"
+   },
+   "LFEDistribution": {
+    "display": 1,
+    "gray": "0"
+   },
+   "LPFforLFE": {
+    "display": 1,
+    "gray": "0"
+   },
+   "Levels": {
+    "display": 3,
+    "gray": "0"
+   },
+   "SpeakerConfig": {
+    "display": 3,
+    "gray": "0"
+   },
+   "SpeakerLayout": {
+    "display": 1,
+    "gray": "0"
+   },
+   "SpeakerPreset": {
+    "display": 1,
+    "gray": "0"
+   },
+   "Subwoofer": {
+    "display": 1,
+    "gray": "0"
+   },
+   "SubwooferOutput": {
+    "display": 1,
+    "gray": "0"
+   },
+   "TactileTransducer": {
+    "display": 1,
+    "gray": "0"
+   },
+   "TwoChPlayback": {
+    "display": 1,
+    "gray": "0"
+   },
+   "WirelessSpeakerSetup": {
+    "display": 1,
+    "gray": "0"
+   },
+   "XLROutputAssign": {
+    "display": 1,
+    "gray": "0"
+   }
+  },
+  "collections": {
+   "speaker_layout_assign": {},
+   "speaker_layout_config": {}
+  },
   "controls": {
    "amp_assign": {
     "available": true,
@@ -39,9 +125,83 @@
    }
   },
   "feature_flags": [],
-  "supported": true
+  "supported": true,
+  "value_lists": {
+   "crossover": [
+    "40",
+    "60",
+    "80",
+    "90",
+    "100",
+    "110",
+    "120",
+    "150",
+    "180",
+    "200",
+    "250"
+   ],
+   "lpf_for_lfe": null
+  }
  },
  "video_config": {
+  "availability": {
+   "AnalogVideoOut": {
+    "display": 1,
+    "gray": "0"
+   },
+   "ComponentVideo": {
+    "display": 1,
+    "gray": "0"
+   },
+   "FourKEightKSignalFormat": {
+    "display": 1,
+    "gray": "0"
+   },
+   "FourKEightKSignalFormatPerInput": {
+    "display": 1,
+    "gray": "0"
+   },
+   "FourKSignalFormat": {
+    "display": 3,
+    "gray": "0"
+   },
+   "HDCPSetup": {
+    "display": 1,
+    "gray": "0"
+   },
+   "HDMIScaler": {
+    "display": 1,
+    "gray": "0"
+   },
+   "HDMISetup": {
+    "display": 3,
+    "gray": "0"
+   },
+   "OnScreenDisplay": {
+    "display": 3,
+    "gray": "0"
+   },
+   "OutputSettings": {
+    "display": 3,
+    "gray": "0"
+   },
+   "PictureAdjust": {
+    "display": 2,
+    "gray": "0"
+   },
+   "ScreenSaver": {
+    "display": 1,
+    "gray": "0"
+   },
+   "TVFormat": {
+    "display": 3,
+    "gray": "0"
+   }
+  },
+  "collections": {
+   "input_hdcp": {},
+   "input_signal_format": {}
+  },
   "controls": {
    "arc": {
     "available": false,
@@ -158,6 +318,7 @@
   "feature_flags": [
    "PictureAdjust"
   ],
-  "supported": true
+  "supported": true,
+  "value_lists": {}
  }
 }

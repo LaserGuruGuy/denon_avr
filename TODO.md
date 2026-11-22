@@ -133,20 +133,24 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
 - [x] step 1: test safety net (fixtures X3900H + X3600H, goldens, layer guard, CI)
 - [x] step 2: 1:1 refactor into transport / protocol / services / facade; HA imports only `.avr`
 - [x] step 3: webconfig endpoint probe (80/443 redirect -> 10443 / 11080, candidates), serialised requests, re-probe policy, configuration_url
-- [ ] step 4: schema engine for /ajax documents (variants, per-input collections, device value lists)
+- [~] step 4 (mostly): /ajax document engine: Availability as the receiver's UI reads it (display
+  2/3/4 shown, 3/4 active, gray = reason of a disabled item), per-input collections (4K/8K format,
+  HDCP; speaker layout read-only), device value lists (crossover, LPF), one fetch per document per
+  pass. Telnet checked first: SpeakerPreset is SPPR (telnet), PSSP and SSLFL are telnet; per-input
+  4K/HDCP have no telnet. Moved to step 5: graphic EQ onto the availability map (audio listSetupMenu),
+  Amp Assign / Speaker Layout as explicit document variants.
 - [ ] step 5: HA adapter (entity catalogue, Inputs device, live user-setup following, i18n)
 - [ ] step 6: telnet / 1256 parity; then live verification, docs, 1.2.0
 - later (from the step-2 review): HA-layer pyflakes warnings (select.py:225, const.py:12, sensor.py:19);
   volume step default 0.5 from the profile; a public test hook instead of `_tasks.pending`.
 
-## Availability display=1 ("hidden"): decision pending with the owner
+## Availability display=1 ("hidden"): DECIDED 2026-11-22 (owner agreed with the architect advice)
 Measured on the X3900H: FourKSignalFormat=1 -> video type 8 answers 500, AmpAssign=1 -> speakers type
 2 answers 500, TVFormat=1 -> video type 9 answers 200 with a meaningless value. So display=1 means
 "not applicable now". Architect advice: do not read such documents, but follow the availability map
 live (re-read on every poll, done in step 3). 1->2/3: read the document and add the entity dynamically;
 3->2: grayed (unavailable); >=2->1: unavailable, not removed; never seen >=2: no entity.
-Availability maps go into diagnostics. Web Control reports values above 3 (AdvancedSetup=4); step 4
-handles them explicitly.
+Availability maps go into diagnostics (done in step 4). display=4 is active, like 3 (Web Control bundle).
 
 ## Before the push (owner's condition: tested on BOTH receivers, with permission)
 - live read test of every web subsystem on both receivers;
@@ -154,3 +158,12 @@ handles them explicitly.
   and the same on the X3600H, only with the owner's explicit yes;
 - retry of the first web discovery when the receiver's web stack is not ready at HA start (step 5,
   together with dynamic entities).
+
+## From step 4 for steps 5/6
+- SpeakerPreset on telnet: `SPPR ?` -> `SPPR 1` (X3900H only) -> telnet control (step 6).
+- `PSSP:` (speaker layout height) answers on both receivers -> telnet control (step 6).
+- VSSCH reports `OFF` on the X3900H (new token next to AUTO/48P/...) -> profile (step 6).
+- Crossover 'FUL' on telnet == '0' in the web list (value_lists.crossover.telnet_tokens); the parser
+  still drops FUL (pinned defect) -> step 6. LPF web values '70' vs telnet width '070' -> normalise.
+- Speaker layout labels (mode ids 1..19, per-position config ids) from the Web Control bundle, and a
+  staged, confirmed apply (CustomSettings path) -> step 5; never without the owner's yes.

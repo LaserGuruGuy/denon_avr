@@ -105,7 +105,11 @@
       "channels_each": ["Front L", "Front R", "Center", "Surround L", "Surround R", "Surround Back L", "Surround Back R", "Surround Back", "Front Wide L", "Front Wide R", "Front Height L", "Front Height R", "Top Front L", "Top Front R", "Top Middle L", "Top Middle R", "Top Rear L", "Top Rear R", "Surround Height L", "Surround Height R", "Top Surround", "Rear Height L", "Front Dolby L", "Front Dolby R", "Rear Height R", "Surround Dolby L", "Surround Dolby R", "Back Dolby L", "Back Dolby R", "Center Height"]
     },
     "video_web": {
-      "channel_policy": "secondary: these video setup menus have no telnet or port-1256 command (verified live on the AVR-X3600H)",
+      "channel_policy": "secondary: these video setup menus have no telnet or port-1256 command (verified live on the AVR-X3600H; per-input 4K/8K format and HDCP: no answer to candidate telnet queries on AVC-X3900H and AVR-X3600H, 2026-11-22)",
+      "collections": [
+        {"id": "input_signal_format", "doc": "4K/8K signal format per input (FourKEightKSignalFormatPerInput). Option 3 (Custom) only where the input reports MaxResolution=1. Write: <Format index=slot>id</Format>, the shape of the receiver's own UI.", "type": 14, "root": "FourKEightKSignalFormatPerInput", "item": "Source", "key_attr": "index", "name_field": "Name", "value_field": "Format", "options": ["1", "2", "3", "4"], "conditional_options": {"3": {"field": "MaxResolution", "equals": "1"}}, "option_keys": {"1": "standard", "2": "enhanced", "3": "custom", "4": "8k_enhanced"}},
+        {"id": "input_hdcp", "doc": "HDCP version per input (HDCPSetup). Option 4 (Custom) only where the input reports Limit=1. Write: <Value index=slot>id</Value>.", "type": 11, "root": "HDCPSetup", "item": "Source", "key_attr": "index", "name_field": "Name", "value_field": "Value", "options": ["1", "2", "3", "4"], "conditional_options": {"4": {"field": "Limit", "equals": "1"}}, "option_keys": {"1": "auto", "2": "hdcp_1_4", "3": "hdcp_2_3", "4": "custom"}}
+      ],
       "doc": "Video setup menu settings that have NO telnet token, read/written via the setup config API (/ajax/video/{get,set}_config). type=1 is the availability map; each control names its config type and XML tag. On/off wire values are Denon's SETTING_ON=1/SETTING_OFF=2 except OSD Info which uses VIDEO_SETTING On=1/Off=0. Option maps + the pass-through source values are the receiver's own (from the setup UI).",
       "config_section": "video",
       "availability_type": 1,
@@ -132,6 +136,14 @@
     "speakers_web": {
       "channel_policy": "secondary: amp assign has no telnet command; port 1256 needs a calibration session that interrupts playback (verified live on the AVR-X3600H)",
       "availability_type": 1,
+      "collections": [
+        {"id": "speaker_layout_assign", "doc": "Speaker layout (successor of Amp Assign): item 1 is the assign mode, its <List> holds the modes THIS receiver allows. READ-ONLY: writing re-wires the user's speakers and uses another path (CustomSettings); a staged, confirmed apply comes later.", "type": 15, "root": "SpeakerLayout", "item": "List/Item", "key_attr": "index", "value_field": "Value", "options_from": "List/Value", "writable": false},
+        {"id": "speaker_layout_config", "doc": "Speaker layout per position: <Config> value with the positions' own allowed list and display. READ-ONLY (see speaker_layout_assign).", "type": 15, "root": "SpeakerLayout", "item": "List/Item", "key_attr": "index", "value_field": "Config/Value", "options_from": "Config/List/Value", "availability_from": "Config", "writable": false}
+      ],
+      "value_lists": [
+        {"id": "crossover", "doc": "The crossover frequencies the receiver offers (Hz). '0' is Full range, 'FUL' on telnet. The SETTING itself stays on telnet (SSCFR); only this capability list comes from here.", "type": 6, "root": "Crossovers", "path": "SelectableValue/List", "telnet_tokens": {"0": "FUL"}},
+        {"id": "lpf_for_lfe", "doc": "The LPF for LFE frequencies the receiver offers (Hz). The SETTING stays on telnet (SSLFL).", "type": 17, "root": "LPFforLFE", "path": "SelectableValue/List"}
+      ],
       "doc": "Speaker-setup settings with no telnet token, read/written via the /ajax speakers config API. Amp Assign (AssignMode, config type=2) is DEVICE-DRIVEN: the valid modes depend on the receiver's queried AmpType, so the option list is keyed by AmpType in amptype_options (extracted from the setup UI's getAmpAssignList, covering every Denon/Marantz amp type - not X3600H-specific). Read type=2 gives AmpType (selects the list) + AssignMode (current value); set is a field-only /ajax write <AssignMode>N</AssignMode>. Values are numeric AssignMode ids; labels are the receiver's own (e.g. 6='7.1ch + Front B').",
       "config_section": "speakers",
       "wrap_root": true,

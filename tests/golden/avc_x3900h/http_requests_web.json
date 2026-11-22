@@ -51,6 +51,31 @@
  {
   "ssl": false,
   "timeout_total": 8.0,
+  "url": "http://192.0.2.10:11080/ajax/video/get_config?type=14"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "http://192.0.2.10:11080/ajax/video/get_config?type=11"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
   "url": "http://192.0.2.10:11080/ajax/speakers/get_config?type=1"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "http://192.0.2.10:11080/ajax/speakers/get_config?type=15"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "http://192.0.2.10:11080/ajax/speakers/get_config?type=6"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "http://192.0.2.10:11080/ajax/speakers/get_config?type=17"
  }
 ]

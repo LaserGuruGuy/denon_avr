@@ -31,66 +31,88 @@
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CARC%3E1%3C%2FARC%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:hdmi_control=1": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CHDMIControl%3E1%3C%2FHDMIControl%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:hdmi_pass_through=1": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CHDMIPassThrough%3E1%3C%2FHDMIPassThrough%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:hdmi_power_off_control=3": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CPowerOffControl%3E3%3C%2FPowerOffControl%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:hdmi_power_saving=2": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CPowerSaving%3E2%3C%2FPowerSaving%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:osd_info=1": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3CInfo%3E1%3C%2FInfo%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:osd_now_playing=2": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3CNowPlaying%3E2%3C%2FNowPlaying%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:osd_volume=3": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3CVolume%3E3%3C%2FVolume%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:pass_through_source=7": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CPassThroughSource%3E%3CSource%3E7%3C%2FSource%3E%3C%2FPassThroughSource%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:rc_select=2": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CRCSelect%3E2%3C%2FRCSelect%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:tv_audio_switching=1": [
   "http://192.0.2.10:11080/ajax/video/set_config?type=3&data=%3CTVAudioSwitching%3E1%3C%2FTVAudioSwitching%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
-  "http://192.0.2.10:11080/ajax/video/get_config?type=7"
+  "http://192.0.2.10:11080/ajax/video/get_config?type=7",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=14",
+  "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ]
 }

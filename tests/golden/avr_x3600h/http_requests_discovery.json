@@ -67,5 +67,10 @@
   "ssl": false,
   "timeout_total": 8.0,
   "url": "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/speakers/get_config?type=6"
  }
 ]
