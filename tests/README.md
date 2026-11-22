@@ -10,8 +10,8 @@ python -m pytest -p no:anyio            # DENON_UPDATE_GOLDEN=1 to accept intend
 * `fixtures/<receiver>/` holds the raw responses: goform, UPnP, `/ajax` documents and a telnet corpus.
   `fixture.json` describes the set and how the setup web interface is reachable (`webconfig`).
   - `avc_x3900h`: real capture made with `tools/capture_fixtures.py`, read-only and redacted.
-  - `avr_x3600h_synth`: **synthetic** legacy interface (HTTPS 10443, global 4K type 8, Amp Assign type 2).
-    No real X3600H was available. Replace it with a capture when one is.
+  - `avr_x3600h`: real capture, read-only and redacted. Legacy interface: HTTPS 10443, global 4K type 8,
+    Amp Assign type 2, 'SSCFR IDV/ALL' crossover mode.
 * `golden/<receiver>/` pins the end-to-end behaviour of v1.1.2: discovery, resync queries, telnet replay,
   every setter's exact wire string and the web subsystems. A refactor must keep these byte-identical.
 * `golden/ha_registry/` is a reference snapshot of the HA entity surface (unique_ids): live X3900H and the

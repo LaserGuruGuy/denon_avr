@@ -31,7 +31,8 @@
     "available": true,
     "options": {
      "1": "Height None / Dolby None",
-     "2": "Height None / Dolby 2ch"
+     "2": "Height None / Dolby 2ch",
+     "5": "Height 2ch / Dolby None"
     },
     "present": true,
     "value": "1"
@@ -43,7 +44,7 @@
  "video_config": {
   "controls": {
    "arc": {
-    "available": true,
+    "available": false,
     "options": {},
     "present": true,
     "value": "1"
@@ -74,7 +75,7 @@
     "available": true,
     "options": {},
     "present": true,
-    "value": "2"
+    "value": "1"
    },
    "hdmi_signal_format": {
     "available": true,
@@ -100,7 +101,7 @@
      "2": "Auto Off"
     },
     "present": true,
-    "value": "1"
+    "value": "2"
    },
    "osd_volume": {
     "available": true,
@@ -116,14 +117,12 @@
     "available": true,
     "options": {
      "1": "Last",
-     "2": "AAP",
-     "3": "Media Player",
-     "4": "VIS",
-     "5": "NOOT",
-     "7": "MIES"
+     "4": "NOOT",
+     "5": "ROOS",
+     "6": "AAP"
     },
     "present": true,
-    "value": "1"
+    "value": "5"
    },
    "rc_select": {
     "available": true,
@@ -135,10 +134,10 @@
     "value": "1"
    },
    "smart_menu": {
-    "available": false,
+    "available": true,
     "options": {},
-    "present": false,
-    "value": ""
+    "present": true,
+    "value": "2"
    },
    "tv_audio_switching": {
     "available": true,
@@ -153,10 +152,12 @@
      "2": "PAL"
     },
     "present": true,
-    "value": "1"
+    "value": "2"
    }
   },
-  "feature_flags": [],
+  "feature_flags": [
+   "PictureAdjust"
+  ],
   "supported": true
  }
 }

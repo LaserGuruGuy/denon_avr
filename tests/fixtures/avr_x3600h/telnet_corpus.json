@@ -1,0 +1,1202 @@
+[
+ {
+  "t": 0.069,
+  "after": "SSFUN ?",
+  "line": "SSFUNDVD NOOT"
+ },
+ {
+  "t": 0.123,
+  "after": "SSFUN ?",
+  "line": "SSFUNBD AAP"
+ },
+ {
+  "t": 0.123,
+  "after": "SSFUN ?",
+  "line": "SSFUNTV TV Audio"
+ },
+ {
+  "t": 0.266,
+  "after": "SSFUN ?",
+  "line": "SSFUNSAT/CBL CBL/SAT"
+ },
+ {
+  "t": 0.266,
+  "after": "SSFUN ?",
+  "line": "SSFUNMPLAY Media Player"
+ },
+ {
+  "t": 0.266,
+  "after": "SSFUN ?",
+  "line": "SSFUNGAME ROOS"
+ },
+ {
+  "t": 0.266,
+  "after": "SSFUN ?",
+  "line": "SSFUNAUX1 MIES"
+ },
+ {
+  "t": 0.266,
+  "after": "SSFUN ?",
+  "line": "SSFUNCD BOOM"
+ },
+ {
+  "t": 0.266,
+  "after": "SSFUN ?",
+  "line": "SSFUNAUX2 AUX2"
+ },
+ {
+  "t": 0.302,
+  "after": "SSFUN ?",
+  "line": "SSFUNPHONO Phono"
+ },
+ {
+  "t": 0.302,
+  "after": "SSFUN ?",
+  "line": "SSFUN END"
+ },
+ {
+  "t": 0.557,
+  "after": "SSSOD ?",
+  "line": "SSSODDVD USE"
+ },
+ {
+  "t": 0.571,
+  "after": "SSSOD ?",
+  "line": "SSSODBD USE"
+ },
+ {
+  "t": 0.579,
+  "after": "SSSOD ?",
+  "line": "SSSODTV USE"
+ },
+ {
+  "t": 0.59,
+  "after": "SSSOD ?",
+  "line": "SSSODSAT/CBL DEL"
+ },
+ {
+  "t": 0.599,
+  "after": "SSSOD ?",
+  "line": "SSSODMPLAY DEL"
+ },
+ {
+  "t": 0.611,
+  "after": "SSSOD ?",
+  "line": "SSSODGAME USE"
+ },
+ {
+  "t": 0.618,
+  "after": "SSSOD ?",
+  "line": "SSSODAUX1 USE"
+ },
+ {
+  "t": 0.629,
+  "after": "SSSOD ?",
+  "line": "SSSODCD USE"
+ },
+ {
+  "t": 0.638,
+  "after": "SSSOD ?",
+  "line": "SSSODAUX2 DEL"
+ },
+ {
+  "t": 0.65,
+  "after": "SSSOD ?",
+  "line": "SSSODPHONO DEL"
+ },
+ {
+  "t": 0.658,
+  "after": "SSSOD ?",
+  "line": "SSSODTUNER DEL"
+ },
+ {
+  "t": 0.674,
+  "after": "SSSOD ?",
+  "line": "SSSODNET USE"
+ },
+ {
+  "t": 0.686,
+  "after": "SSSOD ?",
+  "line": "SSSOD END"
+ },
+ {
+  "t": 0.917,
+  "after": "SSLEV ?",
+  "line": "SSLEVFL 44"
+ },
+ {
+  "t": 0.929,
+  "after": "SSLEV ?",
+  "line": "SSLEVFR 44"
+ },
+ {
+  "t": 0.942,
+  "after": "SSLEV ?",
+  "line": "SSLEVC 46"
+ },
+ {
+  "t": 0.953,
+  "after": "SSLEV ?",
+  "line": "SSLEVSL 45"
+ },
+ {
+  "t": 0.96,
+  "after": "SSLEV ?",
+  "line": "SSLEVSR 45"
+ },
+ {
+  "t": 0.972,
+  "after": "SSLEV ?",
+  "line": "SSLEVSBL 50"
+ },
+ {
+  "t": 0.978,
+  "after": "SSLEV ?",
+  "line": "SSLEVSBR 50"
+ },
+ {
+  "t": 0.989,
+  "after": "SSLEV ?",
+  "line": "SSLEVSB 50"
+ },
+ {
+  "t": 0.999,
+  "after": "SSLEV ?",
+  "line": "SSLEVFHL 50"
+ },
+ {
+  "t": 1.01,
+  "after": "SSLEV ?",
+  "line": "SSLEVFHR 50"
+ },
+ {
+  "t": 1.018,
+  "after": "SSLEV ?",
+  "line": "SSLEVTFL 50"
+ },
+ {
+  "t": 1.029,
+  "after": "SSLEV ?",
+  "line": "SSLEVTFR 50"
+ },
+ {
+  "t": 1.04,
+  "after": "SSLEV ?",
+  "line": "SSLEVTML 50"
+ },
+ {
+  "t": 1.051,
+  "after": "SSLEV ?",
+  "line": "SSLEVTMR 50"
+ },
+ {
+  "t": 1.057,
+  "after": "SSLEV ?",
+  "line": "SSLEVFDL 50"
+ },
+ {
+  "t": 1.069,
+  "after": "SSLEV ?",
+  "line": "SSLEVFDR 50"
+ },
+ {
+  "t": 1.079,
+  "after": "SSLEV ?",
+  "line": "SSLEVSDL 50"
+ },
+ {
+  "t": 1.091,
+  "after": "SSLEV ?",
+  "line": "SSLEVSDR 50"
+ },
+ {
+  "t": 1.1,
+  "after": "SSLEV ?",
+  "line": "SSLEVFWL 50"
+ },
+ {
+  "t": 1.111,
+  "after": "SSLEV ?",
+  "line": "SSLEVFWR 50"
+ },
+ {
+  "t": 1.118,
+  "after": "SSLEV ?",
+  "line": "SSLEVTRL 50"
+ },
+ {
+  "t": 1.129,
+  "after": "SSLEV ?",
+  "line": "SSLEVTRR 50"
+ },
+ {
+  "t": 1.137,
+  "after": "SSLEV ?",
+  "line": "SSLEVRHL 50"
+ },
+ {
+  "t": 1.15,
+  "after": "SSLEV ?",
+  "line": "SSLEVRHR 50"
+ },
+ {
+  "t": 1.158,
+  "after": "SSLEV ?",
+  "line": "SSLEVBDL 50"
+ },
+ {
+  "t": 1.171,
+  "after": "SSLEV ?",
+  "line": "SSLEVBDR 50"
+ },
+ {
+  "t": 1.179,
+  "after": "SSLEV ?",
+  "line": "SSLEVSW 50"
+ },
+ {
+  "t": 1.191,
+  "after": "SSLEV ?",
+  "line": "SSLEVSW2 50"
+ },
+ {
+  "t": 1.198,
+  "after": "SSLEV ?",
+  "line": "SSLEV END"
+ },
+ {
+  "t": 1.431,
+  "after": "SSSDE ?",
+  "line": "SSSDEFL 0284"
+ },
+ {
+  "t": 1.45,
+  "after": "SSSDE ?",
+  "line": "SSSDEFR 0284"
+ },
+ {
+  "t": 1.464,
+  "after": "SSSDE ?",
+  "line": "SSSDEC 0293"
+ },
+ {
+  "t": 1.477,
+  "after": "SSSDE ?",
+  "line": "SSSDESL 0175"
+ },
+ {
+  "t": 1.492,
+  "after": "SSSDE ?",
+  "line": "SSSDESR 0175"
+ },
+ {
+  "t": 1.51,
+  "after": "SSSDE ?",
+  "line": "SSSDESBL 0300"
+ },
+ {
+  "t": 1.523,
+  "after": "SSSDE ?",
+  "line": "SSSDESBR 0300"
+ },
+ {
+  "t": 1.541,
+  "after": "SSSDE ?",
+  "line": "SSSDESB 0300"
+ },
+ {
+  "t": 1.554,
+  "after": "SSSDE ?",
+  "line": "SSSDEFHL 0360"
+ },
+ {
+  "t": 1.57,
+  "after": "SSSDE ?",
+  "line": "SSSDEFHR 0360"
+ },
+ {
+  "t": 1.582,
+  "after": "SSSDE ?",
+  "line": "SSSDETFL 0300"
+ },
+ {
+  "t": 1.598,
+  "after": "SSSDE ?",
+  "line": "SSSDETFR 0300"
+ },
+ {
+  "t": 1.614,
+  "after": "SSSDE ?",
+  "line": "SSSDETML 0300"
+ },
+ {
+  "t": 1.629,
+  "after": "SSSDE ?",
+  "line": "SSSDETMR 0300"
+ },
+ {
+  "t": 1.644,
+  "after": "SSSDE ?",
+  "line": "SSSDEFDL 0360"
+ },
+ {
+  "t": 1.66,
+  "after": "SSSDE ?",
+  "line": "SSSDEFDR 0360"
+ },
+ {
+  "t": 1.672,
+  "after": "SSSDE ?",
+  "line": "SSSDESDL 0300"
+ },
+ {
+  "t": 1.691,
+  "after": "SSSDE ?",
+  "line": "SSSDESDR 0300"
+ },
+ {
+  "t": 1.705,
+  "after": "SSSDE ?",
+  "line": "SSSDETRL 0300"
+ },
+ {
+  "t": 1.719,
+  "after": "SSSDE ?",
+  "line": "SSSDETRR 0300"
+ },
+ {
+  "t": 1.731,
+  "after": "SSSDE ?",
+  "line": "SSSDERHL 0300"
+ },
+ {
+  "t": 1.75,
+  "after": "SSSDE ?",
+  "line": "SSSDERHR 0300"
+ },
+ {
+  "t": 1.766,
+  "after": "SSSPC ?",
+  "line": "SSSDEBDL 0300"
+ },
+ {
+  "t": 1.784,
+  "after": "SSSPC ?",
+  "line": "SSSDEBDR 0300"
+ },
+ {
+  "t": 1.801,
+  "after": "SSSPC ?",
+  "line": "SSSDESW 0350"
+ },
+ {
+  "t": 1.815,
+  "after": "SSSPC ?",
+  "line": "SSSDESW2 0000"
+ },
+ {
+  "t": 1.832,
+  "after": "SSSPC ?",
+  "line": "SSSDESTP 01M"
+ },
+ {
+  "t": 1.883,
+  "after": "SSSPC ?",
+  "line": "SSSDE END"
+ },
+ {
+  "t": 1.904,
+  "after": "SSSPC ?",
+  "line": "SSSPCFRO LAR"
+ },
+ {
+  "t": 1.917,
+  "after": "SSSPC ?",
+  "line": "SSSPCCEN SMA"
+ },
+ {
+  "t": 1.933,
+  "after": "SSSPC ?",
+  "line": "SSSPCSUA LAR"
+ },
+ {
+  "t": 1.949,
+  "after": "SSSPC ?",
+  "line": "SSSPCSBK NON"
+ },
+ {
+  "t": 1.964,
+  "after": "SSSPC ?",
+  "line": "SSSPCSBK 2SP"
+ },
+ {
+  "t": 1.977,
+  "after": "SSSPC ?",
+  "line": "SSSPCFRH NON"
+ },
+ {
+  "t": 1.992,
+  "after": "SSSPC ?",
+  "line": "SSSPCTFR NON"
+ },
+ {
+  "t": 2.009,
+  "after": "SSSPC ?",
+  "line": "SSSPCTPM NON"
+ },
+ {
+  "t": 2.023,
+  "after": "SSSPC ?",
+  "line": "SSSPCFRD NON"
+ },
+ {
+  "t": 2.04,
+  "after": "SSSPC ?",
+  "line": "SSSPCSUD NON"
+ },
+ {
+  "t": 2.053,
+  "after": "SSSPC ?",
+  "line": "SSSPCTPR NON"
+ },
+ {
+  "t": 2.085,
+  "after": "SSSPC ?",
+  "line": "SSSPCRHE NON"
+ },
+ {
+  "t": 2.085,
+  "after": "SSSPC ?",
+  "line": "SSSPCBKD NON"
+ },
+ {
+  "t": 2.099,
+  "after": "SSSPC ?",
+  "line": "SSSPCSWF 1SP"
+ },
+ {
+  "t": 2.347,
+  "after": "SSCFR ?",
+  "line": "SSCFRFRO 040"
+ },
+ {
+  "t": 2.358,
+  "after": "SSCFR ?",
+  "line": "SSCFRCEN 100"
+ },
+ {
+  "t": 2.371,
+  "after": "SSCFR ?",
+  "line": "SSCFRSUA 040"
+ },
+ {
+  "t": 2.39,
+  "after": "SSCFR ?",
+  "line": "SSCFRSBK 040"
+ },
+ {
+  "t": 2.403,
+  "after": "SSCFR ?",
+  "line": "SSCFRFRH 040"
+ },
+ {
+  "t": 2.417,
+  "after": "SSCFR ?",
+  "line": "SSCFRTFR 080"
+ },
+ {
+  "t": 2.432,
+  "after": "SSCFR ?",
+  "line": "SSCFRTPM 080"
+ },
+ {
+  "t": 2.45,
+  "after": "SSCFR ?",
+  "line": "SSCFRFRD 080"
+ },
+ {
+  "t": 2.464,
+  "after": "SSCFR ?",
+  "line": "SSCFRSUD 080"
+ },
+ {
+  "t": 2.477,
+  "after": "SSCFR ?",
+  "line": "SSCFRTPR 080"
+ },
+ {
+  "t": 2.493,
+  "after": "SSCFR ?",
+  "line": "SSCFRRHE 080"
+ },
+ {
+  "t": 2.51,
+  "after": "SSCFR ?",
+  "line": "SSCFRBKD 080"
+ },
+ {
+  "t": 2.533,
+  "after": "SSCFR ?",
+  "line": "SSCFR IDV"
+ },
+ {
+  "t": 2.533,
+  "after": "SSCFR ?",
+  "line": "SSCFRALL 040"
+ },
+ {
+  "t": 2.585,
+  "after": "SSCFR ?",
+  "line": "SSCFR END"
+ },
+ {
+  "t": 2.824,
+  "after": "SSSMG ?",
+  "line": "SSSMG MUS"
+ },
+ {
+  "t": 3.072,
+  "after": "SSSMG ?",
+  "line": "SSSPCFRO LAR"
+ },
+ {
+  "t": 3.089,
+  "after": "SSSMG ?",
+  "line": "SSSPCCEN SMA"
+ },
+ {
+  "t": 3.103,
+  "after": "SSSMG ?",
+  "line": "SSSPCSUA LAR"
+ },
+ {
+  "t": 3.118,
+  "after": "SSSMG ?",
+  "line": "SSSPCSBK NON"
+ },
+ {
+  "t": 3.132,
+  "after": "SSSMG ?",
+  "line": "SSSPCSBK 2SP"
+ },
+ {
+  "t": 3.15,
+  "after": "SSSMG ?",
+  "line": "SSSPCFRH NON"
+ },
+ {
+  "t": 3.166,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCTFR NON"
+ },
+ {
+  "t": 3.183,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCTPM NON"
+ },
+ {
+  "t": 3.2,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCFRD NON"
+ },
+ {
+  "t": 3.215,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCSUD NON"
+ },
+ {
+  "t": 3.229,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCTPR NON"
+ },
+ {
+  "t": 3.244,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCRHE NON"
+ },
+ {
+  "t": 3.258,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCBKD NON"
+ },
+ {
+  "t": 3.272,
+  "after": "SSQSNZMA ?",
+  "line": "SSSPCSWF 1SP"
+ },
+ {
+  "t": 3.32,
+  "after": "SSQSNZMA ?",
+  "line": "SSQSNZMAQS1 Quick Select 1"
+ },
+ {
+  "t": 3.36,
+  "after": "SSQSNZMA ?",
+  "line": "SSQSNZMAQS2 Quick Select 2"
+ },
+ {
+  "t": 3.36,
+  "after": "SSQSNZMA ?",
+  "line": "SSQSNZMAQS3 Quick Select 3"
+ },
+ {
+  "t": 3.381,
+  "after": "SSQSNZMA ?",
+  "line": "SSQSNZMAQS4 Quick Select 4"
+ },
+ {
+  "t": 3.399,
+  "after": "SSQSNZMA ?",
+  "line": "SSQSNZMA END"
+ },
+ {
+  "t": 3.646,
+  "after": "MSQUICK ?",
+  "line": "MSQUICK0"
+ },
+ {
+  "t": 4.099,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 4.171,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV020Multi Ch Stereo"
+ },
+ {
+  "t": 4.239,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV030Mono Movie"
+ },
+ {
+  "t": 4.31,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV040Virtual"
+ },
+ {
+  "t": 4.385,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MUS050Stereo"
+ },
+ {
+  "t": 4.453,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MUS061Multi Ch Stereo"
+ },
+ {
+  "t": 4.519,
+  "after": "OPSML ?",
+  "line": "OPSML 010Stereo"
+ },
+ {
+  "t": 4.599,
+  "after": "OPSML ?",
+  "line": "OPSML 021Multi Ch Stereo"
+ },
+ {
+  "t": 4.667,
+  "after": "OPSML ?",
+  "line": "OPSML 030Rock Arena"
+ },
+ {
+  "t": 4.746,
+  "after": "OPSML ?",
+  "line": "OPSML 040Jazz Club"
+ },
+ {
+  "t": 4.82,
+  "after": "OPSML ?",
+  "line": "OPSML 050Matrix"
+ },
+ {
+  "t": 4.879,
+  "after": "SSINFAISSIG ?",
+  "line": "SSINFAISSIG 12"
+ },
+ {
+  "t": 4.919,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSML 060Virtual"
+ },
+ {
+  "t": 4.948,
+  "after": "SSINFAISSIG ?",
+  "line": "SYSDA Unknown"
+ },
+ {
+  "t": 5.034,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 5.059,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS070Rock Arena"
+ },
+ {
+  "t": 5.13,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS080Jazz Club"
+ },
+ {
+  "t": 5.207,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS090Matrix"
+ },
+ {
+  "t": 5.254,
+  "after": "SSINFAISFSV ?",
+  "line": "SSINFAISFSV NON"
+ },
+ {
+  "t": 5.293,
+  "after": "SSINFAISFSV ?",
+  "line": "OPSMLALL MUS100Virtual"
+ },
+ {
+  "t": 5.374,
+  "after": "SSINFAISFSV ?",
+  "line": "OPSMLALL GAM110Stereo"
+ },
+ {
+  "t": 5.44,
+  "after": "SSINFAISFSV ?",
+  "line": "OPSMLALL GAM120Multi Ch Stereo"
+ },
+ {
+  "t": 5.514,
+  "after": "SSINFAISFSV ?",
+  "line": "OPSMLALL GAM130Video Game"
+ },
+ {
+  "t": 5.579,
+  "after": "SSINFAISFSV ?",
+  "line": "OPSMLALL GAM140Virtual"
+ },
+ {
+  "t": 5.621,
+  "after": "SSINFAISFOR ?",
+  "line": "SSINFAISFOR  / /.0"
+ },
+ {
+  "t": 5.673,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL PUR150Direct"
+ },
+ {
+  "t": 5.741,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL PUR160Pure Direct"
+ },
+ {
+  "t": 5.806,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 6.046,
+  "after": "SYSDA ?",
+  "line": "SYSDA Unknown"
+ },
+ {
+  "t": 6.421,
+  "after": "SYSDA ?",
+  "line": "SYSMI Multi Ch Stereo"
+ },
+ {
+  "t": 6.476,
+  "after": "SYSMI ?",
+  "line": "SSINFAISSIG 12"
+ },
+ {
+  "t": 6.521,
+  "after": "SYSMI ?",
+  "line": "SYSMI Multi Ch Stereo"
+ },
+ {
+  "t": 6.613,
+  "after": "SYSMI ?",
+  "line": "OPINFINS 11111111111111000000"
+ },
+ {
+  "t": 6.632,
+  "after": "SYSMI ?",
+  "line": "SYSDA Unknown"
+ },
+ {
+  "t": 6.72,
+  "after": "SYSMI ?",
+  "line": "OPINFASP 11111100000000000000000000000000"
+ },
+ {
+  "t": 6.966,
+  "after": "PW?",
+  "line": "PWON"
+ },
+ {
+  "t": 7.406,
+  "after": "ZM?",
+  "line": "ZMON"
+ },
+ {
+  "t": 7.487,
+  "after": "ZM?",
+  "line": "SLPOFF"
+ },
+ {
+  "t": 7.92,
+  "after": "MV?",
+  "line": "MV27"
+ },
+ {
+  "t": 7.938,
+  "after": "MV?",
+  "line": "MVMAX 60"
+ },
+ {
+  "t": 8.415,
+  "after": "MU?",
+  "line": "MUOFF"
+ },
+ {
+  "t": 8.859,
+  "after": "SI?",
+  "line": "SIGAME"
+ },
+ {
+  "t": 8.906,
+  "after": "SI?",
+  "line": "SVOFF"
+ },
+ {
+  "t": 9.406,
+  "after": "MS?",
+  "line": "MSMCH STEREO"
+ },
+ {
+  "t": 9.422,
+  "after": "MS?",
+  "line": "PSDRC OFF"
+ },
+ {
+  "t": 9.437,
+  "after": "MS?",
+  "line": "PSLFE 00"
+ },
+ {
+  "t": 9.452,
+  "after": "MS?",
+  "line": "PSBAS 50"
+ },
+ {
+  "t": 9.476,
+  "after": "MS?",
+  "line": "PSTRE 50"
+ },
+ {
+  "t": 9.484,
+  "after": "MS?",
+  "line": "PSTONE CTRL OFF"
+ },
+ {
+  "t": 9.714,
+  "after": "SV?",
+  "line": "SVOFF"
+ },
+ {
+  "t": 10.15,
+  "after": "PSBAS ?",
+  "line": "PSBAS 50"
+ },
+ {
+  "t": 10.444,
+  "after": "PSBAS ?",
+  "line": "SYSMI Multi Ch Stereo"
+ },
+ {
+  "t": 10.502,
+  "after": "PSBAS ?",
+  "line": "SSINFAISSIG 12"
+ },
+ {
+  "t": 10.611,
+  "after": "PSTRE ?",
+  "line": "OPINFINS 11111111111111000000"
+ },
+ {
+  "t": 10.632,
+  "after": "PSTRE ?",
+  "line": "SYSDA Unknown"
+ },
+ {
+  "t": 10.679,
+  "after": "PSTRE ?",
+  "line": "PSTRE 50"
+ },
+ {
+  "t": 10.787,
+  "after": "PSTRE ?",
+  "line": "OPINFASP 11111100000000000000000000000000"
+ },
+ {
+  "t": 11.019,
+  "after": "PSTONE CTRL ?",
+  "line": "PSTONE CTRL OFF"
+ },
+ {
+  "t": 11.45,
+  "after": "PSDRC ?",
+  "line": "PSDRC OFF"
+ },
+ {
+  "t": 11.883,
+  "after": "PSLFE ?",
+  "line": "PSLFE 00"
+ },
+ {
+  "t": 12.371,
+  "after": "PSDYNEQ ?",
+  "line": "PSDYNEQ OFF"
+ },
+ {
+  "t": 12.85,
+  "after": "PSGEQ ?",
+  "line": "PSGEQ OFF"
+ },
+ {
+  "t": 14.116,
+  "after": "PSHEQ ?",
+  "line": "PSHEQ OFF"
+ },
+ {
+  "t": 14.997,
+  "after": "PSDYNVOL ?",
+  "line": "PSDYNVOL OFF"
+ },
+ {
+  "t": 15.465,
+  "after": "PSREFLEV ?",
+  "line": "PSREFLEV 0"
+ },
+ {
+  "t": 15.896,
+  "after": "PSLOM ?",
+  "line": "PSLOM OFF"
+ },
+ {
+  "t": 16.33,
+  "after": "PSCINEMA EQ. ?",
+  "line": "PSCINEMA EQ.OFF"
+ },
+ {
+  "t": 16.786,
+  "after": "PSMULTEQ: ?",
+  "line": "PSMULTEQ:FLAT"
+ },
+ {
+  "t": 17.242,
+  "after": "PSRSTR ?",
+  "line": "PSRSTR OFF"
+ },
+ {
+  "t": 17.677,
+  "after": "PSSWR ?",
+  "line": "PSSWR ON"
+ },
+ {
+  "t": 18.108,
+  "after": "PSSWL ?",
+  "line": "PSSWL 50"
+ },
+ {
+  "t": 18.565,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMADIS REL"
+ },
+ {
+  "t": 18.576,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMAMLV MUT"
+ },
+ {
+  "t": 18.59,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMALIM 060"
+ },
+ {
+  "t": 18.612,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMAPON 27"
+ },
+ {
+  "t": 19.466,
+  "after": "SSSWM ?",
+  "line": "SSSWM L+M"
+ },
+ {
+  "t": 19.923,
+  "after": "PSFRONT?",
+  "line": "SSFRSDST SPB"
+ },
+ {
+  "t": 19.933,
+  "after": "PSFRONT?",
+  "line": "PSFRONT SPB"
+ },
+ {
+  "t": 20.399,
+  "after": "SSLFL ?",
+  "line": "SSLFL 080"
+ },
+ {
+  "t": 21.276,
+  "after": "ECO?",
+  "line": "ECOAUTO"
+ },
+ {
+  "t": 21.708,
+  "after": "PSSPV ?",
+  "line": "PSSPV OFF"
+ },
+ {
+  "t": 22.141,
+  "after": "PSCES ?",
+  "line": "PSCES OFF"
+ },
+ {
+  "t": 22.616,
+  "after": "PSNEURAL ?",
+  "line": "PSNEURAL ON"
+ },
+ {
+  "t": 23.069,
+  "after": "PSLFC ?",
+  "line": "PSLFC OFF"
+ },
+ {
+  "t": 23.502,
+  "after": "PSEFF ?",
+  "line": "PSEFF 00"
+ },
+ {
+  "t": 23.988,
+  "after": "PSCNTAMT ?",
+  "line": "PSCNTAMT 00"
+ },
+ {
+  "t": 24.491,
+  "after": "PSDELAY ?",
+  "line": "PSDELAY 000"
+ },
+ {
+  "t": 24.93,
+  "after": "PSDIC ?",
+  "line": "PSDIC 00"
+ },
+ {
+  "t": 25.404,
+  "after": "DIM ?",
+  "line": "DIM BRI"
+ },
+ {
+  "t": 25.879,
+  "after": "VSVPM ?",
+  "line": "VSVPMAUTO"
+ },
+ {
+  "t": 26.353,
+  "after": "PV?",
+  "line": "PVDAY"
+ },
+ {
+  "t": 26.807,
+  "after": "PVCN ?",
+  "line": "PVCN 050"
+ },
+ {
+  "t": 27.269,
+  "after": "PVBR ?",
+  "line": "PVBR 050"
+ },
+ {
+  "t": 27.731,
+  "after": "PVST ?",
+  "line": "PVST 050"
+ },
+ {
+  "t": 28.19,
+  "after": "PVENH ?",
+  "line": "PVENH 00"
+ },
+ {
+  "t": 28.656,
+  "after": "PVDNR ?",
+  "line": "PVDNR OFF"
+ },
+ {
+  "t": 29.105,
+  "after": "VSMONI ?",
+  "line": "VSMONIAUTO"
+ },
+ {
+  "t": 29.579,
+  "after": "VSASP ?",
+  "line": "VSASPFUL"
+ },
+ {
+  "t": 30.031,
+  "after": "VSAUDIO ?",
+  "line": "VSAUDIO AMP"
+ },
+ {
+  "t": 30.506,
+  "after": "VSSCH ?",
+  "line": "VSSCHAUTO"
+ },
+ {
+  "t": 30.96,
+  "after": "SD?",
+  "line": "SDHDMI"
+ },
+ {
+  "t": 31.394,
+  "after": "CV?",
+  "line": "CVFL 50"
+ },
+ {
+  "t": 31.405,
+  "after": "CV?",
+  "line": "CVFR 50"
+ },
+ {
+  "t": 31.413,
+  "after": "CV?",
+  "line": "CVC 50"
+ },
+ {
+  "t": 31.425,
+  "after": "CV?",
+  "line": "CVSL 50"
+ },
+ {
+  "t": 31.434,
+  "after": "CV?",
+  "line": "CVSR 50"
+ },
+ {
+  "t": 31.447,
+  "after": "CV?",
+  "line": "CVEND"
+ },
+ {
+  "t": 31.605,
+  "after": "CV?",
+  "line": "MVMAX 60"
+ },
+ {
+  "t": 31.634,
+  "after": "CV?",
+  "line": "DCAUTO"
+ }
+]

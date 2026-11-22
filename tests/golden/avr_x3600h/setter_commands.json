@@ -374,13 +374,13 @@
  "quick_select=1": [
   "MSQUICK1"
  ],
- "sound_mode=Multi Ch In": [
-  "MSMULTI CH IN",
+ "sound_mode=Mono Movie": [
+  "MSMONO MOVIE",
   "OPSML ?",
   "OPSML ?"
  ],
- "sound_mode=Multi In + DSurr": [
-  "MSMULTI IN + DSURR",
+ "sound_mode=Multi Ch Stereo": [
+  "MSMCH STEREO",
   "OPSML ?",
   "OPSML ?"
  ],
@@ -409,29 +409,29 @@
   "OPSML ?",
   "OPSML ?"
  ],
- "source:main=VIS": [
+ "source:main=NOOT": [
+  "SIDVD"
+ ],
+ "source:main=AAP": [
   "SIBD"
  ],
- "source:main=TV Audio": [
-  "SITV"
+ "source:zone2=NOOT": [
+  "Z2DVD"
  ],
- "source:zone2=VIS": [
+ "source:zone2=AAP": [
   "Z2BD"
  ],
- "source:zone2=TV Audio": [
-  "Z2TV"
+ "speaker_size:BKD=SMA": [
+  "SSSPCBKD SMA"
  ],
  "speaker_size:CEN=SMA": [
   "SSSPCCEN SMA"
- ],
- "speaker_size:FRO=SMA": [
-  "SSSPCFRO SMA"
  ],
  "system_power=off": [
   "PWSTANDBY"
  ],
  "volume_level:main=0.5": [
-  "MV35"
+  "MV30"
  ],
  "volume_level:zone2=0.5": [
   "Z249"

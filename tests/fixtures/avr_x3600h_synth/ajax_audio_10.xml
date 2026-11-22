@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<GraphicEQ><Enable>1</Enable><SpeakerSelection>2</SpeakerSelection><SelectableSpeaker><Each>111110000000000000000000</Each></SelectableSpeaker><AdjustEQ><Channel>0</Channel><Eq63Hz>0</Eq63Hz><Eq125Hz>-10</Eq125Hz><Eq250Hz>5</Eq250Hz><Eq500Hz>0</Eq500Hz><Eq1kHz>20</Eq1kHz><Eq2kHz>-5</Eq2kHz><Eq4kHz>0</Eq4kHz><Eq8kHz>-15</Eq8kHz><Eq16kHz>10</Eq16kHz></AdjustEQ></GraphicEQ>

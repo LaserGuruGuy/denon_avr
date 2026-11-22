@@ -14,12 +14,12 @@
   <manufacturer>Denon</manufacturer>
   <manufacturerURL>http://www.denon.com</manufacturerURL>
   <modelName>Denon AVR-X3600H</modelName>
-  <modelNumber>Aios 6.5V</modelNumber>
-  <serialNumber>DCWJ000000000</serialNumber>
+  <modelNumber>Aios 4.025</modelNumber>
+  <serialNumber>BHB30000000000</serialNumber>
   <UDN>uuid:00000000-0000-0000-0000-000000000000</UDN>
   <DMH:X_Audyssey>00000002</DMH:X_Audyssey>
   <DMH:X_AudysseyPort>1256</DMH:X_AudysseyPort>
-  <DMH:X_DeviceCapabilities>ba143bd5</DMH:X_DeviceCapabilities>
+  <DMH:X_DeviceCapabilities>ba143b94</DMH:X_DeviceCapabilities>
   <DMH:X_ProductCategory>ANY</DMH:X_ProductCategory>
   <DMH:X_WebAPIPort>8080</DMH:X_WebAPIPort>
 <deviceList>
@@ -29,7 +29,7 @@
   <manufacturer>Denon</manufacturer>
   <manufacturerURL>http://www.denon.com</manufacturerURL>
   <modelName>Denon AVR-X3600H</modelName>
-  <modelNumber>Aios 6.5V</modelNumber>
+  <modelNumber>Aios 4.025</modelNumber>
   <UDN>uuid:00000000-0000-0000-0000-000000000000</UDN>
   <X_Play_Queue_Capacity>1000</X_Play_Queue_Capacity>
   <qq:X_QPlay_SoftwareCapability>QPlay:2</qq:X_QPlay_SoftwareCapability>
@@ -70,7 +70,7 @@
   <manufacturer>Denon</manufacturer>
   <manufacturerURL>http://www.denon.com</manufacturerURL>
   <modelName>Denon AVR-X3600H</modelName>
-  <modelNumber>Aios 6.5V</modelNumber>
+  <modelNumber>Aios 4.025</modelNumber>
   <UDN>uuid:00000000-0000-0000-0000-000000000000</UDN>
 <serviceList>
 <service>
@@ -97,45 +97,14 @@
 </serviceList>
 </device>
 <device>
-  <deviceType>urn:schemas-denon-com:device:ACT-Denon:1</deviceType>
-  <friendlyName>Denon AVR-X3600H</friendlyName>
-  <manufacturer>Denon</manufacturer>
-  <manufacturerURL>http://www.denon.com</manufacturerURL>
-  <modelName>Denon AVR-X3600H</modelName>
-  <modelNumber>Aios 6.5V</modelNumber>
-  <serialNumber>DCWJ000000000</serialNumber>
-  <UDN>uuid:00000000-0000-0000-0000-000000000000</UDN>
-  <DeviceID>AIOS:0001</DeviceID>
-  <capability_version>4</capability_version>
-  <firmwareRevision>1793367809</firmwareRevision>
-  <firmware_date>Sat 2026-10-31 02:22:54</firmware_date>
-  <firmware_version>3.88.614</firmware_version>
-  <lanMac>00:06:78:00:00:0A</lanMac>
-  <locale>en_EU</locale>
-  <moduleRevision>3</moduleRevision>
-  <moduleType>Aios 6.5V</moduleType>
-  <productRevision>1</productRevision>
-  <releaseType>Production</releaseType>
-  <wlanMac>00:06:78:00:00:0F</wlanMac>
-<serviceList>
-<service>
-   <serviceType>urn:schemas-denon-com:service:ACT:1</serviceType>
-   <serviceId>urn:denon-com:serviceId:ACT</serviceId>
-   <SCPDURL>/ACT/SCPD.xml</SCPDURL>
-   <controlURL>/ACT/control</controlURL>
-   <eventSubURL>/ACT/event</eventSubURL>
-</service>
-</serviceList>
-</device>
-<device>
   <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
   <friendlyName>Denon AVR-X3600H</friendlyName>
   <manufacturer>Denon</manufacturer>
   <manufacturerURL>http://www.denon.com</manufacturerURL>
   <modelDescription>Shares User defined folders and files to other Universal Plug and Play media devices.</modelDescription>
   <modelName>Denon AVR-X3600H</modelName>
-  <modelNumber>Aios 6.5V</modelNumber>
-  <serialNumber>DCWJ000000000</serialNumber>
+  <modelNumber>Aios 4.025</modelNumber>
+  <serialNumber>BHB30000000000</serialNumber>
   <UDN>uuid:00000000-0000-0000-0000-000000000000</UDN>
   <avega_media_server:X_VirtualServersSupported>True</avega_media_server:X_VirtualServersSupported>
 <serviceList>
@@ -152,6 +121,37 @@
    <SCPDURL>/upnp/scpd/ams_dvc/ConnectionManager.xml</SCPDURL>
    <controlURL>/upnp/control/ams_dvc/ConnectionManager</controlURL>
    <eventSubURL>/upnp/event/ams_dvc/ConnectionManager</eventSubURL>
+</service>
+</serviceList>
+</device>
+<device>
+  <deviceType>urn:schemas-denon-com:device:ACT-Denon:1</deviceType>
+  <friendlyName>Denon AVR-X3600H</friendlyName>
+  <manufacturer>Denon</manufacturer>
+  <manufacturerURL>http://www.denon.com</manufacturerURL>
+  <modelName>Denon AVR-X3600H</modelName>
+  <modelNumber>Aios 4.025</modelNumber>
+  <serialNumber>BHB30000000000</serialNumber>
+  <UDN>uuid:00000000-0000-0000-0000-000000000000</UDN>
+  <DeviceID>AIOS:0001</DeviceID>
+  <capability_version>4</capability_version>
+  <firmwareRevision>1783925966</firmwareRevision>
+  <firmware_date>Tue 2026-07-14 04:38:06</firmware_date>
+  <firmware_version>3.139.173</firmware_version>
+  <lanMac>00:05:CD:00:00:0C</lanMac>
+  <locale>en_EU</locale>
+  <moduleRevision>4</moduleRevision>
+  <moduleType>Aios 4.025</moduleType>
+  <productRevision>1</productRevision>
+  <releaseType>Production</releaseType>
+  <wlanMac>00:05:CD:00:00:0E</wlanMac>
+<serviceList>
+<service>
+   <serviceType>urn:schemas-denon-com:service:ACT:1</serviceType>
+   <serviceId>urn:denon-com:serviceId:ACT</serviceId>
+   <SCPDURL>/ACT/SCPD.xml</SCPDURL>
+   <controlURL>/ACT/control</controlURL>
+   <eventSubURL>/ACT/event</eventSubURL>
 </service>
 </serviceList>
 </device>

@@ -17,9 +17,9 @@
  "poll_connected_zone": {
   "muted": false,
   "power": true,
-  "source": "TV",
+  "source": "GAME",
   "volume_max_raw": null,
-  "volume_raw": 43.0
+  "volume_raw": 27.0
  },
  "poll_fallback_requests": [
   {
@@ -61,8 +61,8 @@
  "poll_fallback_zone": {
   "muted": false,
   "power": true,
-  "source": "TV",
+  "source": "GAME",
   "volume_max_raw": null,
-  "volume_raw": 43.0
+  "volume_raw": 27.0
  }
 }

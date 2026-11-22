@@ -1,5 +1,10 @@
 {
  "description": "AVC-X3900H, firmware 3.139.174 (Aios 6.5V), captured read-only 2026-11-22 with tools/capture_fixtures.py, redacted with tools/redact_fixtures.py.",
  "generation_note": "Setup web interface: 10443 refused, 443 redirects to http :11080. The current (1.1.2) code only knows 10443, so the characterization run models 10443 as unreachable (webconfig absent) - exactly the live behaviour.",
- "webconfig": null
+ "webconfig": null,
+ "observed_endpoints": {
+  "443": "301 -> http://<host>:11080/ (ajax on 443: 403)",
+  "10443": "closed",
+  "11080": "setup web interface (HTTP)"
+ }
 }

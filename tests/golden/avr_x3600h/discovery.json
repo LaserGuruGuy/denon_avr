@@ -1,20 +1,5 @@
 {
- "all_sound_modes": [
-  "Stereo",
-  "Multi Ch In",
-  "Multi In + DSurr",
-  "Multi In + Neural:X",
-  "Multi In + Virtual:X",
-  "AURO Surround",
-  "Multi Ch Stereo",
-  "Mono Movie",
-  "Rock Arena",
-  "Jazz Club",
-  "Matrix",
-  "Video Game",
-  "Direct",
-  "Pure Direct"
- ],
+ "all_sound_modes": [],
  "channels": [
   {
    "code": "C",
@@ -22,19 +7,7 @@
   },
   {
    "code": "SW",
-   "name": "Subwoofer 1"
-  },
-  {
-   "code": "SW2",
-   "name": "Subwoofer 2"
-  },
-  {
-   "code": "SW3",
-   "name": "Subwoofer 3"
-  },
-  {
-   "code": "SW4",
-   "name": "Subwoofer 4"
+   "name": "Subwoofer"
   },
   {
    "code": "FL",
@@ -105,14 +78,6 @@
    "name": "Rear Height R"
   },
   {
-   "code": "SHL",
-   "name": "Surround Height L"
-  },
-  {
-   "code": "SHR",
-   "name": "Surround Height R"
-  },
-  {
    "code": "FDL",
    "name": "Front Dolby L"
   },
@@ -135,43 +100,26 @@
   {
    "code": "BDR",
    "name": "Back Dolby R"
-  },
-  {
-   "code": "TS",
-   "name": "Top Surround"
-  },
-  {
-   "code": "CH",
-   "name": "Center Height"
   }
  ],
  "configured_channels": [
-  "C",
   "FL",
-  "FR",
-  "SBL",
-  "SBR",
-  "SL",
-  "SR",
-  "SW"
+  "FR"
  ],
- "current_sound_modes": [
-  "Direct",
-  "Pure Direct",
-  "Auto"
- ],
+ "current_sound_modes": [],
  "device": {
-  "firmware_revision": "1793367809",
-  "firmware_version": "3.88.614",
+  "firmware_revision": "1783925966",
+  "firmware_version": "3.139.173",
   "hardware_type": "avr-x-2016",
-  "mac_address": "00:06:78:00:00:0a",
+  "mac_address": "00:05:cd:00:00:0c",
   "manufacturer": "Denon",
   "model_name": "AVR-X3600H",
-  "network_module_version": "Aios 6.5V",
-  "serial_number": "DCWJ000000000",
+  "network_module_version": "Aios 4.025",
+  "serial_number": "BHB30000000000",
   "zone_count": 2
  },
  "feature_names": {
+  "AspectRatio": "Aspect Ratio",
   "AudioDelay": "Audio Delay",
   "AudysseyLfc": "Audyssey LFC",
   "AutoLipSync": "Auto Lip Sync",
@@ -182,6 +130,7 @@
   "ContainmentAmount": "Containment Amount",
   "DTSNeuralX": "DTS Neural:X",
   "DialogControl": "Dialog Control",
+  "DialogLevel": "Center Level Adjust",
   "DynamicCompression": "Dynamic Compression",
   "DynamicEq": "Dynamic EQ",
   "DynamicVolume": "Dynamic Volume",
@@ -194,7 +143,9 @@
   "LFE": "Low Frequency Effects",
   "Loudness": "Loudness Management",
   "MultEq": "MultEQ XT32",
+  "PictureMode": "Picture Mode",
   "RefLevOffset": "Reference Level Offset",
+  "ResolutionHdmi": "Resolution (HDMI)",
   "Restorer": "Restorer",
   "RoomSize": "Room Size",
   "SpeakerVirtualizer": "Speaker Virtualizer",
@@ -212,27 +163,22 @@
   "AllZonePower",
   "AllZoneStereo",
   "AllowUpdate",
+  "AspectRatio",
   "AudioDelay",
   "Audyssey",
   "AudysseyLfc",
-  "Auro3DMode",
-  "AuroMatic3DPreset",
-  "AuroMatic3DStrength",
   "AutoLipSync",
   "AutoSetupMenuOff",
   "AutoUpdate",
   "BTTX",
   "Bass",
-  "BassSync",
   "BatteryMode",
   "Blu-ray",
   "Bluetooth",
   "CBL/SAT",
   "CD",
   "CenterSpread",
-  "ChannelExpander",
   "ChannelLevel",
-  "ChannelLevelMonitoring",
   "CinemaEq",
   "Clock",
   "ClockAdjust",
@@ -240,11 +186,11 @@
   "ContainmentAmount",
   "Cursor",
   "DTSNeuralX",
+  "DVD",
   "DelayTime",
   "DeviceColor",
   "DialogControl",
-  "DialogEnhancer",
-  "DiracLive",
+  "DialogLevel",
   "DynamicCompression",
   "DynamicEq",
   "DynamicVolume",
@@ -255,10 +201,8 @@
   "ExternalContol",
   "FirmwareUpdate",
   "FrontDisplay",
-  "GAME1",
+  "GAME",
   "GraphicEQ",
-  "HDMIUpscaler",
-  "HEOSapp",
   "HdmiAudioOut",
   "HdmiSetup",
   "HdmiVideoOut",
@@ -268,13 +212,13 @@
   "IMAXAudioSettings",
   "InputMode",
   "InputSelect",
+  "IpScaler",
   "LFE",
   "LchLevel",
   "Lock",
   "Loudness",
   "LowPassFilter",
   "Media Player",
-  "MenuLock",
   "MultEq",
   "NETWORK",
   "NetLink",
@@ -283,6 +227,9 @@
   "OutputSettings",
   "PHONO",
   "PartyMode",
+  "PictureAdjust",
+  "PictureMode",
+  "ProgressiveMode",
   "Quick Select1",
   "Quick Select2",
   "Quick Select3",
@@ -290,27 +237,27 @@
   "QuickSelectName",
   "RchLevel",
   "RefLevOffset",
+  "ResolutionAnalog",
+  "ResolutionHdmi",
   "Restorer",
   "RoomSize",
   "SOURCE",
   "SetupLock",
+  "Sharpness",
   "SleepTimer",
   "SoundMode",
   "SourceRename",
   "SpeakerAB",
-  "SpeakerPreset",
   "SpeakerSelect",
   "SpeakerSelection",
   "SpeakerSelectionAll",
   "SpeakerSelectionEach",
   "SpeakerSelectionLR",
   "SpeakerVirtualizer",
-  "Spotify",
   "StatusInfo",
   "Subwoofer",
   "SubwooferLevel",
-  "SubwooferOutput",
-  "SurroundLevelCompensation",
+  "SubwooferMode",
   "SurroundParameter",
   "SystemFavorites",
   "TUNER",
@@ -324,7 +271,8 @@
   "VideoSelect",
   "WakeupTimer",
   "Zone2Setup",
-  "ZoneRename"
+  "ZoneRename",
+  "iPod/USB"
  ],
  "numeric_meta": {
   "BDL": {
@@ -347,7 +295,7 @@
    "min": -12.0,
    "step": 0.5
   },
-  "CH": {
+  "DialogLevel": {
    "max": 12.0,
    "min": -12.0,
    "step": 0.5
@@ -417,16 +365,6 @@
    "min": -12.0,
    "step": 0.5
   },
-  "SHL": {
-   "max": 12.0,
-   "min": -12.0,
-   "step": 0.5
-  },
-  "SHR": {
-   "max": 12.0,
-   "min": -12.0,
-   "step": 0.5
-  },
   "SL": {
    "max": 12.0,
    "min": -12.0,
@@ -438,21 +376,6 @@
    "step": 0.5
   },
   "SW": {
-   "max": 12.0,
-   "min": -12.0,
-   "step": 0.5
-  },
-  "SW2": {
-   "max": 12.0,
-   "min": -12.0,
-   "step": 0.5
-  },
-  "SW3": {
-   "max": 12.0,
-   "min": -12.0,
-   "step": 0.5
-  },
-  "SW4": {
    "max": 12.0,
    "min": -12.0,
    "step": 0.5
@@ -492,11 +415,6 @@
    "min": -12.0,
    "step": 0.5
   },
-  "TS": {
-   "max": 12.0,
-   "min": -12.0,
-   "step": 0.5
-  },
   "Treble": {
    "max": 6.0,
    "min": -6.0,
@@ -504,6 +422,10 @@
   }
  },
  "option_labels": {
+  "AspectRatio": [
+   "16:9",
+   "4:3"
+  ],
   "DynamicCompression": [
    "Off",
    "Low",
@@ -518,7 +440,7 @@
    "Heavy"
   ],
   "FrontDisplay": [
-   "Brightness",
+   "Dimmer",
    "Bright",
    "Dim",
    "Dark",
@@ -530,8 +452,8 @@
   ],
   "HdmiVideoOut": [
    "Auto(Dual)",
-   "TV 1",
-   "TV 2"
+   "Monitor 1",
+   "Monitor 2"
   ],
   "InputMode": [
    "No Input",
@@ -549,11 +471,31 @@
    "Flat",
    "Off"
   ],
+  "PictureMode": [
+   "Standard",
+   "Movie",
+   "Vivid",
+   "Streaming",
+   "ISF Day",
+   "ISF Night",
+   "Custom",
+   "Off"
+  ],
   "RefLevOffset": [
    "0dB",
    "+5dB",
    "+10dB",
    "+15dB"
+  ],
+  "ResolutionHdmi": [
+   "Auto",
+   "480p/576p",
+   "1080i",
+   "720p",
+   "1080p",
+   "1080p:24Hz",
+   "4K",
+   "4K(60/50)"
   ],
   "Restorer": [
    "High",
@@ -571,8 +513,7 @@
   "VideoMode": [
    "Auto",
    "Game",
-   "Movie",
-   "Bypass"
+   "Movie"
   ]
  },
  "quick_select_names": {},
@@ -582,49 +523,16 @@
   "MUS": "Music",
   "PUR": "Pure"
  },
- "sound_mode_groups": {
-  "GAM": [
-   "Stereo",
-   "Multi Ch In",
-   "Multi In + DSurr",
-   "Multi In + Neural:X",
-   "Multi In + Virtual:X",
-   "AURO Surround",
-   "Multi Ch Stereo",
-   "Video Game"
-  ],
-  "MOV": [
-   "Stereo",
-   "Multi Ch In",
-   "Multi In + DSurr",
-   "Multi In + Neural:X",
-   "Multi In + Virtual:X",
-   "AURO Surround",
-   "Multi Ch Stereo",
-   "Mono Movie"
-  ],
-  "MUS": [
-   "Stereo",
-   "Multi Ch In",
-   "Multi In + DSurr",
-   "Multi In + Neural:X",
-   "Multi In + Virtual:X",
-   "AURO Surround",
-   "Multi Ch Stereo",
-   "Rock Arena",
-   "Jazz Club",
-   "Matrix"
-  ],
-  "PUR": [
-   "Direct",
-   "Pure Direct",
-   "Multi Ch In"
-  ]
- },
+ "sound_mode_groups": {},
  "sources": [
   {
+   "code": "DVD",
+   "name": "NOOT",
+   "visible": true
+  },
+  {
    "code": "BD",
-   "name": "VIS",
+   "name": "AAP",
    "visible": true
   },
   {
@@ -634,23 +542,23 @@
   },
   {
    "code": "SAT/CBL",
-   "name": "AAP",
-   "visible": true
+   "name": "CBL/SAT",
+   "visible": false
   },
   {
    "code": "MPLAY",
    "name": "Media Player",
-   "visible": true
+   "visible": false
   },
   {
-   "code": "GAME1",
-   "name": "NOOT",
+   "code": "GAME",
+   "name": "ROOS",
    "visible": true
   },
   {
    "code": "AUX1",
-   "name": "AUX1",
-   "visible": false
+   "name": "MIES",
+   "visible": true
   },
   {
    "code": "CD",
@@ -659,8 +567,8 @@
   },
   {
    "code": "AUX2",
-   "name": "MIES",
-   "visible": true
+   "name": "AUX2",
+   "visible": false
   },
   {
    "code": "PHONO",
@@ -669,7 +577,7 @@
   },
   {
    "code": "TUNER",
-   "name": "Tuner",
+   "name": "TUNER",
    "visible": false
   },
   {
@@ -679,27 +587,8 @@
   }
  ],
  "speaker_config": {
-  "CEN": [
-   "YES"
-  ],
   "FRO": [
-   "YES"
-  ],
-  "SBK": [
-   "2SP",
-   "NO"
-  ],
-  "SUA": [
-   "YES"
-  ],
-  "SWF": [
-   "1SP"
-  ],
-  "SWL": [
-   "2LR"
-  ],
-  "SWM": [
-   "STD"
+   "LAR"
   ]
  },
  "volume": {

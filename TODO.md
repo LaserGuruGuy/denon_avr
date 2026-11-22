@@ -102,4 +102,4 @@ advertises the capability, so every item below is additive and self-gating.
 - Telnet transport tests (framing, CR split, queue, reconnect) through a fake open_connection.
 - Faster tests that do not depend on timing: a fake clock instead of the real 0.8 s / 0.1 s sleeps.
 - Wider redaction: 10/8, 172.16/12, IPv6, hostnames, SSID, HEOS pid.
-- Replace the synthetic X3600H set with a real capture (tools/capture_fixtures.py).
+- (done) the synthetic X3600H set is replaced by a real capture.

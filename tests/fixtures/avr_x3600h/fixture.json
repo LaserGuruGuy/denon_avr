@@ -1,0 +1,5 @@
+{
+ "description": "AVR-X3600H, captured read-only 2026-11-22 with tools/capture_fixtures.py (redacted automatically). Legacy setup web interface on HTTPS 10443.",
+ "webconfig": {"scheme": "https", "port": 10443},
+ "observed_endpoints": {"443": "301 -> https://<host>:10443/ (ajax on 443: 403)", "11080": "closed"}
+}
