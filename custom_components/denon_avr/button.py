@@ -41,6 +41,7 @@ class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
     """
 
     _web_backed = True   # setup web interface, not telnet
+    _eq_gated = True
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:content-save"
@@ -57,6 +58,7 @@ class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):
     """Copy the reference curve into the manual graphic EQ as a starting point."""
 
     _web_backed = True   # setup web interface, not telnet
+    _eq_gated = True
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:content-copy"
@@ -73,6 +75,7 @@ class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
     """Reset the manual graphic EQ to its defaults (a flat curve)."""
 
     _web_backed = True   # setup web interface, not telnet
+    _eq_gated = True
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:restore"

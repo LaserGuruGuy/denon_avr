@@ -207,7 +207,11 @@ class StateSync:
         )
         status = await fetch_status(main_path)
         if status is None:
-            # HTTP unreachable; rely on the telnet availability signal.
+            # goform unreachable: still refresh the web sections, so their own
+            # reachability is re-judged (a receiver that is completely offline
+            # must not leave web entities "available" with stale values).
+            for refresh in refreshables:
+                await refresh()
             return
         display = status.get("volume_display")
         if display is not None and display != self._state.volume_display:

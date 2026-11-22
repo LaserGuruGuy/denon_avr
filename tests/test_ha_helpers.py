@@ -78,3 +78,15 @@ async def test_subwoofer_setup_follows_the_subwoofer_count(make_device):
     assert not helpers.has_subwoofer_setup(old)
     await new.async_stop()
     await old.async_stop()
+
+
+async def test_current_input_follows_si(make_device):
+    helpers = conftest.load_ha_module("helpers")
+    dev, telnet = await _device(make_device, "avc_x3900h")
+    assert dev.state.zone("main").source == "TV"
+    assert helpers.current_input_slot(dev, "input_signal_format") == "6"      # TV Audio, as globals 7 says
+    telnet.feed("SIBD")                                                         # VIS on the BD slot
+    assert helpers.current_input_slot(dev, "input_signal_format") == "3"
+    telnet.feed("SIPHONO")                                                      # no per-input video item
+    assert helpers.current_input_slot(dev, "input_signal_format") is None
+    await dev.async_stop()

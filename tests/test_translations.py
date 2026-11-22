@@ -25,3 +25,23 @@ def test_profile_keys_are_translated(lang):
     assert set(SPEAKERS["amp_modes"]["keys"].values()) <= set(sensor["amp_mode"]["state"])
     assert set(SPEAKERS["subwoofer_setup"]["mode_keys"].values()) <= set(sensor["subwoofer_mode"]["state"])
     assert set(SPEAKERS["subwoofer_setup"]["layout_keys"].values()) <= set(sensor["subwoofer_layout"]["state"])
+
+
+@pytest.mark.parametrize("lang", sorted(LANGS))
+def test_per_input_option_keys_are_translated(lang):
+    select = LANGS[lang]["entity"]["select"]
+    for spec in load_profile().grammar["video_web"]["collections"]:
+        keys = set(spec["option_keys"].values())
+        assert keys <= set(select[spec["id"]]["state"]), spec["id"]
+        assert keys <= set(select[f"current_{spec['id']}"]["state"]), spec["id"]
+        assert "{input}" in select[spec["id"]]["name"]
+
+
+@pytest.mark.parametrize("lang", sorted(LANGS))
+def test_every_sub_device_has_a_translated_name(lang):
+    import ast
+
+    tree = ast.parse((PKG / "entity.py").read_text())
+    names = next(n.value for n in ast.walk(tree) if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "SUB_DEVICE_NAMES")
+    subs = {k.value for k in names.keys}
+    assert subs <= set(LANGS[lang]["device"]), subs - set(LANGS[lang]["device"])

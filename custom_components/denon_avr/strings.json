@@ -221,6 +221,58 @@
       },
       "eq_channel": {
         "name": "Channel"
+      },
+      "input_signal_format": {
+        "name": "{input} 4K/8K signal format",
+        "state": {
+          "standard": "Standard",
+          "enhanced": "Enhanced",
+          "custom": "Custom",
+          "8k_enhanced": "8K Enhanced"
+        }
+      },
+      "input_hdcp": {
+        "name": "{input} HDCP",
+        "state": {
+          "auto": "Auto",
+          "hdcp_1_4": "1.4",
+          "hdcp_2_3": "2.3",
+          "custom": "Custom"
+        }
+      },
+      "current_input_signal_format": {
+        "name": "4K/8K signal format (current input)",
+        "state": {
+          "standard": "Standard",
+          "enhanced": "Enhanced",
+          "custom": "Custom",
+          "8k_enhanced": "8K Enhanced"
+        },
+        "state_attributes": {
+          "input": {
+            "name": "Input"
+          },
+          "slot": {
+            "name": "Slot"
+          }
+        }
+      },
+      "current_input_hdcp": {
+        "name": "HDCP (current input)",
+        "state": {
+          "auto": "Auto",
+          "hdcp_1_4": "1.4",
+          "hdcp_2_3": "2.3",
+          "custom": "Custom"
+        },
+        "state_attributes": {
+          "input": {
+            "name": "Input"
+          },
+          "slot": {
+            "name": "Slot"
+          }
+        }
       }
     },
     "switch": {
@@ -345,6 +397,31 @@
       "eq_default": {
         "name": "Default"
       }
+    }
+  },
+  "device": {
+    "audio": {
+      "name": "{model} Audio"
+    },
+    "video": {
+      "name": "{model} Video"
+    },
+    "picture": {
+      "name": "{model} Picture"
+    },
+    "speakers": {
+      "name": "{model} Speakers"
+    },
+    "eq": {
+      "name": "{model} Graphic EQ"
+    },
+    "inputs": {
+      "name": "{model} Inputs"
+    }
+  },
+  "exceptions": {
+    "input_option_refused": {
+      "message": "The receiver does not allow {option} for {input} right now."
     }
   }
 }

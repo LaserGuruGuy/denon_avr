@@ -181,3 +181,25 @@ async def test_device_configuration_url(make_device, fixture, url, scheme, port)
     await dev.async_discover()
     assert dev.configuration_url == url
     assert dev.setup_interface == {"scheme": scheme, "port": port, "source": "redirect"}
+
+
+async def test_reachable_semantics():
+    routes = dict(WEB_CONTROL, **{"http://h:11080/ajax/video/get_config": (500, {}, "")})
+    web = WebConfigClient(_Session(routes), "h")
+    assert web.reachable is None
+    assert await web.async_get("video", 1) is None and web.reachable is True     # answered (HTTP 500)
+    del routes["http://h:11080/ajax/video/get_config"]
+    assert await web.async_get("video", 1) is None and web.reachable is False    # transport failure
+    nothing = WebConfigClient(_Session({}), "h")
+    assert await nothing.async_get("video", 1) is None and nothing.reachable is False
+
+
+async def test_offline_receiver_makes_web_unreachable(make_device, monkeypatch):
+    """goform AND web gone: the poll still re-judges the web, so web entities do not
+    stay available with stale values."""
+    dev, session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    assert dev.web_reachable is True
+    monkeypatch.setattr(type(fx), "http", lambda self, url: None)                # everything refuses
+    await dev.async_poll()
+    assert dev.web_reachable is False

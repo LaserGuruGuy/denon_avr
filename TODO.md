@@ -158,8 +158,12 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
     reported, crossover options from the device value list (incl. 0 = Full), LPF 70/070
   - [~] 5d CODE DONE, ARCHITECT REVIEW PENDING (commit marked so): availability per channel (telnet vs last good web read), dynamic entities, registry restore of
     temporarily hidden entities, retry of the first web discovery; replaces _apply_channel_defaults
-  - [ ] 5e Inputs sub-device, current input (immediate via SI), i18n (state keys, {input}, device
-    translation_key, issues, exceptions); graphic EQ onto the audio availability map
+  - [~] 5e (code done, review pending) Inputs sub-device: per input 4K/8K format and HDCP (key = the
+    receiver's slot, name follows renames via {input}), current-input selects on Video (telnet first:
+    SI -> SSFUN name -> slot; no value on duplicate names), stable option keys translated en/nl,
+    sub-device names via HA device translations, graphic EQ gated on the receiver's audio menu
+    availability (X3600H: grayed). Open: issues/exceptions sections, translated option keys for
+    Full Range/None, crossover/size names via placeholders, current input from globals type 7.
   - [ ] 5f speaker layout staged + Apply (code and tests only, no live write)
   - [ ] 5g diagnostics counters (triggers, notifies, polls, last web read per document)
 - [ ] step 6: telnet parity (SPPR select, PSSP:, VSSCH OFF, Z2 sub-commands); 7 live verification; 8 docs, 1.2.0; 9 push
@@ -240,3 +244,12 @@ Mode), GMISSYbjvpcnxf.php (Subwoofer Layout), GFNFSYaxhqtbzr.php (Subwoofer Outp
 - From the 5c verification: catalogue_entities corrects only the unique_id; also check sub_device /
   enabled_default of the created entity against the entry (5d). The SSSPCSWM/SWL token maps (2LR,
   Directional token) must be verified live before they are fixed in the profile.
+
+## Visible behaviour changes for the release notes (1.2.0)
+- AVR-X3600H: the graphic EQ bands/buttons/selects are unavailable while the receiver grays the EQ menu
+  (e.g. MultEQ on), as on the receiver's own UI; they return as soon as it is active again.
+- AVC-X3900H: surround back entities (SBL/SBR trims and distances, SBK crossover) become unavailable
+  because the receiver reports no surround back (SSSPCSBK NO).
+- Sub-device names are translated (nl: Luidsprekers, Beeld, Grafische EQ, Ingangen); user-set names stay.
+- New: Inputs sub-device (per-input 4K/8K format and HDCP), current-input selects, amplifier mode and
+  subwoofer directional mode/layout sensors, quick select on firmware that is silent on SSQSNZMA.

@@ -83,3 +83,12 @@ async def test_each_document_at_most_once_per_pass(make_device, fixture):
     await dev.async_poll()
     counts = collections.Counter(r["url"] for r in session.requests[before:])
     assert max(counts.values()) == 1, [u for u, n in counts.items() if n > 1]
+
+
+@pytest.mark.parametrize(("fixture", "settable"), [("avc_x3900h", True), ("avr_x3600h", False)])
+async def test_graphic_eq_follows_the_receivers_menu(make_device, fixture, settable):
+    """X3900H reports GraphicEQ display 3 (active), the X3600H display 2 (grayed)."""
+    dev, _session, _telnet, _fx = make_device(fixture)
+    await dev.async_discover()
+    await dev.graphic_eq.refresh()
+    assert dev.graphic_eq.settable is settable

@@ -69,6 +69,7 @@
     },
     "graphic_eq": {
       "channel_policy": "secondary: per-band graphic EQ values have no telnet or port-1256 command (verified live on the AVR-X3600H)",
+      "availability": {"type": 1, "menu": "GraphicEQ"},
       "doc": [
         "Manual graphic equaliser grammar. FIXED protocol constant, like the",
         "crossover grid above: the nine ISO-octave bands (63 Hz..16 kHz) and the",
@@ -340,7 +341,7 @@
       },
       "inputs_web": {"doc": "A source change re-reads the video web section (per-input 4K/8K format and HDCP, current input). Web documents have no push.", "on": ["SI"], "queries": [], "web": ["video"], "debounce": 1.0},
       "speakers_web": {"doc": "A speaker setup line (also our own SSSPC/SSCFR re-queries, and SPPR/PSSP pushes) re-reads the speakers web section: speaker layout, crossover and LPF value lists.", "on": ["SSSPC", "SSCFR", "SPPR", "PSSP:"], "queries": [], "web": ["speakers"], "debounce": 1.5},
-      "graphic_eq_web": {"doc": "A graphic EQ on/off line re-reads the graphic EQ curve.", "on": ["PSGEQ"], "queries": [], "web": ["graphic_eq"], "debounce": 1.0}
+      "graphic_eq_web": {"doc": "A graphic EQ on/off line, or a room correction (MultEQ) change that grays the EQ menu in or out, re-reads the graphic EQ curve and its availability.", "on": ["PSGEQ", "PSMULTEQ:"], "queries": [], "web": ["graphic_eq"], "debounce": 1.0}
     }
   },
   "controls": {

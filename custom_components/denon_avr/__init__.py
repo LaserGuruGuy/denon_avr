@@ -131,15 +131,20 @@ def _enable_used_entities(hass: HomeAssistant, entry: DenonAvrConfigEntry, coord
         if regentry.unique_id.startswith(prefix)
         and regentry.disabled_by is er.RegistryEntryDisabler.INTEGRATION
     }
-    if not disabled or not coordinator.device.discovery.configured_channels:
+    if not disabled:
         return
-    for key in catalog.keys_to_enable(catalog.build(coordinator.device, coordinator.known_keys), set(disabled)):
+    entries = catalog.build(coordinator.device, coordinator.known_keys)
+    for key in catalog.keys_to_enable(entries, set(disabled), coordinator.device.discovery.configured_channels):
         _LOGGER.info("Enabling %s: the receiver's speaker setup now uses it", disabled[key])
         registry.async_update_entity(disabled[key], disabled_by=None)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> bool:
     """Unload a config entry and stop the telnet transport."""
+
+    # First stop adding entities: a push during the platform unload must not
+    # add to a platform that is being torn down.
+    entry.runtime_data.platforms.clear()
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:

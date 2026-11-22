@@ -179,6 +179,7 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
     """
 
     _web_backed = True   # setup web interface, not telnet
+    _eq_gated = True
 
     _attr_entity_category = EntityCategory.CONFIG
     _attr_native_unit_of_measurement = "dB"

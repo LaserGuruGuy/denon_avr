@@ -141,6 +141,26 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
     if device.graphic_eq.supported:
         add(EntityEntry("select", "eq_speaker_selection", "select_eq_speaker_selection", "eq"))
         add(EntityEntry("select", "eq_channel", "select_eq_channel", "eq"))
+    # Per-input settings (setup web collections, e.g. 4K/8K format, HDCP) on the
+    # "inputs" sub-device, keyed by the receiver's own input slot (stable across
+    # renames), plus one contextual select for the current input on Video.
+    video = device.video_config
+    for spec in video.collection_specs():
+        if not spec.get("writable", True):
+            continue
+        cid = spec["id"]
+        items = video.collection(cid)
+        prefix = "select_input_"
+        slots = set(items) | {
+            key[len(prefix):-(len(cid) + 1)] for key in known_keys
+            if key.startswith(prefix) and key.endswith(f"_{cid}")
+        }
+        for slot in sorted(slots, key=lambda x: (len(x), x)):
+            add(EntityEntry("select", "input_setting", f"select_input_{slot}_{cid}", "inputs",
+                            params={"collection": cid, "slot": slot}))
+        if items or f"select_current_{cid}" in known_keys:
+            add(EntityEntry("select", "current_input_setting", f"select_current_{cid}", "video",
+                            params={"collection": cid}))
     for attr, sub in (("video_config", "video"), ("speaker_config", "speakers")):
         section = getattr(device, attr)
         if not section.supported:
@@ -192,9 +212,20 @@ def _known_groups(known_keys, prefix: str, profile) -> set[str]:
     return {g for g in found if g in groups}
 
 
-def keys_to_enable(entries: list[EntityEntry], disabled_by_integration: set[str]) -> set[str]:
+def keys_to_enable(
+    entries: list[EntityEntry], disabled_by_integration: set[str], configured_channels
+) -> set[str]:
     """Keys the integration itself disabled earlier that the receiver's current
-    setup now uses (e.g. a second subwoofer was switched on). Entities the USER
-    disabled are never in ``disabled_by_integration`` and so are never touched."""
+    speaker setup now uses (e.g. a second subwoofer was switched on).
 
-    return {e.key for e in entries if e.enabled_default and e.key in disabled_by_integration}
+    Only speaker-channel entities (entries with ``channels``) are considered: their
+    default follows the user's speaker setup. Nothing is decided while the speaker
+    setup is unknown (silence is not absence). Entities the USER disabled are
+    never in ``disabled_by_integration`` and so are never touched."""
+
+    if not configured_channels:
+        return set()
+    return {
+        e.key for e in entries
+        if e.params.get("channels") and e.enabled_default and e.key in disabled_by_integration
+    }

@@ -34,6 +34,11 @@
   {
    "ssl": false,
    "timeout_total": 8.0,
+   "url": "http://192.0.2.10:11080/ajax/audio/get_config?type=1"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
    "url": "http://192.0.2.10:11080/ajax/audio/get_config?type=10&opt1=0&opt2=0"
   },
   {

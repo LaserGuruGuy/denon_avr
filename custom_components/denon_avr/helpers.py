@@ -256,3 +256,24 @@ def has_speaker_layout(device) -> bool:
 
     availability = device.speaker_config.availability_map().get("SpeakerLayout")
     return availability is not None and availability.present
+
+
+def option_key(device, collection_id: str, option: str) -> str:
+    """Stable, translatable key of a per-input option id (``option_<id>`` if unknown)."""
+
+    return device.video_config.option_key(collection_id, option)
+
+
+def current_input_slot(device, collection_id: str, zone_id: str = "main") -> str | None:
+    """The receiver's input slot of the zone's current source, telnet first:
+    the SI code -> its name (SSFUN) -> the per-input item with that name. None
+    when it cannot be decided unambiguously (unknown, or duplicate names)."""
+
+    code = device.state.zone(zone_id).source
+    if not code:
+        return None
+    name = next((s.name for s in device.discovery.sources if s.code == code), None)
+    if not name:
+        return None
+    matches = [slot for slot, item in device.video_config.collection(collection_id).items() if item.name == name]
+    return matches[0] if len(matches) == 1 else None

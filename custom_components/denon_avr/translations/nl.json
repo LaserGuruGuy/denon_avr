@@ -221,6 +221,58 @@
       },
       "eq_channel": {
         "name": "Kanaal"
+      },
+      "input_signal_format": {
+        "name": "{input} 4K/8K-signaalformaat",
+        "state": {
+          "standard": "Standaard",
+          "enhanced": "Verhoogd",
+          "custom": "Aangepast",
+          "8k_enhanced": "8K Verhoogd"
+        }
+      },
+      "input_hdcp": {
+        "name": "{input} HDCP",
+        "state": {
+          "auto": "Automatisch",
+          "hdcp_1_4": "1.4",
+          "hdcp_2_3": "2.3",
+          "custom": "Aangepast"
+        }
+      },
+      "current_input_signal_format": {
+        "name": "4K/8K-signaalformaat (huidige ingang)",
+        "state": {
+          "standard": "Standaard",
+          "enhanced": "Verhoogd",
+          "custom": "Aangepast",
+          "8k_enhanced": "8K Verhoogd"
+        },
+        "state_attributes": {
+          "input": {
+            "name": "Ingang"
+          },
+          "slot": {
+            "name": "Slot"
+          }
+        }
+      },
+      "current_input_hdcp": {
+        "name": "HDCP (huidige ingang)",
+        "state": {
+          "auto": "Automatisch",
+          "hdcp_1_4": "1.4",
+          "hdcp_2_3": "2.3",
+          "custom": "Aangepast"
+        },
+        "state_attributes": {
+          "input": {
+            "name": "Ingang"
+          },
+          "slot": {
+            "name": "Slot"
+          }
+        }
       }
     },
     "switch": {
@@ -345,6 +397,31 @@
       "eq_default": {
         "name": "Standaard"
       }
+    }
+  },
+  "device": {
+    "audio": {
+      "name": "{model} Audio"
+    },
+    "video": {
+      "name": "{model} Video"
+    },
+    "picture": {
+      "name": "{model} Beeld"
+    },
+    "speakers": {
+      "name": "{model} Luidsprekers"
+    },
+    "eq": {
+      "name": "{model} Grafische EQ"
+    },
+    "inputs": {
+      "name": "{model} Ingangen"
+    }
+  },
+  "exceptions": {
+    "input_option_refused": {
+      "message": "De receiver staat {option} voor {input} op dit moment niet toe."
     }
   }
 }

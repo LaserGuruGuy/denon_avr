@@ -84,10 +84,14 @@ async def test_integration_disabled_entities_are_re_enabled_when_used(make_devic
     catalog, dev, entries = await _catalogue(make_device, "avc_x3900h")
     # SW2 is disabled by the integration (one subwoofer); C is configured
     disabled = {"number_channel_trim_SW2", "number_channel_trim_C"}
-    assert catalog.keys_to_enable(entries, disabled) == {"number_channel_trim_C"}
+    configured = dev.discovery.configured_channels
+    assert catalog.keys_to_enable(entries, disabled, configured) == {"number_channel_trim_C"}
+    assert catalog.keys_to_enable(entries, disabled, set()) == set()          # setup unknown: decide nothing
+    assert catalog.keys_to_enable(entries, {"sensor_amp_mode"}, configured) == set()  # only channel entities
     dev.discovery.configured_channels = set(dev.discovery.configured_channels) | {"SW2"}   # a 2nd sub
     entries = catalog.build(dev)
-    assert catalog.keys_to_enable(entries, disabled) == {"number_channel_trim_SW2", "number_channel_trim_C"}
+    assert catalog.keys_to_enable(entries, disabled, dev.discovery.configured_channels) == {
+        "number_channel_trim_SW2", "number_channel_trim_C"}
 
 
 async def test_channel_entities_carry_their_required_channels(make_device):
@@ -95,3 +99,37 @@ async def test_channel_entities_carry_their_required_channels(make_device):
     by_key = {e.key: e for e in entries}
     assert by_key["number_channel_trim_SW2"].params["channels"] == ["SW2"]
     assert by_key["select_crossover_FRO"].params["channels"] == ["FL", "FR"]
+
+
+async def test_inputs_sub_device(make_device):
+    _catalog, _dev, entries = await _catalogue(make_device, "avc_x3900h")
+    inputs = [e for e in entries if e.sub_device == "inputs"]
+    keys = {e.key for e in inputs}
+    assert {"select_input_1_input_signal_format", "select_input_1_input_hdcp", "select_input_6_input_hdcp"} <= keys
+    assert all(e.enabled_default for e in inputs)                               # display 2/3: shown
+    current = {e.key for e in entries if e.kind == "current_input_setting"}
+    assert current == {"select_current_input_signal_format", "select_current_input_hdcp"}
+    assert not any("speaker_layout" in e.key for e in entries)                  # read-only collections: no select
+    _c2, _d2, legacy = await _catalogue(make_device, "avr_x3600h")
+    assert not [e for e in legacy if e.sub_device == "inputs"]                  # legacy: no per-input documents
+
+
+
+async def test_upgrade_of_the_live_x3900h_registry(make_device):
+    """Upgrading the live installation: nothing appears disabled-to-enabled by mistake,
+    and the enabled channel entities that become unavailable are exactly the surround
+    back ones (the receiver reports SSSPCSBK NO)."""
+    catalog, dev, entries = await _catalogue(make_device, "avc_x3900h")
+    rows = json.loads((REGISTRY / "avc_x3900h_live.json").read_text())["entities"]
+    enabled = {r["unique_id"].split("_", 1)[1] for r in rows if r["disabled_by"] is None}
+    integration_disabled = {r["unique_id"].split("_", 1)[1] for r in rows if r["disabled_by"] == "integration"}
+    configured = dev.discovery.configured_channels
+    assert catalog.keys_to_enable(entries, integration_disabled, configured) == set()
+    unavailable = {
+        e.key for e in entries
+        if e.key in enabled and e.params.get("channels") and not any(c in configured for c in e.params["channels"])
+    }
+    assert unavailable == {
+        "number_channel_trim_SBL", "number_channel_trim_SBR",
+        "number_channel_distance_SBL", "number_channel_distance_SBR", "select_crossover_SBK",
+    }

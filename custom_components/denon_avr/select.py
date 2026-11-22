@@ -9,10 +9,12 @@ from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec, eq_channel_options
+from .const import DOMAIN
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import (
@@ -20,6 +22,8 @@ from .helpers import (
     crossover_from_label,
     crossover_label,
     crossover_values,
+    current_input_slot,
+    option_key,
     enum_options,
     group_name,
     is_size_token,
@@ -47,6 +51,8 @@ async def async_setup_entry(
         "subwoofer_count": lambda e: DenonAvrSubwooferCount(coordinator),
         "eq_speaker_selection": lambda e: DenonAvrEqSpeakerSelection(coordinator),
         "eq_channel": lambda e: DenonAvrEqChannel(coordinator),
+        "input_setting": lambda e: DenonAvrInputSetting(coordinator, e.params["collection"], e.params["slot"]),
+        "current_input_setting": lambda e: DenonAvrCurrentInputSetting(coordinator, e.params["collection"]),
         "web_select": lambda e: DenonAvrVideoSelect(
             coordinator,
             e.params["control"],
@@ -415,6 +421,7 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
     """Graphic-EQ speaker selection: one curve for all, the L/R pair, or each."""
 
     _web_backed = True   # setup web interface, not telnet
+    _eq_gated = True
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -449,6 +456,7 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
     """
 
     _web_backed = True   # setup web interface, not telnet
+    _eq_gated = True
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -531,3 +539,107 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
             if label == option:
                 await self._ctrl.async_set(self._id, wire)
                 return
+
+
+class _CollectionSelect(DenonAvrEntity, SelectEntity):
+    """A per-input setting from a setup web collection (e.g. 4K/8K format, HDCP).
+
+    Options are stable keys (translated via ``entity.select.<key>.state``); the
+    allowed options come per input from the receiver. Writes go through the
+    library, which refuses anything the receiver does not allow for that input.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _web_backed = True
+
+    def __init__(self, coordinator: DenonAvrCoordinator, key: str, collection: str, sub_device: str) -> None:
+        super().__init__(coordinator, key, sub_device=sub_device)
+        self._collection = collection
+
+    def _slot(self) -> str | None:
+        raise NotImplementedError
+
+    def _item(self):
+        slot = self._slot()
+        if slot is None:
+            return None
+        return self.coordinator.device.video_config.collection(self._collection).get(slot)
+
+    @property
+    def available(self) -> bool:
+        item = self._item()
+        return super().available and item is not None and item.availability.settable
+
+    @property
+    def options(self) -> list[str]:
+        item = self._item()
+        if item is None:
+            return []
+        return [option_key(self.coordinator.device, self._collection, o) for o in item.options]
+
+    @property
+    def current_option(self) -> str | None:
+        item = self._item()
+        if item is None or not item.value:
+            return None
+        key = option_key(self.coordinator.device, self._collection, item.value)
+        return key if key in self.options else None
+
+    async def async_select_option(self, option: str) -> None:
+        item = self._item()
+        wire = None
+        if item is not None:
+            wire = next((w for w in item.options if option_key(self.coordinator.device, self._collection, w) == option), None)
+        accepted = wire is not None and await self.coordinator.device.video_config.async_set_item(
+            self._collection, item.slot, wire
+        )
+        if not accepted:
+            # The library refuses what the receiver does not allow for this input
+            # now; tell the user instead of failing silently.
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="input_option_refused",
+                translation_placeholders={"option": option, "input": item.name if item else "?"},
+            )
+
+
+class DenonAvrInputSetting(_CollectionSelect):
+    """One input's setting, on the Inputs sub-device. The name follows the input's
+    name on the receiver ({input} placeholder), the identity its slot."""
+
+    def __init__(self, coordinator: DenonAvrCoordinator, collection: str, slot: str) -> None:
+        super().__init__(coordinator, f"select_input_{slot}_{collection}", collection, "inputs")
+        self._slot_id = slot
+        self._attr_translation_key = collection
+        self._attr_translation_placeholders = {"input": self._input_name()}
+
+    def _slot(self) -> str | None:
+        return self._slot_id
+
+    def _input_name(self) -> str:
+        item = self._item()
+        return item.name if item is not None and item.name else f"#{self._slot_id}"
+
+    def _handle_coordinator_update(self) -> None:
+        # Follow a rename on the receiver: assigning the placeholder attribute
+        # invalidates Home Assistant's cached entity name.
+        name = self._input_name()
+        if self._attr_translation_placeholders.get("input") != name:
+            self._attr_translation_placeholders = {"input": name}
+        super()._handle_coordinator_update()
+
+
+class DenonAvrCurrentInputSetting(_CollectionSelect):
+    """The setting of the input that is playing now (follows the SI push), on Video."""
+
+    def __init__(self, coordinator: DenonAvrCoordinator, collection: str) -> None:
+        super().__init__(coordinator, f"select_current_{collection}", collection, "video")
+        self._attr_translation_key = f"current_{collection}"
+
+    def _slot(self) -> str | None:
+        return current_input_slot(self.coordinator.device, self._collection)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        item = self._item()
+        return {"input": item.name if item is not None else None, "slot": item.slot if item is not None else None}

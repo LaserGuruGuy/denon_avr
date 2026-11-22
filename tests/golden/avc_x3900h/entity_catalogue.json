@@ -925,6 +925,132 @@
  },
  {
   "enabled": true,
+  "key": "select_input_1_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_3_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_4_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_5_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_6_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_7_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_8_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_9_input_signal_format",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_current_input_signal_format",
+  "kind": "current_input_setting",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_1_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_3_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_4_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_5_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_6_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_7_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_8_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_9_input_hdcp",
+  "kind": "input_setting",
+  "platform": "select",
+  "sub_device": "inputs"
+ },
+ {
+  "enabled": true,
+  "key": "select_current_input_hdcp",
+  "kind": "current_input_setting",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
   "key": "select_hdmi_power_off_control",
   "kind": "web_select",
   "platform": "select",

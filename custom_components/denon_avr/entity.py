@@ -32,6 +32,7 @@ SUB_DEVICE_NAMES = {
     "picture": "Picture",
     "speakers": "Speakers",
     "eq": "Graphic EQ",
+    "inputs": "Inputs",
 }
 
 
@@ -42,6 +43,7 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
     # Set by subclasses / the catalogue (see available).
     _web_backed: bool = False
     _required_channels: tuple[str, ...] = ()
+    _eq_gated: bool = False     # graphic EQ controls: also need the EQ menu settable
 
     def __init__(
         self, coordinator: DenonAvrCoordinator, key: str, sub_device: str | None = None
@@ -61,11 +63,15 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
             # removed in HA 2027.8.0. The main device is registered up front in
             # __init__ so its id is available here.
             suffix = SUB_DEVICE_NAMES.get(sub_device, sub_device)
+            model = device_info.model_name or "Denon AVR"
             info = DeviceInfo(
                 identifiers={(DOMAIN, f"{identifier}_{sub_device}")},
                 manufacturer=device_info.manufacturer or "Denon",
                 model=device_info.model_name,
-                name=f"{device_info.model_name or 'Denon AVR'} {suffix}",
+                # Translated via strings.json "device.<sub_device>" ({model} placeholder).
+                translation_key=sub_device,
+                translation_placeholders={"model": model},
+                name=f"{model} {suffix}",
             )
             if coordinator.main_device_id:
                 info["via_device_id"] = coordinator.main_device_id
@@ -109,6 +115,8 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
             link = self.coordinator.available
         if not link:
             return False
+        if self._eq_gated and not self.coordinator.device.graphic_eq.settable:
+            return False
         if self._required_channels:
             configured = self.coordinator.device.discovery.configured_channels
             if configured and not any(c in configured for c in self._required_channels):
@@ -140,6 +148,8 @@ def catalogue_entities(coordinator, platform: str, factories: dict, entries=None
         channels = entry.params.get("channels")
         if channels:
             entity._required_channels = tuple(channels)
+        # The catalogue is also the source of the default enablement.
+        entity._attr_entity_registry_enabled_default = entry.enabled_default
         entities.append(entity)
         coordinator.created_keys.add(entry.key)
     return entities

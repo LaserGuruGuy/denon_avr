@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from ..models import GraphicEqState
+from ..models import Availability, GraphicEqState
+from ..protocol.webdoc import parse_availability, parse_xml
 from .ports import ConfigDocumentPort
 from ..protocol.eq_doc import (
     adjust_payload,
@@ -40,6 +41,9 @@ class GraphicEqController:
         self.state = GraphicEqState()
         self._pending: dict[str, float] = {}
         self._channel = 0
+        # The receiver's own availability of the graphic EQ menu (audio
+        # listSetupMenu), e.g. grayed while a room correction is active.
+        self.availability: Availability | None = None
 
     @property
     def grammar(self) -> dict[str, Any]:
@@ -48,6 +52,13 @@ class GraphicEqController:
     @property
     def supported(self) -> bool:
         return bool(self._grammar) and self._is_supported()
+
+    @property
+    def settable(self) -> bool:
+        """True unless the receiver reports the EQ menu as not settable now
+        (unknown availability keeps the previous behaviour: settable)."""
+
+        return self.availability is None or self.availability.settable
 
     @property
     def channel(self) -> int:
@@ -70,11 +81,24 @@ class GraphicEqController:
     def _type(self) -> int:
         return int(self._grammar.get("config_type", 0))
 
+    async def _read_availability(self) -> None:
+        spec = self._grammar.get("availability")
+        if not spec:
+            return
+        root = parse_xml(await self._webconfig.async_get(self._section(), int(spec["type"])))
+        if root is None:
+            return              # silence: keep the last known availability
+        availability = parse_availability(root).get(spec["menu"])
+        if availability != self.availability:
+            self.availability = availability
+            self._on_update()
+
     async def refresh(self) -> None:
         """Read the selected channel's curve into state (non-disruptive)."""
 
         if not self.supported:
             return
+        await self._read_availability()
         param = self._grammar.get("channel_read_param", "opt1")
         xml = await self._webconfig.async_get(
             self._section(), self._type(), {param: str(self._channel), "opt2": "0"}

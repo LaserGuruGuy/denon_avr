@@ -106,6 +106,10 @@ Consequences:
 - parsed items (speaker groups, list entries) are never dropped because they went silent;
 - entities that existed stay and turn unavailable; they are not removed (owner decision).
 
+- A speaker group the receiver never mentions counts as not configured (newer firmware omits absent
+  groups). Its channel entities are unavailable, never removed. That is the same meaning the default
+  enablement always had; it is a deliberate choice, not a removal on silence.
+
 ## Telnet setup grammar
 
 - **Introspection completes on a sentinel plus closed lists.** After the introspection queries the
