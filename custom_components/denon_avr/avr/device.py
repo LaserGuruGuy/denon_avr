@@ -180,6 +180,13 @@ class DenonAvrDevice:
         return self._webconfig.reachable
 
     @property
+    def stats(self) -> dict[str, object]:
+        """Diagnostics counters of the push/refresh machinery and the web documents
+        (no payloads, no host)."""
+
+        return {**self._sync.stats, "web_last_status": dict(self._webconfig.last_status)}
+
+    @property
     def setup_interface(self) -> dict[str, object] | None:
         """How the setup web interface was located (diagnostics; no host)."""
 

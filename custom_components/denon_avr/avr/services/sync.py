@@ -55,6 +55,11 @@ class StateSync:
         # unchanged (the periodic signal cluster, list lines before END) does not
         # notify Home Assistant.
         self._fingerprint = self._snapshot()
+        # Diagnostics counters (since start): what the push/refresh machinery did.
+        self.stats: dict[str, object] = {
+            "lines": 0, "lines_unknown": 0, "notifies": 0, "polls": 0,
+            "refresh_groups": {}, "web_refreshes": {},
+        }
 
     def _snapshot(self) -> str:
         return repr((self._state, self._discovery))
@@ -66,11 +71,15 @@ class StateSync:
 
         changed = False
         understood = self._parser.understands(line)
+        self.stats["lines"] += 1
+        if not understood:
+            self.stats["lines_unknown"] += 1
         if self._parser.feed(line, self._state):
             snapshot = self._snapshot()
             if snapshot != self._fingerprint:
                 self._fingerprint = snapshot
                 changed = True
+                self.stats["notifies"] += 1
                 self._notify()
         # The receiver pushes OPSMLALL (all groups) when the sound mode context
         # changes, but never pushes OPSML (the current group's selectable modes).
@@ -150,6 +159,8 @@ class StateSync:
         if not group:
             return
         self._refresh_scheduled.add(group_id)
+        groups = self.stats["refresh_groups"]
+        groups[group_id] = groups.get(group_id, 0) + 1
         queries = list(group.get("queries", []))
         web_sections = [w for w in group.get("web", []) if w in self._web_refreshers]
         debounce = float(group.get("debounce", 1.0))
@@ -178,6 +189,8 @@ class StateSync:
             self._web_dirty.add(section)
             return
         self._web_running.add(section)
+        web = self.stats["web_refreshes"]
+        web[section] = web.get(section, 0) + 1
         try:
             while True:
                 self._web_dirty.discard(section)
@@ -202,6 +215,7 @@ class StateSync:
         zone state so entities do not go blank. Then the web subsystems refresh.
         """
 
+        self.stats["polls"] += 1
         main_path = self._profile.zones.get(
             "status_lite_main", "/goform/formMainZone_MainZoneXmlStatusLite.xml"
         )

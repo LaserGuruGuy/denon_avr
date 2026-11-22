@@ -116,3 +116,20 @@ async def test_poll_and_trigger_share_the_single_flight(make_device):
     await dev.async_poll()
     assert sorted(calls) == ["graphic_eq", "speakers", "video"]
     await dev.async_stop()
+
+
+async def test_diagnostics_counters(make_device):
+    dev, _session, telnet, _fired = await _started(make_device)
+    before = dict(dev.stats)
+    telnet.feed("MV31")
+    telnet.feed("SPPR 1")                        # unknown to the parser
+    await asyncio.sleep(0.15)
+    await dev.async_poll()
+    stats = dev.stats
+    assert stats["lines"] == before["lines"] + 2
+    assert stats["lines_unknown"] == before["lines_unknown"] + 1
+    assert stats["notifies"] >= before["notifies"] + 1
+    assert stats["polls"] == before["polls"] + 1
+    assert any("speakers/get_config" in k for k in stats["web_last_status"])
+    assert not any("data=" in k for k in stats["web_last_status"])   # no payloads in diagnostics
+    await dev.async_stop()

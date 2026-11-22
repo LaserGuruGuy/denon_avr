@@ -31,6 +31,9 @@ async def async_get_config_entry_diagnostics(
     return {
         "available": device.available,
         "setup_web_interface": device.setup_interface,
+        "web_reachable": device.web_reachable,
+        "stats": device.stats,
+        "entities": {"known": len(coordinator.known_keys), "created": len(coordinator.created_keys)},
         "setup_web": {
             name: {
                 "availability": {

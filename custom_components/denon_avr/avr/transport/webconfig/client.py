@@ -57,6 +57,8 @@ class WebConfigClient:
         # interface answered (any HTTP status), False = it did not / none found,
         # None = not tried yet.
         self._reachable: bool | None = None
+        # Last outcome per document path (diagnostics): HTTP status or "error".
+        self.last_status: dict[str, object] = {}
 
     @property
     def reachable(self) -> bool | None:
@@ -117,6 +119,7 @@ class WebConfigClient:
                     url, ssl=False, timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
                 ) as response:
                     self._reachable = True
+                    self.last_status[f"{path}?type={params.get('type')}"] = response.status
                     if response.status != 200:
                         _LOGGER.debug("%s returned HTTP %s", path, response.status)
                         return None
@@ -124,6 +127,7 @@ class WebConfigClient:
             except (aiohttp.ClientError, asyncio.TimeoutError) as err:
                 _LOGGER.debug("GET %s failed: %s", path, err)
                 self._reachable = False
+                self.last_status[f"{path}?type={params.get('type')}"] = "error"
                 self._invalidate(endpoint)
                 return None
 
