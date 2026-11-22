@@ -65,6 +65,53 @@ serialises the requests, and after a transport failure locates it again, at most
 Which settings exist is then decided by the receiver's own availability documents, never by the model.
 The device link in HA (`configuration_url`) is the located interface.
 
+## Push and refresh
+
+- **Telnet push reaches HA at once.** telnet line -> `TelnetParser` -> `AvrState` -> `StateSync`
+  -> 0.1 s debounce -> coordinator listeners. Only a real change notifies: `StateSync` compares a
+  fingerprint of state and discovery, so the receiver's periodic signal cluster (about every 5 s on the
+  X3900H) and list lines before their END do not rewrite every entity.
+- **The coordinator never restarts its interval on a push** (`async_update_listeners`, not
+  `async_set_updated_data`), so the 60 s reconcile poll keeps running with a pushing receiver.
+- **Refresh groups run when a line changed something, or when the parser does not model the line**
+  (then a change cannot be ruled out, e.g. SPPR or `PSSP:` today). An unchanged, understood, repeated
+  push does not re-query. The OPSMLALL END handler still re-queries OPSML unconditionally.
+- **What the receiver does not re-push** is re-queried by the profile's `refresh` groups (audio info
+  and the speaker/channel layout after MS/SI, the sound mode lists after a signal change).
+- **Web documents have no push.** A `refresh` group can name web sections (`web`) to re-read when a
+  related telnet line arrives: SI -> video (per-input 4K/8K, HDCP); SSSPC/SSCFR/SPPR/PSSP: -> speakers (`PSSP:` with colon, so the Speaker Virtualizer `PSSPV` does not match);
+  PSGEQ -> graphic EQ. One read per section at a time; triggers during a read cause exactly one re-run.
+
+## Silence is not absence
+
+A command or item that does not answer is UNKNOWN, not absent: it may be silent only in the current
+setup (PSFRONT answers only with a Front B amp assignment, VSSCH only in certain video modes), or a
+response may have been cut off. Absence comes only from an explicit statement by the receiver: a
+Deviceinfo feature list, an availability `display` of 1, or an explicit absent token (NO / NON).
+Consequences:
+- profile controls are never removed because their query is silent;
+- telnet-first checks that found no answer are recorded as "not found in this setup", and are re-checked
+  in other setups and on other receivers;
+- parsed items (speaker groups, list entries) are never dropped because they went silent;
+- entities that existed stay and turn unavailable; they are not removed (owner decision).
+
+## Telnet setup grammar
+
+- **Introspection completes on a sentinel plus closed lists.** After the introspection queries the
+  probe sends the profile's `introspection_sentinel` (`PW?`). It is complete when that has answered
+  AND no END-terminated list (`terminated` in the profile) is still open: replies mostly come in order,
+  but the sound mode lists stream asynchronously between other replies. SSSPC has no END line at all.
+- **SSSPC values are classified per protocol generation** (`speakers.tokens`): presence (YES/NO on
+  newer firmware), size (LAR/SMA, and NON = size "none" on older firmware), count (`<n>SP`), other. A
+  group is absent only when its presence (or, without a presence line, its size) is an absent token. Per group the last value of
+  each kind wins, so a push or a repeated response overwrites instead of accumulating. Newer firmware
+  omits absent groups; a group that was reported and later goes silent is kept (see below).
+- **Count groups map a count to channels** (`count_groups.*.by_count`): subwoofers 1-4 (SW..SW4),
+  surround back 1 (SB) or 2 (SBL/SBR).
+- **Numbered lists (OPSML, OPSMLALL):** entry number 1 starts a new response; on END the list is
+  replaced only when the numbers run 1..n without a gap, otherwise merged, so nothing is dropped.
+- **Crossover "FUL"** (full range) is 0, as in the web value list; the command builder sends 0 as FUL.
+
 ## Setup web documents (protocol/webdoc.py)
 
 - **Availability in one place** (`models.Availability`), read the way the receiver's own Web Control

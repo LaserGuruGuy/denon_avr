@@ -70,7 +70,21 @@ class DenonAvrDevice:
             on_availability=self._handle_availability,
         )
         parser = TelnetParser(self._profile, self._discovery)
-        self._sync = StateSync(self._profile, self._discovery, self._state, parser, self._telnet, self._tasks, notify)
+        self._sync = StateSync(
+            self._profile,
+            self._discovery,
+            self._state,
+            parser,
+            self._telnet,
+            self._tasks,
+            notify,
+            # Web sections a telnet event may trigger a re-read of (profile 'refresh').
+            {
+                "video": self._video_config.refresh,
+                "speakers": self._speaker_config.refresh,
+                "graphic_eq": self._graphic_eq.refresh,
+            },
+        )
         self._control = ControlService(
             self._profile,
             self._discovery,
@@ -225,7 +239,9 @@ class DenonAvrDevice:
         await self._sync.async_reconcile(
             self._goform.async_get_status,
             lambda: self._telnet.connected,
-            (self._graphic_eq.refresh, self._video_config.refresh, self._speaker_config.refresh),
+            # Through the single-flight path, so a poll and an event trigger never
+            # read the same section twice.
+            tuple(partial(self._sync.refresh_web, s) for s in ("graphic_eq", "video", "speakers")),
         )
 
     def _handle_availability(self, available: bool) -> None:

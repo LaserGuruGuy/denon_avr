@@ -117,14 +117,25 @@ class DiscoveryService:
         """Fill the telnet-discovered model over a short-lived connection.
 
         Separate from the persistent connection so discovery is deterministic at
-        setup time; stops once sources and speaker configuration have arrived.
+        setup time. Complete when the sentinel query has answered and no list
+        that ends with END is still open (the probe deadline still bounds it).
         """
 
-        await self._probe(
-            commands.introspection_queries(self._profile),
-            lambda line: self._parser.feed(line, self._state),
-            lambda: bool(self._discovery.configured_channels and self._discovery.sources),
-        )
+        sentinel = self._profile.introspection_sentinel
+        queries = commands.introspection_queries(self._profile)
+        done = [False]
+
+        def on_line(line: str) -> None:
+            self._parser.feed(line, self._state)
+            if sentinel and line.startswith(sentinel["prefix"]):
+                done[0] = True
+
+        if sentinel:
+            queries.append(sentinel["query"])
+        # Complete when the sentinel has answered AND no END-terminated list is
+        # still streaming: the sound mode lists stream asynchronously, between
+        # other replies, so answer order alone is not enough.
+        await self._probe(queries, on_line, lambda: done[0] and not self._parser.open_lists)
 
     async def await_ready(self, timeout: float) -> None:
         """Best effort wait until the initial resync populated the state.

@@ -254,33 +254,113 @@ async def test_known_x3900h_crossover_gap(make_device):
     await drain(dev)
     assert "crossover_speaker_selection" not in dev.state.values
     assert "crossover_all" not in dev.state.values
-    assert "FRO" not in dev.state.crossovers, "'FUL' (full range) is dropped silently"
+    # Fixed in 5b: 'SSCFRFRO FUL' (full range) is no longer dropped; it is 0 like the web list.
+    assert dev.state.crossovers["FRO"] == 0 and dev.state.crossovers["SUA"] == 0
     assert fx.file("ajax_speakers_6.xml") and 'mode="normal"' in fx.file("ajax_speakers_6.xml")
     await dev.async_stop()
 
 
+EXPECTED_CONFIGURED = {
+    # From each receiver's own SSSPC answers (the owner's actual speaker setup).
+    "avr_x3600h": ["C", "FL", "FR", "SL", "SR", "SW"],
+    "avc_x3900h": ["C", "FL", "FR", "SL", "SR", "SW"],      # SBK NO: no surround back
+}
+
+
 @pytest.mark.parametrize("fixture", FIXTURE_SETS)
-async def test_known_probe_stops_early(make_device, fixture):
-    """Known v1.1.2 defect, pinned on purpose: the introspection probe is 'complete' after
-    the FIRST SSSPC/SSFUN line, so discovery holds only part of the user's speaker setup
-    (FL/FR) until the persistent resync fills it in. To be fixed by completing on each
-    list's END; this test must then be changed deliberately."""
+async def test_probe_completes_every_list(make_device, fixture):
+    """Fixed in 5b (was pinned as test_known_probe_stops_early): the probe ends on the
+    sentinel reply, so discovery holds the complete speaker setup and every source."""
     dev, _session, _telnet, _fx = make_device(fixture)
     discovery = await dev.async_discover()
-    assert sorted(discovery.configured_channels) == ["FL", "FR"]
-    assert list(discovery.speaker_config) == ["FRO"]
+    assert sorted(discovery.configured_channels) == EXPECTED_CONFIGURED[fixture]
+    assert dev.test_probe.queries[-1][-1] == dev.profile.introspection_sentinel["query"]
+    # every list, not only the speakers: sources and both sound mode lists
+    assert discovery.sources and discovery.all_sound_modes and discovery.current_sound_modes
+    assert discovery.sound_mode_groups
 
 
-async def test_known_x3900h_yes_no_speaker_grammar(make_device):
-    """Known v1.1.2 defect, pinned on purpose: the X3900H reports speaker presence as
-    YES/NO ('SSSPCSBK NO') while the profile only knows the absent token NON, so the
-    surround back channels count as configured although the user has none."""
-    dev, _session, telnet, fx = make_device("avc_x3900h")
+@pytest.mark.parametrize("fixture", FIXTURE_SETS)
+async def test_speaker_presence_grammar(make_device, fixture):
+    """Fixed in 5b (was pinned as test_known_x3900h_yes_no_speaker_grammar): YES/NO
+    (newer firmware) and NON (older) both mean presence; 'SBK NO' + 'SBK 2SP' is no
+    surround back, whatever the count line says."""
+    dev, _session, telnet, fx = make_device(fixture)
     await dev.async_discover()
     await dev.async_start()
     for rec in fx.telnet_corpus:
         telnet.feed(rec["line"])
     await drain(dev)
-    assert any(r["line"] == "SSSPCSBK NO" for r in fx.telnet_corpus)
-    assert sorted(dev.discovery.configured_channels) == ["C", "FL", "FR", "SBL", "SBR", "SL", "SR", "SW"]
+    assert sorted(dev.discovery.configured_channels) == EXPECTED_CONFIGURED[fixture]
+    await dev.async_stop()
+
+
+async def test_interrupted_sound_mode_list_is_not_duplicated(make_device):
+    dev, _session, telnet, _fx = make_device("avr_x3600h")
+    await dev.async_discover()
+    await dev.async_start()
+    for line in ("OPSML 010Stereo", "OPSML 021Multi Ch Stereo"):          # cut off, no END
+        telnet.feed(line)
+    for line in ("OPSML 010Stereo", "OPSML 021Multi Ch Stereo", "OPSML 030Matrix", "OPSML END"):
+        telnet.feed(line)
+    assert dev.discovery.current_sound_modes == ["Stereo", "Multi Ch Stereo", "Matrix"]
+    await dev.async_stop()
+
+
+async def test_silence_is_not_absence(make_device):
+    """A speaker group the receiver stops mentioning stays; only an explicit absent
+    token (NO / NON) removes it (owner rule: never drop real items on silence)."""
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    assert "C" in dev.discovery.configured_channels
+    for line in ("SSSPCFRO YES", "SSSPCSUA YES"):          # a cut-off / partial cycle without CEN
+        telnet.feed(line)
+    telnet.feed("SSSPCFRO YES")                              # next cycle starts
+    assert "C" in dev.discovery.configured_channels
+    telnet.feed("SSSPCCEN NO")                               # explicit absent token
+    assert "C" not in dev.discovery.configured_channels
+    await dev.async_stop()
+
+
+async def test_full_range_crossover_round_trip():
+    from avr.protocol import commands
+    from avr.protocol.profile import load_profile
+
+    assert commands.crossover(load_profile(), "FRO", 0) == "SSCFRFRO FUL"
+    assert commands.crossover(load_profile(), "FRO", 80) == "SSCFRFRO 080"
+
+
+async def test_non_is_a_size_not_a_lock(make_device):
+    """AVR-X3600H: 'NON' is the size 'none'; switching the group to Small makes it present."""
+    dev, _session, telnet, _fx = make_device("avr_x3600h")
+    await dev.async_discover()
+    await dev.async_start()
+    assert "FHL" not in dev.discovery.configured_channels      # SSSPCFRH NON
+    telnet.feed("SSSPCFRH SMA")
+    assert {"FHL", "FHR"} <= set(dev.discovery.configured_channels)
+    await dev.async_stop()
+
+
+async def test_partial_list_is_merged_not_replaced(make_device):
+    dev, _session, telnet, _fx = make_device("avr_x3600h")
+    await dev.async_discover()
+    await dev.async_start()
+    full = list(dev.discovery.current_sound_modes)
+    assert len(full) >= 3
+    for line in ("OPSML 030Rock Arena", "OPSML END"):         # began mid-stream: no entry 01
+        telnet.feed(line)
+    assert dev.discovery.current_sound_modes == full           # nothing dropped
+    await dev.async_stop()
+
+
+async def test_count_group_recovers_from_non(make_device):
+    dev, _session, telnet, _fx = make_device("avr_x3600h")
+    await dev.async_discover()
+    await dev.async_start()
+    telnet.feed("SSSPCSWF NON")
+    assert "SW" not in dev.discovery.configured_channels
+    telnet.feed("SSSPCCEN SMA")            # another group in between
+    telnet.feed("SSSPCSWF 1SP")
+    assert "SW" in dev.discovery.configured_channels
     await dev.async_stop()

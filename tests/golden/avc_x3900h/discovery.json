@@ -1,5 +1,20 @@
 {
- "all_sound_modes": [],
+ "all_sound_modes": [
+  "Stereo",
+  "Multi Ch In",
+  "Multi In + DSurr",
+  "Multi In + Neural:X",
+  "Multi In + Virtual:X",
+  "AURO Surround",
+  "Multi Ch Stereo",
+  "Mono Movie",
+  "Rock Arena",
+  "Jazz Club",
+  "Matrix",
+  "Video Game",
+  "Direct",
+  "Pure Direct"
+ ],
  "channels": [
   {
    "code": "C",
@@ -131,8 +146,12 @@
   }
  ],
  "configured_channels": [
+  "C",
   "FL",
-  "FR"
+  "FR",
+  "SL",
+  "SR",
+  "SW"
  ],
  "current_sound_modes": [
   "Direct",
@@ -561,7 +580,45 @@
   "MUS": "Music",
   "PUR": "Pure"
  },
- "sound_mode_groups": {},
+ "sound_mode_groups": {
+  "GAM": [
+   "Stereo",
+   "Multi Ch In",
+   "Multi In + DSurr",
+   "Multi In + Neural:X",
+   "Multi In + Virtual:X",
+   "AURO Surround",
+   "Multi Ch Stereo",
+   "Video Game"
+  ],
+  "MOV": [
+   "Stereo",
+   "Multi Ch In",
+   "Multi In + DSurr",
+   "Multi In + Neural:X",
+   "Multi In + Virtual:X",
+   "AURO Surround",
+   "Multi Ch Stereo",
+   "Mono Movie"
+  ],
+  "MUS": [
+   "Stereo",
+   "Multi Ch In",
+   "Multi In + DSurr",
+   "Multi In + Neural:X",
+   "Multi In + Virtual:X",
+   "AURO Surround",
+   "Multi Ch Stereo",
+   "Rock Arena",
+   "Jazz Club",
+   "Matrix"
+  ],
+  "PUR": [
+   "Direct",
+   "Pure Direct",
+   "Multi Ch In"
+  ]
+ },
  "sources": [
   {
    "code": "BD",
@@ -620,8 +677,27 @@
   }
  ],
  "speaker_config": {
+  "CEN": [
+   "YES"
+  ],
   "FRO": [
    "YES"
+  ],
+  "SBK": [
+   "2SP",
+   "NO"
+  ],
+  "SUA": [
+   "YES"
+  ],
+  "SWF": [
+   "1SP"
+  ],
+  "SWL": [
+   "2LR"
+  ],
+  "SWM": [
+   "STD"
   ]
  },
  "volume": {

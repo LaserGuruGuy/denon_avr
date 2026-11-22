@@ -75,9 +75,22 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
 
     @callback
     def _handle_device_update(self) -> None:
-        """Forward a pushed state change to the entities."""
+        """Forward a pushed state change to the entities immediately.
 
-        self.async_set_updated_data(self.device.state)
+        Not ``async_set_updated_data``: that also restarts the reconcile
+        interval, and a receiver that pushes every few seconds (the AVC-X3900H
+        sends its signal cluster about every 5 s) would then never get its
+        reconcile poll - the web documents and the HTTP fallback would starve.
+        The state object is shared and updated in place, so notifying the
+        listeners is enough; the poll keeps its own fixed cadence.
+        """
+
+        self.data = self.device.state
+        # A push proves the receiver is reachable: do not leave the entities
+        # unavailable until the next poll because one poll failed.
+        if self.device.available:
+            self.last_update_success = True
+        self.async_update_listeners()
 
     @property
     def available(self) -> bool:

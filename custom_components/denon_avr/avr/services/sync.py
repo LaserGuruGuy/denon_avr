@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Mapping
 
 from ..models import AvrState, Discovery, NowPlaying
 from ..protocol import commands
@@ -28,6 +28,7 @@ class StateSync:
         sink: CommandSink,
         tasks: BackgroundTasks,
         notify: Callable[[], None],
+        web_refreshers: Mapping[str, Callable[[], Awaitable[None]]] | None = None,
     ) -> None:
         self._profile = profile
         self._discovery = discovery
@@ -44,14 +45,33 @@ class StateSync:
         # debounce. A group is scheduled at most once until its re-query fires.
         self._refresh_groups = profile.refresh_groups
         self._refresh_scheduled: set[str] = set()
+        # Web documents have no push: groups may name web sections ("web") to
+        # re-read when a related telnet event arrives. Single flight per section:
+        # a trigger during a running read marks it dirty and it runs once more.
+        self._web_refreshers = dict(web_refreshers or {})
+        self._web_running: set[str] = set()
+        self._web_dirty: set[str] = set()
+        # Fingerprint of what entities can see; a pushed line that leaves it
+        # unchanged (the periodic signal cluster, list lines before END) does not
+        # notify Home Assistant.
+        self._fingerprint = self._snapshot()
+
+    def _snapshot(self) -> str:
+        return repr((self._state, self._discovery))
 
     # Telnet events ---------------------------------------------------------
 
     def handle_line(self, line: str) -> None:
         """Feed a received telnet line to the parser and notify on change."""
 
+        changed = False
+        understood = self._parser.understands(line)
         if self._parser.feed(line, self._state):
-            self._notify()
+            snapshot = self._snapshot()
+            if snapshot != self._fingerprint:
+                self._fingerprint = snapshot
+                changed = True
+                self._notify()
         # The receiver pushes OPSMLALL (all groups) when the sound mode context
         # changes, but never pushes OPSML (the current group's selectable modes).
         # When an OPSMLALL push completes, re-query OPSML so the list follows.
@@ -61,7 +81,12 @@ class StateSync:
             if remainder.startswith(self._profile.list_terminator):
                 self._tasks.create(self.query_current_sound_modes())
         # Data driven refresh: any group whose trigger prefix this line matches
-        # gets a coalesced re-query.
+        # gets a coalesced re-query - when the line changed something, or when the
+        # parser does not model it (then a change cannot be ruled out, e.g. SPPR).
+        # A repeated, unchanged, understood push (the periodic signal cluster)
+        # re-queries nothing.
+        if understood and not changed:
+            return
         for group_id, group in self._refresh_groups.items():
             on = group.get("on")
             if on and line.startswith(tuple(on)):
@@ -69,7 +94,10 @@ class StateSync:
 
     def handle_now_playing(self, snapshot: dict) -> None:
         self._state.now_playing = NowPlaying(**snapshot)
-        self._notify()
+        fingerprint = self._snapshot()
+        if fingerprint != self._fingerprint:
+            self._fingerprint = fingerprint
+            self._notify()
 
     # Resync ----------------------------------------------------------------
 
@@ -123,6 +151,7 @@ class StateSync:
             return
         self._refresh_scheduled.add(group_id)
         queries = list(group.get("queries", []))
+        web_sections = [w for w in group.get("web", []) if w in self._web_refreshers]
         debounce = float(group.get("debounce", 1.0))
 
         async def _refresh() -> None:
@@ -130,12 +159,33 @@ class StateSync:
                 await asyncio.sleep(debounce)
                 for query in queries:
                     await self._sink.async_send(query)
+                for section in web_sections:
+                    await self.refresh_web(section)
             except asyncio.CancelledError:
                 pass
             finally:
                 self._refresh_scheduled.discard(group_id)
 
         self._tasks.create(_refresh())
+
+    async def refresh_web(self, section: str) -> None:
+        """Re-read one web section now; coalesces triggers that arrive meanwhile."""
+
+        refresh = self._web_refreshers.get(section)
+        if refresh is None:
+            return
+        if section in self._web_running:
+            self._web_dirty.add(section)
+            return
+        self._web_running.add(section)
+        try:
+            while True:
+                self._web_dirty.discard(section)
+                await refresh()
+                if section not in self._web_dirty:
+                    break
+        finally:
+            self._web_running.discard(section)
 
     # HTTP reconciliation ----------------------------------------------------
 
@@ -162,9 +212,11 @@ class StateSync:
         display = status.get("volume_display")
         if display is not None and display != self._state.volume_display:
             self._state.volume_display = str(display)
+            self._fingerprint = self._snapshot()
             self._notify()
         if not telnet_connected():
             self._apply_http_status("main", status)
+            self._fingerprint = self._snapshot()
             self._notify()
         for refresh in refreshables:
             await refresh()

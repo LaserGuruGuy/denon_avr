@@ -36,6 +36,27 @@ class TelnetParser:
         # OPSMLALL cycle so a signal change cannot leave a group with a mode the
         # receiver no longer offers.
         self._opsmlall_groups_pending: dict[str, list[str]] = {}
+        # SSSPC: per group {kind: value} (last value of each kind wins).
+        self._spc_kinds: dict[str, dict[str, str]] = {}
+        self._spc_last_group: str | None = None
+        # Lists that end with an END line and have started but not ended yet
+        # (longest prefix first: OPSMLALL before OPSML).
+        self._terminated = sorted(
+            (spec["prefix"] for spec in profile.introspection.values() if spec.get("terminated") and spec.get("prefix")),
+            key=len,
+            reverse=True,
+        )
+        self._open_lists: set[str] = set()
+        # Every line prefix this parser models (for "understood" vs "unknown").
+        known = {"PW", "ZM", "MV", "MU", "SI", "MS", "SV", "CV", "Z"}
+        known.update(spec.prefix for spec in profile.controls.values() if spec.prefix)
+        known.update(spec.get("prefix", "") for spec in profile.readonly.values())
+        known.update(spec.get("prefix", "") for spec in profile.introspection.values())
+        known.discard("")
+        self._known_prefixes = tuple(sorted(known, key=len, reverse=True))
+        # OPSML / OPSMLALL accumulate (index, name) to judge completeness on END.
+        self._opsml_indices: list[int] = []
+        self._opsmlall_indices: list[int] = []
         # Precompute the generic feature and read only matchers, longest prefix
         # first so that specific tokens win over shorter ones.
         # Feature controls decode generically from their prefix. Core enum/on-off
@@ -68,12 +89,34 @@ class TelnetParser:
             reverse=True,
         )
 
+    @property
+    def open_lists(self) -> frozenset[str]:
+        """Prefixes of END-terminated lists that started and have not ended yet."""
+
+        return frozenset(self._open_lists)
+
+    def understands(self, line: str) -> bool:
+        """True when this parser models the line's command (whether or not it changed
+        anything); False for commands it does not know (e.g. SPPR, PSSP: today)."""
+
+        return line.startswith(self._known_prefixes)
+
+    def _track_list(self, line: str) -> None:
+        for prefix in self._terminated:
+            if line.startswith(prefix):
+                if line[len(prefix):].strip().startswith(self._profile.list_terminator):
+                    self._open_lists.discard(prefix)
+                else:
+                    self._open_lists.add(prefix)
+                return
+
     def feed(self, line: str, state: AvrState) -> bool:
         """Apply a single telnet line to the state. Return True if it changed."""
 
         line = line.rstrip("\r\n")
         if not line:
             return False
+        self._track_list(line)
         try:
             return self._dispatch(line, state)
         except (ValueError, IndexError) as err:
@@ -202,24 +245,45 @@ class TelnetParser:
         state.values["all_zone_stereo"] = remainder == "ALL ZONE STEREO"
         return True
 
+    @staticmethod
+    def _complete(indices: list[int]) -> bool:
+        """A list response is complete when its entry numbers run 1..n without a gap."""
+
+        return bool(indices) and indices == list(range(1, len(indices) + 1))
+
+    @staticmethod
+    def _merge(existing: list[str], new: list[str]) -> list[str]:
+        """Partial response: keep what we had, add what is new (never drop)."""
+
+        return list(existing) + [name for name in new if name not in existing]
+
     def _set_sound_mode_list(self, remainder: str, state: AvrState) -> bool:
         """Parse an OPSMLALL entry (all genre groups) into the flat mode set.
 
-        Entries look like 'OPSMLALL MOV071Virtual': a 3 letter genre code, a two
-        digit group, a one digit flag and the display name. This builds the full
-        cross group set of modes and the per genre groups. The currently selected
-        mode is taken from OPSML (current context), not here, because OPSMLALL
-        omits context modes such as Auto.
+        Entries look like 'OPSMLALL MOV071Virtual': a 3 letter genre code, a
+        running entry number (07), a one digit flag and the display name. Entry
+        number 1 starts a new response. On END the response REPLACES the lists
+        only when it is complete (numbers 1..n without gap); a partial one (the
+        connection started mid-stream, a line was lost) is MERGED so nothing the
+        receiver offers is dropped. The selected mode comes from OPSML.
         """
 
         remainder = remainder.strip()
         if remainder.startswith(self._profile.list_terminator):
-            # End of the list: publish the accumulated set (receiver order) and
-            # swap in the freshly rebuilt per group map so no stale modes remain.
-            self._discovery.all_sound_modes = list(self._opsmlall_pending)
-            self._discovery.sound_mode_groups = self._opsmlall_groups_pending
+            if self._complete(self._opsmlall_indices):
+                self._discovery.all_sound_modes = list(self._opsmlall_pending)
+                self._discovery.sound_mode_groups = self._opsmlall_groups_pending
+            else:
+                self._discovery.all_sound_modes = self._merge(
+                    self._discovery.all_sound_modes, self._opsmlall_pending
+                )
+                groups = {g: list(m) for g, m in self._discovery.sound_mode_groups.items()}
+                for genre, modes in self._opsmlall_groups_pending.items():
+                    groups[genre] = self._merge(groups.get(genre, []), modes)
+                self._discovery.sound_mode_groups = groups
             self._opsmlall_pending = []
             self._opsmlall_groups_pending = {}
+            self._opsmlall_indices = []
             return True
         if not remainder:
             return False
@@ -227,9 +291,13 @@ class TelnetParser:
         match = re.match(r"^(\d+)(.*)$", remainder[3:])
         if not match:
             return False
-        name = match.group(2).strip()
+        digits, name = match.group(1), match.group(2).strip()
         if not name:
             return False
+        index = int(digits[:-1] or 0)
+        if index == 1:
+            self._opsmlall_pending, self._opsmlall_groups_pending, self._opsmlall_indices = [], {}, []
+        self._opsmlall_indices.append(index)
         if name not in self._opsmlall_pending:
             self._opsmlall_pending.append(name)
         modes = self._opsmlall_groups_pending.setdefault(genre, [])
@@ -240,17 +308,22 @@ class TelnetParser:
     def _set_current_sound_mode(self, remainder: str, state: AvrState) -> bool:
         """Parse an OPSML entry (modes selectable in the CURRENT context/group).
 
-        OPSML reflects exactly what the active group offers now, including modes
-        OPSMLALL leaves out (such as Auto). Entries look like '011Direct'; the
-        trailing flag digit marks the selected mode. The full response is
-        accumulated and swapped in on the terminating 'OPSML END' line.
+        Entries look like '011Direct': a running entry number (01), the
+        "selected" flag digit and the name. As for OPSMLALL: entry number 1
+        starts a new response; END replaces the list only when it is complete,
+        otherwise merges.
         """
 
         remainder = remainder.strip()
         if remainder.startswith(self._profile.list_terminator):
-            # End of the list: publish the accumulated set as the current options.
-            self._discovery.current_sound_modes = list(self._opsml_pending)
+            if self._complete(self._opsml_indices):
+                self._discovery.current_sound_modes = list(self._opsml_pending)
+            else:
+                self._discovery.current_sound_modes = self._merge(
+                    self._discovery.current_sound_modes, self._opsml_pending
+                )
             self._opsml_pending = []
+            self._opsml_indices = []
             return True
         match = re.match(r"^(\d+)(.*)$", remainder)
         if not match:
@@ -258,7 +331,12 @@ class TelnetParser:
         digits, name = match.group(1), match.group(2).strip()
         if not name:
             return False
-        self._opsml_pending.append(name)
+        index = int(digits[:-1] or 0)
+        if index == 1:
+            self._opsml_pending, self._opsml_indices = [], []
+        self._opsml_indices.append(index)
+        if name not in self._opsml_pending:
+            self._opsml_pending.append(name)
         # The trailing digit is the "currently selected" flag; this is the mode
         # the user selected, which can differ from the resolved MS mode.
         if digits and digits[-1] == "1":
@@ -325,6 +403,9 @@ class TelnetParser:
         if len(parts) != 2:
             return False
         group, raw = parts
+        tokens = self._profile.introspection.get("crossover", {}).get("value_tokens", {})
+        if raw in tokens:
+            raw = str(tokens[raw])        # e.g. FUL (full range) -> 0, as the web list has it
         if not raw.isdigit():
             return False
         if group == all_group:
@@ -410,6 +491,20 @@ class TelnetParser:
         return True
 
     def _set_speaker_config(self, remainder: str, state: AvrState) -> bool:
+        """One SSSPC line: '<GROUP> <value>'. There is no END line on any generation.
+
+        Each value is classified (presence / size / count / other, profile
+        ``speakers.tokens``). Consecutive lines of one group form its record
+        (e.g. 'SBK NO' + 'SBK 2SP'); a new run for that group replaces the record,
+        keeping the count if the run has none. So a push or a repeated response
+        overwrites instead of accumulating.
+
+        Silence is not absence: a group the receiver stops mentioning is KEPT. A
+        group only becomes absent through an explicit absent token (NO / NON). A
+        response can be cut off, or a group can be silent in the current setup,
+        and that must never remove a real speaker group.
+        """
+
         remainder = remainder.strip()
         if not remainder or remainder.startswith(self._profile.list_terminator):
             return False
@@ -417,35 +512,59 @@ class TelnetParser:
         value = value.strip()
         if not group or not value:
             return False
-        # discovery.speaker_config accumulates every reported value per group (it
-        # drives the configured-channel derivation); state.speaker_sizes keeps the
-        # latest single value per group so the size selects have a live value.
-        self._discovery.speaker_config.setdefault(group, set()).add(value)
+        if group != self._spc_last_group:
+            # A new run of lines for this group replaces its record (so 'NON'
+            # followed later by '1SP' is not stuck as absent); the count is kept
+            # when the new run does not mention one.
+            previous = self._spc_kinds.get(group, {})
+            self._spc_kinds[group] = {"count": previous["count"]} if "count" in previous else {}
+            self._spc_last_group = group
+        kinds = self._spc_kinds[group]
+        kinds[self._speaker_token_kind(value)] = value
+        # discovery.speaker_config keeps the group's current values (one per
+        # kind); state.speaker_sizes keeps the latest value for the live selects.
+        self._discovery.speaker_config[group] = set(kinds.values())
         state.speaker_sizes[group] = value
         self._recompute_configured_channels()
         return True
 
+    def _speaker_token_kind(self, value: str) -> str:
+        tokens = self._profile.speakers.get("tokens", {})
+        if value in tokens.get("presence", {}):
+            return "presence"
+        if value in tokens.get("size", []):
+            return "size"
+        if re.match(tokens.get("count_pattern", r"^(\d+)SP$"), value):
+            return "count"
+        return "other"
+
     def _recompute_configured_channels(self) -> None:
         """Derive the configured channel codes from the SSSPC speaker config.
 
-        A group counts as present only when none of its reported values is the
-        absent token. The channel/count maps come from the profile (protocol
-        grammar); which groups are present comes entirely from the receiver.
+        A group is present unless an explicit token says absent: its presence line
+        (NO on newer firmware) or, without one, its size (NON on older firmware). Count groups contribute the channel list of their
+        reported count. The maps come from the profile (protocol grammar); which
+        groups are present comes entirely from the receiver.
         """
 
         speakers = self._profile.speakers
-        absent = speakers.get("absent_token", "NON")
-        double = speakers.get("double_token", "2SP")
+        tokens = speakers.get("tokens", {})
+        absent = set(tokens.get("absent", []))
+        pattern = tokens.get("count_pattern", r"^(\d+)SP$")
         groups = speakers.get("groups", {})
         count_groups = speakers.get("count_groups", {})
 
         configured: set[str] = set()
-        for group, values in self._discovery.speaker_config.items():
-            if absent in values:
+        for group, kinds in self._spc_kinds.items():
+            # Absent only by an explicit token: the presence line (YES/NO), or the
+            # size when there is no presence line (NON on older firmware).
+            if kinds.get("presence", kinds.get("size")) in absent:
                 continue
             if group in count_groups:
-                key = "double" if double in values else "single"
-                configured.update(count_groups[group].get(key, []))
+                by_count = count_groups[group].get("by_count", {})
+                match = re.match(pattern, kinds.get("count", ""))
+                count = match.group(1) if match else "1"
+                configured.update(by_count.get(count, by_count.get("1", [])))
             elif group in groups:
                 configured.update(groups[group])
         self._discovery.configured_channels = configured

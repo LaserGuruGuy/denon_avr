@@ -248,13 +248,25 @@ class FakeProbe:
         self.exclude: tuple[str, ...] = ()       # line prefixes to drop (simulate missing answers)
 
     async def __call__(self, host, queries, on_line, is_complete, **_kw):
+        """Replay like the real probe: lines in capture time order, completion only
+        judged after a quiet gap (the real client checks after 0.4 s of silence).
+
+        Lines are those answering one of the queries, plus lines of the queried
+        lists recorded under another query (the receiver streams some lists,
+        e.g. the sound mode lists, asynchronously)."""
         self.queries.append(list(queries))
         wanted = set(queries)
-        for rec in self.fixtures.telnet_corpus:
-            if rec["after"] in wanted and not rec["line"].startswith(self.exclude or ("\x00",)):
-                on_line(rec["line"])
-                if is_complete():
-                    return
+        prefixes = tuple(q.split("?")[0].strip() for q in queries if q.split("?")[0].strip())
+        exclude = self.exclude or ("\x00",)
+        lines = [
+            r for r in self.fixtures.telnet_corpus
+            if (r["after"] in wanted or r["line"].startswith(prefixes)) and not r["line"].startswith(exclude)
+        ]
+        for i, rec in enumerate(lines):
+            on_line(rec["line"])
+            gap = lines[i + 1]["t"] - rec["t"] if i + 1 < len(lines) else 1.0
+            if gap > 0.4 and is_complete():
+                return
 
 
 def replace_everywhere(monkeypatch, original, fake) -> int:

@@ -153,11 +153,16 @@ class WebConfigSectionController:
             if not self._menu_present(root_tag):
                 continue
             root = await doc(int(type_id))
-            if root is None:
-                continue
             for control in self.controls():
-                if str(control["type"]) == str(type_id):
-                    parse_control(self._grammar, control, root, fields)
+                if str(control["type"]) != str(type_id):
+                    continue
+                if root is None:
+                    # Transient read failure: keep the last known field (silence
+                    # is not absence) instead of making the control disappear.
+                    if control["id"] in self._fields:
+                        fields[control["id"]] = self._fields[control["id"]]
+                    continue
+                parse_control(self._grammar, control, root, fields)
         self._fields = fields
 
         collections: dict[str, dict[str, CollectionItem]] = {}

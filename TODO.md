@@ -136,11 +136,27 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
 - [~] step 4 (mostly): /ajax document engine: Availability as the receiver's UI reads it (display
   2/3/4 shown, 3/4 active, gray = reason of a disabled item), per-input collections (4K/8K format,
   HDCP; speaker layout read-only), device value lists (crossover, LPF), one fetch per document per
-  pass. Telnet checked first: SpeakerPreset is SPPR (telnet), PSSP and SSLFL are telnet; per-input
-  4K/HDCP have no telnet. Moved to step 5: graphic EQ onto the availability map (audio listSetupMenu),
+  pass. Telnet checked first: SpeakerPreset is SPPR (telnet), PSSP and SSLFL are telnet; for per-input
+  4K/HDCP no telnet command was FOUND in the current setup (silence is not absence: re-check). Moved to step 5: graphic EQ onto the availability map (audio listSetupMenu),
   Amp Assign / Speaker Layout as explicit document variants.
-- [ ] step 5: HA adapter (entity catalogue, Inputs device, live user-setup following, i18n)
-- [ ] step 6: telnet / 1256 parity; then live verification, docs, 1.2.0
+- step 5 (revised 2026-11-22 after the push analysis):
+  - [x] 5a push/refresh: no poll-timer reset on push, notify only on real change, duplicate OPSML query
+    removed, web sections re-read on related telnet events (single flight)
+  - [x] 5b telnet setup grammar: probe completes on a sentinel (SSSPC has no END line), presence
+    YES/NO/NON, count groups 1-4, groups SHE/TPS/CHE, SSSPC per kind + per cycle, interrupted lists
+    not duplicated. Still open (5c/6): crossover select option 0 = Full range, LPF 70/070, group FRW (no evidence
+    of its code yet), size selects only where the receiver reports a size token (X3900H: YES only).
+  - [ ] 5c pure entity catalogue + one unique_id function + test against tests/golden/ha_registry;
+    from the 5b review: quick select entity from Deviceinfo QuickSelect when SSQSNZMA is silent
+    (X3900H), subwoofer count labels from by_count (1-4), size selects only where a size token is
+    reported, crossover options from the device value list (incl. 0 = Full), LPF 70/070
+  - [ ] 5d (most important remaining "silence is not absence" item) availability per channel (telnet vs last good web read), dynamic entities, registry restore of
+    temporarily hidden entities, retry of the first web discovery; replaces _apply_channel_defaults
+  - [ ] 5e Inputs sub-device, current input (immediate via SI), i18n (state keys, {input}, device
+    translation_key, issues, exceptions); graphic EQ onto the audio availability map
+  - [ ] 5f speaker layout staged + Apply (code and tests only, no live write)
+  - [ ] 5g diagnostics counters (triggers, notifies, polls, last web read per document)
+- [ ] step 6: telnet parity (SPPR select, PSSP:, VSSCH OFF, Z2 sub-commands); 7 live verification; 8 docs, 1.2.0; 9 push
 - later (from the step-2 review): HA-layer pyflakes warnings (select.py:225, const.py:12, sensor.py:19);
   volume step default 0.5 from the profile; a public test hook instead of `_tasks.pending`.
 
@@ -163,7 +179,23 @@ Availability maps go into diagnostics (done in step 4). display=4 is active, lik
 - SpeakerPreset on telnet: `SPPR ?` -> `SPPR 1` (X3900H only) -> telnet control (step 6).
 - `PSSP:` (speaker layout height) answers on both receivers -> telnet control (step 6).
 - VSSCH reports `OFF` on the X3900H (new token next to AUTO/48P/...) -> profile (step 6).
-- Crossover 'FUL' on telnet == '0' in the web list (value_lists.crossover.telnet_tokens); the parser
-  still drops FUL (pinned defect) -> step 6. LPF web values '70' vs telnet width '070' -> normalise.
+- Crossover 'FUL' on telnet == '0' in the web list: parsed and sent since 5b. Still open (5c): the
+  crossover select has no 0 / Full range option. LPF web values '70' vs telnet width '070' -> normalise.
 - Speaker layout labels (mode ids 1..19, per-position config ids) from the Web Control bundle, and a
   staged, confirmed apply (CustomSettings path) -> step 5; never without the owner's yes.
+
+## To observe live with the owner (read-only, owner present)
+- Does the receiver push SS*, SPPR, PSSP or MNMEN when a setting is changed by hand (OSD/app)?
+- How many telnet sessions does it allow, and do replies go to all of them? The X3900H corpus likely
+  contains the running HA session's traffic -> recapture with the integration disabled.
+- Debug log: "Finished fetching" keeps appearing every 60 s while telnet is busy (after 5a).
+
+## Silence is not absence: re-check items that did not answer (other setups, both receivers)
+- per-input 4K/8K format and HDCP on telnet (candidate queries silent on both receivers, 2026-11-22);
+- SPPR on the AVR-X3600H (silent; SpeakerPreset may not exist there, or may need another setup);
+- what the X3900H reports for a speaker group that is switched to "None" (NO, or omitted?), observed
+  read-only while the owner changes it.
+- Probe sentinel PW? is also the keepalive and other sessions may receive PW replies: consider a
+  dedicated sentinel (it is combined with "no open list" and the 0.4 s quiet gap already).
+- SSSWM ? is silent on the X3900H while SSSPCSWM carries the subwoofer mode -> step 6.
+- Setup load: the probe does not ask SI?/MS?, so the resync triggers the refresh groups once more.

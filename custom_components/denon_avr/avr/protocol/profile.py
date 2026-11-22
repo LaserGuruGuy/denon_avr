@@ -155,9 +155,9 @@ class ProtocolProfile:
         """Return the channel codes that make up a speaker group.
 
         Groups map to a fixed pair/single of channels (protocol grammar). The
-        count groups (subwoofer, surround back) can be single or double; both
-        possible members are returned so the group can be named/matched whether
-        the receiver configured it as one speaker or two.
+        count groups (subwoofer, surround back) have one channel list per count;
+        all possible members are returned so the group can be named/matched for
+        whatever count the receiver reports.
         """
 
         groups = self.speakers.get("groups", {})
@@ -165,10 +165,11 @@ class ProtocolProfile:
             return list(groups[group])
         count = self.speakers.get("count_groups", {})
         if group in count:
-            members = list(count[group].get("single", []))
-            for code in count[group].get("double", []):
-                if code not in members:
-                    members.append(code)
+            members: list[str] = []
+            for _n, codes in sorted(count[group].get("by_count", {}).items(), key=lambda kv: int(kv[0])):
+                for code in codes:
+                    if code not in members:
+                        members.append(code)
             return members
         return []
 
@@ -189,6 +190,12 @@ class ProtocolProfile:
         """Return the query string for an introspection item, or None."""
 
         return self.introspection.get(key, {}).get("query")
+
+    @property
+    def introspection_sentinel(self) -> dict[str, str]:
+        """The query whose reply marks the end of the introspection replies."""
+
+        return self._raw.get("introspection_sentinel", {})
 
     def introspection_prefix(self, key: str) -> str | None:
         """Return the line prefix of an introspection item, or None."""

@@ -163,7 +163,9 @@ def crossover(profile: ProtocolProfile, group: str, hertz: int) -> str:
     """Zero padded to the protocol width (80 -> '080'); off-grid values are ignored by the receiver."""
 
     width = int(profile.crossover.get("width", 3) or 3)
-    return f"{_introspection_prefix(profile, 'crossover', 'SSCFR')}{group} {int(hertz):0{width}d}"
+    tokens = {v: k for k, v in profile.introspection.get("crossover", {}).get("value_tokens", {}).items()}
+    value = tokens.get(int(hertz), f"{int(hertz):0{width}d}")      # 0 -> FUL (full range)
+    return f"{_introspection_prefix(profile, 'crossover', 'SSCFR')}{group} {value}"
 
 
 def crossover_mode(profile: ProtocolProfile, mode: str) -> str:

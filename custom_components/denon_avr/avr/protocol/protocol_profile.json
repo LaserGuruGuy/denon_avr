@@ -187,23 +187,9 @@
       "doc": "Speaker size wire tokens for the regular (non-count) groups, exposed as a select. LAR=Large, SMA=Small; the absent_token (NON) means no speaker. The count groups (subwoofer, surround back) report presence/count tokens instead and are not size-selectable. Set via 'SSSPC<GROUP> <token>' (verified live: read -> set -> restore).",
       "options": {"LAR": "Large", "SMA": "Small"}
     },
-    "groups": {
-      "FRO": ["FL", "FR"],
-      "CEN": ["C"],
-      "SUA": ["SL", "SR"],
-      "SUD": ["SDL", "SDR"],
-      "FRH": ["FHL", "FHR"],
-      "FRD": ["FDL", "FDR"],
-      "TFR": ["TFL", "TFR"],
-      "TPM": ["TML", "TMR"],
-      "TPR": ["TRL", "TRR"],
-      "RHE": ["RHL", "RHR"],
-      "BKD": ["BDL", "BDR"]
-    },
-    "count_groups": {
-      "SWF": {"single": ["SW"], "double": ["SW", "SW2"]},
-      "SBK": {"single": ["SB"], "double": ["SBL", "SBR"]}
-    }
+    "groups": {"FRO": ["FL", "FR"], "CEN": ["C"], "SUA": ["SL", "SR"], "SUD": ["SDL", "SDR"], "FRH": ["FHL", "FHR"], "FRD": ["FDL", "FDR"], "TFR": ["TFL", "TFR"], "TPM": ["TML", "TMR"], "TPR": ["TRL", "TRR"], "RHE": ["RHL", "RHR"], "BKD": ["BDL", "BDR"], "SHE": ["SHL", "SHR"], "TPS": ["TS"], "CHE": ["CH"]},
+    "tokens": {"doc": "How SSSPC values are classified, per protocol generation: presence (AVC-X3900H: YES/NO), size (AVR-X3600H: LAR/SMA, and NON = size 'none'), count ('<n>SP'). A group is absent when its presence, or (without a presence line) its size, is an 'absent' token. Any other value (e.g. SWM STD, SWL 2LR) is kept as 'other'. Per group the LAST value of each kind wins, so a push or a new response cycle overwrites instead of accumulating.", "presence": {"YES": true, "NO": false}, "size": ["LAR", "SMA", "NON"], "absent": ["NO", "NON"], "count_pattern": "^(\\d+)SP$"},
+    "count_groups": {"SWF": {"by_count": {"1": ["SW"], "2": ["SW", "SW2"], "3": ["SW", "SW2", "SW3"], "4": ["SW", "SW2", "SW3", "SW4"]}}, "SBK": {"by_count": {"1": ["SB"], "2": ["SBL", "SBR"]}}}
   },
   "zones": {
     "doc": [
@@ -223,25 +209,26 @@
     "status_lite_main": "/goform/formMainZone_MainZoneXmlStatusLite.xml",
     "status_lite_additional": "/goform/formZone{index}_Zone{index}XmlStatusLite.xml"
   },
+  "introspection_sentinel": {"doc": "Sent after the introspection queries. The probe is complete when this has answered AND no END-terminated list is still open: replies mostly come in order, but the sound mode lists stream asynchronously; SSSPC has no END line at all.", "query": "PW?", "prefix": "PW"},
   "introspection": {
-    "source_names": {
+    "source_names": {"terminated": true, 
       "query": "SSFUN ?",
       "prefix": "SSFUN",
       "doc": "One line per input: 'SSFUN<CODE> <display name>'. Provides the SI source code and the (possibly renamed) display name."
     },
-    "source_visibility": {
+    "source_visibility": {"terminated": true, 
       "query": "SSSOD ?",
       "prefix": "SSSOD",
       "visible_token": "USE",
       "hidden_token": "DEL",
       "doc": "One line per input: 'SSSOD<CODE> USE|DEL'. Marks which sources the user kept visible."
     },
-    "channel_levels": {
+    "channel_levels": {"terminated": true, 
       "query": "SSLEV ?",
       "prefix": "SSLEV",
       "doc": "One line per configured channel: 'SSLEV<CODE> <level>' terminated by 'SSLEV END'. Reveals which channels are actually configured."
     },
-    "channel_distances": {
+    "channel_distances": {"terminated": true, 
       "query": "SSSDE ?",
       "prefix": "SSSDE",
       "set_prefix": "SSSDE",
@@ -253,7 +240,7 @@
       "set_prefix": "SSSPC",
       "doc": "One line per speaker group with its size/presence setting. Settable per group via 'SSSPC<GROUP> <token>' (see speakers.sizes for the size tokens)."
     },
-    "crossover": {
+    "crossover": {"terminated": true, "value_tokens": {"FUL": 0}, 
       "query": "SSCFR ?",
       "prefix": "SSCFR",
       "set_prefix": "SSCFR",
@@ -265,7 +252,7 @@
       "prefix": "SSSMG",
       "doc": "Reports the receiver's current sound mode genre group directly (MOV/MUS/GAM/PUR)."
     },
-    "quick_select_names": {
+    "quick_select_names": {"terminated": true, 
       "query": "SSQSNZMA ?",
       "prefix": "SSQSNZMA",
       "doc": "Main zone quick select preset names, one per line ('SSQSNZMAQS<n> <name>'), terminated by 'SSQSNZMA END'."
@@ -275,12 +262,12 @@
       "prefix": "MSQUICK",
       "doc": "Currently recalled main zone quick select preset number (0 = none/modified)."
     },
-    "sound_mode_list": {
+    "sound_mode_list": {"terminated": true, 
       "query": "OPSMLALL ?",
       "prefix": "OPSMLALL",
       "doc": "OPSMLALL lists every available sound mode across all genres (Movie/Music/Game/Pure), one per line, terminated by 'OPSMLALL END'. Used for the full flat set and the per genre groups."
     },
-    "current_sound_modes": {
+    "current_sound_modes": {"terminated": true, 
       "query": "OPSML ?",
       "prefix": "OPSML",
       "doc": "OPSML lists the modes actually selectable in the CURRENT context/group, terminated by 'OPSML END'. Context aware: includes modes OPSMLALL omits (such as Auto) and marks the selected mode. Drives the sound mode select for the active group."
@@ -334,7 +321,7 @@
     "doc": "Coalesced re-query groups. When a pushed line's prefix matches an entry in 'on', that group's 'queries' are re-sent after 'debounce' seconds; a burst of matching events collapses into a single re-query. This keeps derived state the receiver does not push on every relevant change in sync: the sound mode lists follow a signal change; the audio information (format/decoder/rate/mode) and the channel/speaker layout follow a sound mode or source change, which the receiver reports (MS/SI) but without re-sending the dependent state.",
     "groups": {
       "sound_mode_lists": {
-        "queries": ["OPSMLALL ?", "OPSML ?"],
+        "queries": ["OPSMLALL ?"],
         "on": ["SSINFAISSIG", "SSINFAISFSV", "SSINFAISFOR", "SYSDA"],
         "debounce": 1.0
       },
@@ -347,7 +334,10 @@
         "queries": ["CV?", "SSLEV ?", "SSSPC ?", "SSCFR ?", "SSSDE ?"],
         "on": ["MS", "SI"],
         "debounce": 1.2
-      }
+      },
+      "inputs_web": {"doc": "A source change re-reads the video web section (per-input 4K/8K format and HDCP, current input). Web documents have no push.", "on": ["SI"], "queries": [], "web": ["video"], "debounce": 1.0},
+      "speakers_web": {"doc": "A speaker setup line (also our own SSSPC/SSCFR re-queries, and SPPR/PSSP pushes) re-reads the speakers web section: speaker layout, crossover and LPF value lists.", "on": ["SSSPC", "SSCFR", "SPPR", "PSSP:"], "queries": [], "web": ["speakers"], "debounce": 1.5},
+      "graphic_eq_web": {"doc": "A graphic EQ on/off line re-reads the graphic EQ curve.", "on": ["PSGEQ"], "queries": [], "web": ["graphic_eq"], "debounce": 1.0}
     }
   },
   "controls": {

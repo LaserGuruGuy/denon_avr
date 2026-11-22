@@ -1,5 +1,16 @@
 {
- "all_sound_modes": [],
+ "all_sound_modes": [
+  "Stereo",
+  "Multi Ch Stereo",
+  "Mono Movie",
+  "Virtual",
+  "Rock Arena",
+  "Jazz Club",
+  "Matrix",
+  "Video Game",
+  "Direct",
+  "Pure Direct"
+ ],
  "channels": [
   {
    "code": "C",
@@ -103,10 +114,21 @@
   }
  ],
  "configured_channels": [
+  "C",
   "FL",
-  "FR"
+  "FR",
+  "SL",
+  "SR",
+  "SW"
  ],
- "current_sound_modes": [],
+ "current_sound_modes": [
+  "Stereo",
+  "Multi Ch Stereo",
+  "Rock Arena",
+  "Jazz Club",
+  "Matrix",
+  "Virtual"
+ ],
  "device": {
   "firmware_revision": "1783925966",
   "firmware_version": "3.139.173",
@@ -516,14 +538,44 @@
    "Movie"
   ]
  },
- "quick_select_names": {},
+ "quick_select_names": {
+  "1": "Quick Select 1",
+  "2": "Quick Select 2",
+  "3": "Quick Select 3",
+  "4": "Quick Select 4"
+ },
  "sound_mode_genres": {
   "GAM": "Game",
   "MOV": "Movie",
   "MUS": "Music",
   "PUR": "Pure"
  },
- "sound_mode_groups": {},
+ "sound_mode_groups": {
+  "GAM": [
+   "Stereo",
+   "Multi Ch Stereo",
+   "Video Game",
+   "Virtual"
+  ],
+  "MOV": [
+   "Stereo",
+   "Multi Ch Stereo",
+   "Mono Movie",
+   "Virtual"
+  ],
+  "MUS": [
+   "Stereo",
+   "Multi Ch Stereo",
+   "Rock Arena",
+   "Jazz Club",
+   "Matrix",
+   "Virtual"
+  ],
+  "PUR": [
+   "Direct",
+   "Pure Direct"
+  ]
+ },
  "sources": [
   {
    "code": "DVD",
@@ -587,8 +639,45 @@
   }
  ],
  "speaker_config": {
+  "BKD": [
+   "NON"
+  ],
+  "CEN": [
+   "SMA"
+  ],
+  "FRD": [
+   "NON"
+  ],
+  "FRH": [
+   "NON"
+  ],
   "FRO": [
    "LAR"
+  ],
+  "RHE": [
+   "NON"
+  ],
+  "SBK": [
+   "2SP",
+   "NON"
+  ],
+  "SUA": [
+   "LAR"
+  ],
+  "SUD": [
+   "NON"
+  ],
+  "SWF": [
+   "1SP"
+  ],
+  "TFR": [
+   "NON"
+  ],
+  "TPM": [
+   "NON"
+  ],
+  "TPR": [
+   "NON"
   ]
  },
  "volume": {
