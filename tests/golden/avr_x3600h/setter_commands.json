@@ -245,11 +245,11 @@
  "control:reference_level_offset='15'": [
   "PSREFLEV 15"
  ],
- "control:resolution_hdmi='4KF'": [
-  "VSSCH4KF"
- ],
  "control:resolution_hdmi='AUTO'": [
   "VSSCHAUTO"
+ ],
+ "control:resolution_hdmi='OFF'": [
+  "VSSCHOFF"
  ],
  "control:restorer='HI'": [
   "PSRSTR HI"
@@ -277,6 +277,12 @@
  ],
  "control:sleep_timer=30": [
   "SLP030"
+ ],
+ "control:speaker_preset='1'": [
+  "SPPR 1"
+ ],
+ "control:speaker_preset='2'": [
+  "SPPR 2"
  ],
  "control:speaker_virtualizer=False": [
   "PSSPV OFF"

@@ -224,8 +224,8 @@ async def test_availability_poll_and_fallback(make_device, fixture):
     trace["poll_fallback_requests"] = session.requests[before:]
     trace["poll_fallback_callbacks"] = list(fired)
     assert_golden(fixture, "availability_poll", trace)
-    trigger = next(iter(next(iter(dev.profile.refresh_groups.values()))["on"]))
-    telnet.feed(trigger)                            # schedules a debounced re-query task
+    telnet.feed("MSDIRECT")                         # first MS after start: no refresh
+    telnet.feed("MSSTEREO")                         # a change: schedules a debounced re-query task
     assert dev._tasks.pending
     await dev.async_stop()
     assert not dev._tasks.pending, "async_stop must cancel every background task"

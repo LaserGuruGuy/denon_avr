@@ -97,6 +97,7 @@ class DiscoveryService:
         await self._video_config.discover()
         target.features |= self._video_config.feature_flags()
         await self._speaker_config.discover()
+        target.features |= self._speaker_config.feature_flags()
         # The authoritative source list comes from the telnet SSFUN/SSSOD
         # introspection; keep the Deviceinfo list only as a fallback.
         self._fallback_sources = discovered.sources

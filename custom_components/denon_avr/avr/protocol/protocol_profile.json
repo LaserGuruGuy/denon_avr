@@ -135,6 +135,7 @@
       ]
     },
     "speakers_web": {
+      "features": {"SpeakerPreset": "SpeakerPreset"},
       "channel_policy": "secondary: amp assign has no telnet command; port 1256 needs a calibration session that interrupts playback (verified live on the AVR-X3600H)",
       "availability_type": 1,
       "amp_modes": {"doc": "Assign mode ids -> stable translation keys, shared by both generations (legacy Amp Assign type 2 AssignMode, Web Control SpeakerLayout item 1). Sources: the Web Control bundle label ids and the owner's manuals. 17 = Pre Amplifier / Preamplifier (every speaker connection becomes 'Pre-out Only'). Unknown ids show as mode_<id>.", "keys": {"1": "9_1ch", "2": "7_1ch_zone2", "3": "7_1ch_zone3", "4": "7_1ch_zone2_3_mono", "6": "7_1ch_front_b", "7": "7_1ch_bi_amp", "12": "11_1ch", "13": "5_1ch_zone2_3", "14": "5_1ch_bi_amp_zone2", "15": "5_1ch_full_bi_amp", "16": "custom", "17": "preamplifier", "18": "11_1ch", "19": "5_1ch_front_lcr_bi_amp"}, "preamplifier": ["17"]},
@@ -196,6 +197,7 @@
     "count_groups": {"SWF": {"by_count": {"1": ["SW"], "2": ["SW", "SW2"], "3": ["SW", "SW2", "SW3"], "4": ["SW", "SW2", "SW3", "SW4"]}}, "SBK": {"by_count": {"1": ["SB"], "2": ["SBL", "SBR"]}}}
   },
   "zones": {
+    "sub_commands": ["CV", "PS", "SLP", "QUICK", "HPF", "SMART", "STBY", "CS", "HDA"],
     "doc": [
       "How zones are addressed on the wire. The NUMBER and names of zones are",
       "discovered from the receiver (DeviceZones); only the addressing grammar is",
@@ -285,6 +287,7 @@
     "default_type": "avr"
   },
   "readonly": {
+    "speaker_layout_protocol": {"kind": "passthrough", "name": "Speaker output (height/wide)", "query": "PSSP: ?", "prefix": "PSSP:", "doc": "Effect speaker selection of the control protocol (PSSP:, e.g. HF = height front, FW = front wide); answers on both receivers. Read-only until its tokens are mapped and verified live."},
     "input_signal": {
       "kind": "passthrough",
       "name": "Input Signal",
@@ -340,11 +343,13 @@
         "debounce": 1.2
       },
       "inputs_web": {"doc": "A source change re-reads the video web section (per-input 4K/8K format and HDCP, current input). Web documents have no push.", "on": ["SI"], "queries": [], "web": ["video"], "debounce": 1.0},
-      "speakers_web": {"doc": "A speaker setup line (also our own SSSPC/SSCFR re-queries, and SPPR/PSSP pushes) re-reads the speakers web section: speaker layout, crossover and LPF value lists.", "on": ["SSSPC", "SSCFR", "SPPR", "PSSP:"], "queries": [], "web": ["speakers"], "debounce": 1.5},
-      "graphic_eq_web": {"doc": "A graphic EQ on/off line, or a room correction (MultEQ) change that grays the EQ menu in or out, re-reads the graphic EQ curve and its availability.", "on": ["PSGEQ", "PSMULTEQ:"], "queries": [], "web": ["graphic_eq"], "debounce": 1.0}
+      "speakers_web": {"doc": "A speaker setup line (also our own SSSPC/SSCFR re-queries, and PSSP: pushes; a Speaker Preset switch has its own group) re-reads the speakers web section: speaker layout, crossover and LPF value lists.", "on": ["SSSPC", "SSCFR", "PSSP:"], "queries": [], "web": ["speakers"], "debounce": 1.5},
+      "graphic_eq_web": {"doc": "A graphic EQ on/off line, or a room correction (MultEQ) change that grays the EQ menu in or out, re-reads the graphic EQ curve and its availability.", "on": ["PSGEQ", "PSMULTEQ:"], "queries": [], "web": ["graphic_eq"], "debounce": 1.0},
+      "speaker_preset": {"doc": "A Speaker Preset switch replaces the whole speaker setup: re-query everything speaker related on telnet and re-read the speakers and graphic EQ web documents.", "on": ["SPPR"], "queries": ["SSSPC ?", "SSCFR ?", "SSLEV ?", "SSSDE ?", "CV?", "SSLFL ?", "SSSWM ?", "PSFRONT?", "PSGEQ ?", "PSMULTEQ: ?", "PSDYNEQ ?", "PSDYNVOL ?", "PSREFLEV ?", "PSLFC ?", "PSCNTAMT ?", "PSSP: ?"], "web": ["speakers", "graphic_eq"], "debounce": 1.5}
     }
   },
   "controls": {
+    "speaker_preset": {"group": "speaker", "scope": "feature", "feature": "SpeakerPreset", "kind": "enum", "query": "SPPR ?", "prefix": "SPPR ", "values": ["1", "2"], "labels": ["Speaker Preset 1", "Speaker Preset 2"], "doc": "Speaker Preset 1/2 (Web Control generation): each preset stores the whole speaker setup (layout, distances, levels, crossovers, LPF, Audyssey/Dirac, graphic EQ). Telnet first: SPPR ? answers SPPR 1 on the AVC-X3900H; silent on the AVR-X3600H. Gated on the speakers web menu SpeakerPreset. The set token SPPR <n> follows the protocol family; not yet verified live."},
     "system_power": {
       "group": "power",
       "scope": "core",
@@ -957,8 +962,8 @@
       "kind": "enum",
       "query": "VSSCH ?",
       "prefix": "VSSCH",
-      "values": ["AUTO", "48P", "10I", "72P", "10P", "10P24", "4K", "4KF"],
-      "labels": ["Auto", "480p/576p", "1080i", "720p", "1080p", "1080p:24Hz", "4K", "4K (60/50)"],
+      "values": ["AUTO", "48P", "10I", "72P", "10P", "10P24", "4K", "4KF", "OFF"],
+      "labels": ["Auto", "480p/576p", "1080i", "720p", "1080p", "1080p:24Hz", "4K", "4K (60/50)", "Off"],
       "doc": "HDMI output resolution (scaler). Wire tokens from the Denon control protocol (VSSCH<token>); AUTO/48P/10I/72P/10P/10P24/4K verified live read/write. Only settable when Video Conversion is on and the IP scaler is on HDMI (the receiver otherwise rejects it); this is the ResolutionHDMI field the web Output Settings page gates the same way. 'VSSC' (analog) is a separate, hidden path and is not exposed."
     },
     "input_mode": {

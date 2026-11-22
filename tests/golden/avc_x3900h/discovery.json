@@ -195,6 +195,7 @@
   "RefLevOffset": "Reference Level Offset",
   "Restorer": "Restorer",
   "RoomSize": "Room Size",
+  "SpeakerPreset": "Speaker Preset",
   "SpeakerVirtualizer": "Speaker Virtualizer",
   "SubwooferLevel": "Subwoofer Level Adjust",
   "ToneControl": "Tone Control",
@@ -565,6 +566,10 @@
    "Medium",
    "Medium large",
    "Large"
+  ],
+  "SpeakerPreset": [
+   "Preset 1",
+   "Preset 2"
   ],
   "VideoMode": [
    "Auto",

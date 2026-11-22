@@ -96,10 +96,13 @@ async def test_speaker_virtualizer_does_not_trigger_speakers_web(make_device):
     await dev.async_stop()
 
 
-async def test_unmodelled_setup_push_triggers_speakers_web(make_device):
+async def test_effect_speaker_change_triggers_speakers_web(make_device):
     dev, session, telnet, _fired = await _started(make_device)
+    telnet.feed("PSSP:HF")                     # first value after start: no refresh
+    await asyncio.sleep(0.15)
+    await drain(dev)
     before = len(session.requests)
-    telnet.feed("SPPR 2")                      # speaker preset: not modelled by the parser yet
+    telnet.feed("PSSP:FW")                     # a real change of the effect speakers
     await asyncio.sleep(0.15)
     await drain(dev)
     assert [r for r in session.requests[before:] if "/ajax/speakers/" in r["url"]]
@@ -122,7 +125,7 @@ async def test_diagnostics_counters(make_device):
     dev, _session, telnet, _fired = await _started(make_device)
     before = dict(dev.stats)
     telnet.feed("MV31")
-    telnet.feed("SPPR 1")                        # unknown to the parser
+    telnet.feed("XYZZY 1")                       # unknown to the parser
     await asyncio.sleep(0.15)
     await dev.async_poll()
     stats = dev.stats
@@ -131,5 +134,45 @@ async def test_diagnostics_counters(make_device):
     assert stats["notifies"] >= before["notifies"] + 1
     assert stats["polls"] == before["polls"] + 1
     assert any("speakers/get_config" in k for k in stats["web_last_status"])
-    assert not any("data=" in k for k in stats["web_last_status"])   # no payloads in diagnostics
+    assert all("?type=" in k and "data" not in k for k in stats["web_last_status"])   # paths only
+    await dev.async_stop()
+
+
+async def test_speaker_preset_switch_rereads_the_whole_speaker_setup(make_device):
+    dev, session, telnet, _fired = await _started(make_device)
+    telnet.feed("SPPR 1")                      # first value after start: no refresh
+    await asyncio.sleep(0.15)
+    await drain(dev)
+    telnet.sent.clear()
+    before = len(session.requests)
+    telnet.feed("SPPR 2")
+    await asyncio.sleep(0.15)
+    await drain(dev)
+    for query in ("SSSPC ?", "SSCFR ?", "SSLEV ?", "SSSDE ?", "CV?", "SSLFL ?", "PSMULTEQ: ?", "PSFRONT?", "PSGEQ ?", "PSSP: ?"):
+        assert query in telnet.sent, query
+    urls = [r["url"] for r in session.requests[before:]]
+    assert any("/ajax/speakers/" in u for u in urls) and any("/ajax/audio/get_config?type=10" in u for u in urls)
+    assert dev.state.values.get("speaker_preset") == "2"
+    await dev.async_stop()
+
+
+async def test_zone_sub_commands_are_not_a_source(make_device):
+    dev, _session, telnet, _fired = await _started(make_device)
+    source = dev.state.zone("zone2").source
+    for line in ("Z2CVFL 50", "Z2QUICK1", "Z2SLP030", "Z2PSBAS 50"):
+        telnet.feed(line)
+    assert dev.state.zone("zone2").source == source
+    telnet.feed("Z2TUNER")
+    assert dev.state.zone("zone2").source == "TUNER"
+    await dev.async_stop()
+
+
+
+async def test_first_value_after_start_does_not_refresh(make_device):
+    dev, _session, telnet, _fired = await _started(make_device)
+    telnet.sent.clear()
+    telnet.feed("SPPR 1")
+    await asyncio.sleep(0.15)
+    await drain(dev)
+    assert telnet.sent == []
     await dev.async_stop()

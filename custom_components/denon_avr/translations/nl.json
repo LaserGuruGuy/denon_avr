@@ -99,6 +99,9 @@
           "fl_fr_rear": "LV/RV/achter",
           "fl_fr_rl_rr": "LV/RV/LA/RA"
         }
+      },
+      "speaker_layout_protocol": {
+        "name": "Effectluidsprekers (hoogte/breed)"
       }
     },
     "select": {
@@ -302,6 +305,9 @@
             "name": "Kamercorrectie opnieuw inmeten"
           }
         }
+      },
+      "speaker_preset": {
+        "name": "Luidsprekerpreset"
       }
     },
     "switch": {

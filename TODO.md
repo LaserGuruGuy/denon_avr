@@ -170,8 +170,16 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
     not yet live), apply verifies by re-reading after 2 s. No live write done. Open: assign ids
     5/8/9/10/11 have no key yet (mode_<id>); Custom (16) needs CustomSettings (type 2) - not modelled;
     keys may differ per AmpType (bundle labels switch on AmpType) -> verify against the manual/live.
-  - [ ] 5g diagnostics counters (triggers, notifies, polls, last web read per document)
-- [ ] step 6: telnet parity (SPPR select, PSSP:, VSSCH OFF, Z2 sub-commands); 7 live verification; 8 docs, 1.2.0; 9 push
+  - [x] 5g diagnostics counters (lines, unknown lines, notifies, polls, refresh groups, web re-reads,
+    last HTTP status per web document; no payloads/host)
+- [~] step 6 (code done, review pending): SPPR speaker preset select (gated on the receiver's
+  SpeakerPreset menu; set token not yet verified live), a preset switch re-reads the whole speaker
+  setup (telnet + speakers/EQ web), PSSP: read-only sensor, VSSCH OFF token, zone sub-commands
+  (Z2CV/PS/SLP/QUICK/...) no longer parsed as a zone source.
+- [ ] step 7: live verification with the owner (read-only observation first, writes only with a yes
+  per action) - see "To observe live" and "Before the push"
+- [ ] step 8: docs (README, ARCHITECTURE), release notes, version 1.2.0
+- [ ] step 9: push (only after tests on both receivers, with the owner's permission)
 - later (from the step-2 review): HA-layer pyflakes warnings (select.py:225, const.py:12, sensor.py:19);
   volume step default 0.5 from the profile; a public test hook instead of `_tasks.pending`.
 
@@ -258,3 +266,8 @@ Mode), GMISSYbjvpcnxf.php (Subwoofer Layout), GFNFSYaxhqtbzr.php (Subwoofer Outp
 - Sub-device names are translated (nl: Luidsprekers, Beeld, Grafische EQ, Ingangen); user-set names stay.
 - New: Inputs sub-device (per-input 4K/8K format and HDCP), current-input selects, amplifier mode and
   subwoofer directional mode/layout sensors, quick select on firmware that is silent on SSQSNZMA.
+
+## Step 7 checklist additions (from the step 6 review)
+- capture SPPR / PSSP: replies and a preset switch read-only into the telnet corpus (none recorded yet);
+- verify the SPPR set token and VSSCH OFF as a write only with the owner's yes;
+- the X3600H SSSWM vs the X3900H subwoofer output (SSSWM silent there).

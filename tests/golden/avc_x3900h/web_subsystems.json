@@ -303,7 +303,9 @@
     "value": null
    }
   },
-  "feature_flags": [],
+  "feature_flags": [
+   "SpeakerPreset"
+  ],
   "supported": true,
   "value_lists": {
    "crossover": [

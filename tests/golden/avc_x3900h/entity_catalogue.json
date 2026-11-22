@@ -631,6 +631,13 @@
  },
  {
   "enabled": true,
+  "key": "select_speaker_preset",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
   "key": "select_dynamic_compression",
   "kind": "control",
   "platform": "select",
@@ -1104,6 +1111,13 @@
   "kind": "web_select",
   "platform": "select",
   "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "sensor_speaker_layout_protocol",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
  },
  {
   "enabled": true,

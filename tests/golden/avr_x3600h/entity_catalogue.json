@@ -1009,6 +1009,13 @@
  },
  {
   "enabled": true,
+  "key": "sensor_speaker_layout_protocol",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
   "key": "sensor_input_signal",
   "kind": "readonly",
   "platform": "sensor",

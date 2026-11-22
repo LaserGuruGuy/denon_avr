@@ -36,7 +36,7 @@ class StateSync:
         self._parser = parser
         self._sink = sink
         self._tasks = tasks
-        self._notify = notify
+        self._notify_hook = notify
         # Data driven coalesced re-query groups (profile 'refresh' section). The
         # receiver does not push some derived state on every relevant change
         # (audio format on a mode change, channel/speaker layout on a mode or
@@ -51,6 +51,10 @@ class StateSync:
         self._web_refreshers = dict(web_refreshers or {})
         self._web_running: set[str] = set()
         self._web_dirty: set[str] = set()
+        # Trigger prefixes seen since start: the first value of a prefix (None ->
+        # value, e.g. right after connecting) does not run a refresh group, the
+        # resync asks for everything anyway.
+        self._seen_triggers: set[str] = set()
         # Fingerprint of what entities can see; a pushed line that leaves it
         # unchanged (the periodic signal cluster, list lines before END) does not
         # notify Home Assistant.
@@ -60,6 +64,10 @@ class StateSync:
             "lines": 0, "lines_unknown": 0, "notifies": 0, "polls": 0,
             "refresh_groups": {}, "web_refreshes": {},
         }
+
+    def _notify(self) -> None:
+        self.stats["notifies"] += 1
+        self._notify_hook()
 
     def _snapshot(self) -> str:
         return repr((self._state, self._discovery))
@@ -79,7 +87,6 @@ class StateSync:
             if snapshot != self._fingerprint:
                 self._fingerprint = snapshot
                 changed = True
-                self.stats["notifies"] += 1
                 self._notify()
         # The receiver pushes OPSMLALL (all groups) when the sound mode context
         # changes, but never pushes OPSML (the current group's selectable modes).
@@ -91,15 +98,19 @@ class StateSync:
                 self._tasks.create(self.query_current_sound_modes())
         # Data driven refresh: any group whose trigger prefix this line matches
         # gets a coalesced re-query - when the line changed something, or when the
-        # parser does not model it (then a change cannot be ruled out, e.g. SPPR).
+        # parser does not model it (then a change cannot be ruled out).
         # A repeated, unchanged, understood push (the periodic signal cluster)
         # re-queries nothing.
         if understood and not changed:
             return
         for group_id, group in self._refresh_groups.items():
-            on = group.get("on")
-            if on and line.startswith(tuple(on)):
-                self._schedule_refresh(group_id)
+            prefix = next((p for p in group.get("on") or () if line.startswith(p)), None)
+            if prefix is None:
+                continue
+            if prefix not in self._seen_triggers:
+                self._seen_triggers.add(prefix)
+                continue
+            self._schedule_refresh(group_id)
 
     def handle_now_playing(self, snapshot: dict) -> None:
         self._state.now_playing = NowPlaying(**snapshot)

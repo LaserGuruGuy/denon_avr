@@ -97,9 +97,14 @@ class TelnetParser:
 
     def understands(self, line: str) -> bool:
         """True when this parser models the line's command (whether or not it changed
-        anything); False for commands it does not know (e.g. SPPR, PSSP: today)."""
+        anything); False for commands it does not know or deliberately does not model yet."""
 
-        return line.startswith(self._known_prefixes)
+        if not line.startswith(self._known_prefixes):
+            return False
+        # Zone sub-commands (Z2CV..., Z3QUICK1, ...) are deliberately not modelled yet.
+        if len(line) > 2 and line[0] == "Z" and line[1].isdigit():
+            return not line[2:].startswith(tuple(self._profile.zones.get("sub_commands", [])))
+        return True
 
     def _track_list(self, line: str) -> None:
         for prefix in self._terminated:
@@ -431,7 +436,11 @@ class TelnetParser:
                 zone.volume_raw = value
                 return True
             return False
-        # Anything else is the zone 2 source code.
+        # Zone sub-commands (channel volume, tone, sleep, quick select ...) are
+        # not a source; they are not modelled yet (profile zones.sub_commands).
+        if remainder.startswith(tuple(self._profile.zones.get("sub_commands", []))):
+            return False
+        # Anything else is the zone's source code.
         zone.source = remainder
         return True
 

@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 
 from .coordinator import DenonAvrConfigEntry
 
-TO_REDACT = {"mac_address"}
+TO_REDACT = {"mac_address", "serial_number"}
 
 
 async def async_get_config_entry_diagnostics(

@@ -85,7 +85,8 @@ The device link in HA (`configuration_url`) is the located interface.
 - **The coordinator never restarts its interval on a push** (`async_update_listeners`, not
   `async_set_updated_data`), so the 60 s reconcile poll keeps running with a pushing receiver.
 - **Refresh groups run when a line changed something, or when the parser does not model the line**
-  (then a change cannot be ruled out, e.g. SPPR or `PSSP:` today). An unchanged, understood, repeated
+  (then a change cannot be ruled out). The first value of a trigger prefix after start does not run a
+  group (the resync asks for everything). An unchanged, understood, repeated
   push does not re-query. The OPSMLALL END handler still re-queries OPSML unconditionally.
 - **What the receiver does not re-push** is re-queried by the profile's `refresh` groups (audio info
   and the speaker/channel layout after MS/SI, the sound mode lists after a signal change).

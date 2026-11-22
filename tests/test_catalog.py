@@ -141,3 +141,10 @@ async def test_staged_speaker_layout_entities(make_device):
     assert {"select_speaker_layout_assign", "button_speaker_layout_apply", "button_speaker_layout_discard"} <= keys
     _c, _d, legacy = await _catalogue(make_device, "avr_x3600h")
     assert not {e.key for e in legacy} & {"select_speaker_layout_assign", "button_speaker_layout_apply"}
+
+
+async def test_speaker_preset_only_where_the_receiver_has_it(make_device):
+    _c, _d, new = await _catalogue(make_device, "avc_x3900h")
+    _c2, _d2, old = await _catalogue(make_device, "avr_x3600h")
+    assert "select_speaker_preset" in {e.key for e in new}
+    assert "select_speaker_preset" not in {e.key for e in old}
