@@ -147,6 +147,20 @@ def parse_device_info(
         if meta:
             discovery.numeric_meta[feature] = meta
 
+    # Quick select presets (capability and default names), when controllable.
+    quick = root.find(".//QuickSelect")
+    if quick is not None and (quick.findtext("Control") or "").strip() == "1":
+        for child in quick:
+            number = (child.findtext("No") or "").strip()
+            name = (child.findtext("Name") or "").strip()
+            if child.tag.startswith("QuickSelect") and number.isdigit() and name:
+                discovery.quick_select_names[int(number)] = name
+
+    # Number of subwoofers the receiver supports (capability, not user setup).
+    sub_count = root.findtext(".//SubwooferLevel/SubwooferNum")
+    if sub_count and sub_count.strip().isdigit():
+        discovery.subwoofer_max = int(sub_count.strip())
+
     # Sound mode genre names (Movie/Music/Game/Pure), read from the receiver's
     # SoundMode genre list. Keyed by the first three upper case letters so they
     # can be correlated with the 3 letter genre codes used by OPSMLALL.

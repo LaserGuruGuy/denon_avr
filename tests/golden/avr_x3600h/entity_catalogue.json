@@ -1,0 +1,1213 @@
+[
+ {
+  "enabled": true,
+  "key": "binary_sensor_connectivity",
+  "kind": "connectivity",
+  "platform": "binary_sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "button_eq_apply",
+  "kind": "eq_apply",
+  "platform": "button",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "button_eq_curve_copy",
+  "kind": "eq_curve_copy",
+  "platform": "button",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "button_eq_set_defaults",
+  "kind": "eq_set_defaults",
+  "platform": "button",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "media_player_main",
+  "kind": "zone",
+  "platform": "media_player",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "media_player_zone2",
+  "kind": "zone",
+  "platform": "media_player",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "number_bass",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_treble",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_lfe",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_dialog_level",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_subwoofer_level",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_sleep_timer",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "number_effect_level",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_containment_amount",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_audio_delay",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_dialog_control",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "number_contrast",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "picture"
+ },
+ {
+  "enabled": true,
+  "key": "number_brightness",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "picture"
+ },
+ {
+  "enabled": true,
+  "key": "number_saturation",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "picture"
+ },
+ {
+  "enabled": true,
+  "key": "number_enhancer",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "picture"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_trim_C",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_distance_C",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_trim_SW",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_distance_SW",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_trim_FL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_distance_FL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_trim_FR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_distance_FR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_trim_SL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_distance_SL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_trim_SR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_channel_distance_SR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_SB",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_SB",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_SBL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_SBL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_SBR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_SBR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_FHL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_FHL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_FHR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_FHR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_TFL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_TFL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_TFR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_TFR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_TML",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_TML",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_TMR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_TMR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_TRL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_TRL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_TRR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_TRR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_RHL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_RHL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_RHR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_RHR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_FDL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_FDL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_FDR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_FDR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_SDL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_SDL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_SDR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_SDR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_BDL",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_BDL",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_BDR",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_BDR",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_trim_SW2",
+  "kind": "channel_trim",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "number_channel_distance_SW2",
+  "kind": "channel_distance",
+  "platform": "number",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq63Hz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq125Hz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq250Hz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq500Hz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq1kHz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq2kHz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq4kHz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq8kHz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "number_eq_Eq16kHz",
+  "kind": "eq_band",
+  "platform": "number",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "select_dynamic_compression",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "select_room_size",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "select_dynamic_volume",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "select_reference_level_offset",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "select_multeq",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "select_restorer",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "select_volume_scale",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_volume_limit",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_muting_level",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_subwoofer_mode",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_front_speaker",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_lpf_for_lfe",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_eco_mode",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_dimmer",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_video_mode",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_picture_mode",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "picture"
+ },
+ {
+  "enabled": true,
+  "key": "select_noise_reduction",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "picture"
+ },
+ {
+  "enabled": true,
+  "key": "select_hdmi_video_output",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_aspect_ratio",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_hdmi_audio_out",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_resolution_hdmi",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_input_mode",
+  "kind": "control",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_sound_mode_group",
+  "kind": "sound_mode_group",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_sound_mode",
+  "kind": "sound_mode",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "select_quick_select",
+  "kind": "quick_select",
+  "platform": "select",
+  "sub_device": null
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_BKD",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_crossover_CEN",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_FRD",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_FRH",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_crossover_FRO",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_RHE",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_SBK",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_crossover_SUA",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_SUD",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_TFR",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_TPM",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_crossover_TPR",
+  "kind": "crossover",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_crossover_speaker_selection",
+  "kind": "crossover_speaker_selection",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_crossover_all",
+  "kind": "crossover_all",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_BKD",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_speaker_size_CEN",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_FRD",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_FRH",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_speaker_size_FRO",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_RHE",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_speaker_size_SUA",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_SUD",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_TFR",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_TPM",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": false,
+  "key": "select_speaker_size_TPR",
+  "kind": "speaker_size",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_subwoofer_count",
+  "kind": "subwoofer_count",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_eq_speaker_selection",
+  "kind": "eq_speaker_selection",
+  "platform": "select",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "select_eq_channel",
+  "kind": "eq_channel",
+  "platform": "select",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "select_hdmi_power_off_control",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_pass_through_source",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_rc_select",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_osd_volume",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_osd_now_playing",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_hdmi_signal_format",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_tv_format",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "select_amp_assign",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_floor_layout",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "select_height_speaker",
+  "kind": "web_select",
+  "platform": "select",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "sensor_input_signal",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_sample_rate",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_audio_format",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_decoder",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_mode_info",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_sound_mode",
+  "kind": "sound_mode",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_volume_db",
+  "kind": "volume_db",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": false,
+  "key": "sensor_amp_mode",
+  "kind": "amp_mode",
+  "platform": "sensor",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "switch_main_power",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "switch_main_mute",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "switch_tone_control",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_dynamic_eq",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_graphic_eq",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "eq"
+ },
+ {
+  "enabled": true,
+  "key": "switch_auto_lip_sync",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_loudness_management",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_cinema_eq",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_subwoofer_switch",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "switch_all_zone_stereo",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "switch_speaker_virtualizer",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_center_spread",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_dts_neural_x",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_low_frequency_containment",
+  "kind": "control",
+  "platform": "switch",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": true,
+  "key": "switch_hdmi_control",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_arc",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_tv_audio_switching",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_hdmi_power_saving",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_smart_menu",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_hdmi_pass_through",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ },
+ {
+  "enabled": true,
+  "key": "switch_osd_info",
+  "kind": "web_switch",
+  "platform": "switch",
+  "sub_device": "video"
+ }
+]

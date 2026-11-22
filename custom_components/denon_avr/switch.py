@@ -15,7 +15,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity
+from .entity import DenonAvrEntity, catalogue_entities
 from .helpers import control_sub_device
 
 
@@ -24,27 +24,14 @@ async def async_setup_entry(
     entry: DenonAvrConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create a switch for each supported on/off feature control."""
+    """Create the switches the entity catalogue lists for this receiver."""
 
     coordinator = entry.runtime_data
-    discovery = coordinator.device.discovery
-    entities: list[SwitchEntity] = [
-        DenonAvrSwitch(coordinator, spec)
-        for spec in coordinator.device.profile.controls.values()
-        if spec.kind == "onoff"
-        and (spec.scope != "feature" or discovery.supports(spec.feature or ""))
-    ]
-    # On/off video setup menu items (HDMI Control/CEC, ARC, TV audio switching,
-    # power saving, smart menu, pass-through, OSD info), read/written over the
-    # /ajax config API, on the Video sub-device. Only advertised items appear.
-    video = coordinator.device.video_config
-    if video.supported:
-        entities.extend(
-            DenonAvrVideoSwitch(coordinator, control)
-            for control in video.controls()
-            if control.get("kind") == "switch" and video.present(control["id"])
-        )
-    async_add_entities(entities)
+    factories = {
+        "control": lambda e: DenonAvrSwitch(coordinator, e.params["spec"]),
+        "web_switch": lambda e: DenonAvrVideoSwitch(coordinator, e.params["control"]),
+    }
+    async_add_entities(catalogue_entities(coordinator, "switch", factories))
 
 
 class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):

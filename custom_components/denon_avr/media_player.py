@@ -19,7 +19,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ZoneDescriptor
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity
+from .entity import DenonAvrEntity, catalogue_entities
 
 # An icon-style picture of the selected input, shown when there is no album art
 # to display. Keyed by the receiver's wire source code (what the state holds);
@@ -69,14 +69,11 @@ async def async_setup_entry(
     entry: DenonAvrConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create one media player per discovered zone."""
+    """Create the media players (one per zone) the entity catalogue lists for this receiver."""
 
     coordinator = entry.runtime_data
-    entities = [
-        DenonAvrMediaPlayer(coordinator, zone)
-        for zone in coordinator.device.discovery.zones
-    ]
-    async_add_entities(entities)
+    factories = {"zone": lambda e: DenonAvrMediaPlayer(coordinator, e.params["zone"])}
+    async_add_entities(catalogue_entities(coordinator, "media_player", factories))
 
 
 class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):

@@ -90,6 +90,8 @@ class DiscoveryService:
         target.numeric_meta = discovered.numeric_meta
         target.volume = discovered.volume
         target.sound_mode_genres = discovered.sound_mode_genres
+        target.quick_select_names = dict(discovered.quick_select_names)
+        target.subwoofer_max = discovered.subwoofer_max
         # Video setup availability + values; menus that are present become
         # discovery features (the telnet picture controls gate on PictureAdjust).
         await self._video_config.discover()

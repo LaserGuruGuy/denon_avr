@@ -14,8 +14,17 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec, eq_channel_options
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity
-from .helpers import control_sub_device, enum_options, group_name
+from .entity import DenonAvrEntity, catalogue_entities
+from .helpers import (
+    control_sub_device,
+    crossover_from_label,
+    crossover_label,
+    crossover_values,
+    enum_options,
+    group_name,
+    is_size_token,
+    subwoofer_count_options,
+)
 
 
 async def async_setup_entry(
@@ -23,78 +32,29 @@ async def async_setup_entry(
     entry: DenonAvrConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create a select entity for each supported enum control."""
+    """Create the select entities the entity catalogue lists for this receiver."""
 
     coordinator = entry.runtime_data
-    discovery = coordinator.device.discovery
-    entities: list[SelectEntity] = [
-        DenonAvrSelect(coordinator, spec)
-        for spec in coordinator.device.profile.controls.values()
-        if spec.kind == "enum"
-        and (spec.scope != "feature" or discovery.supports(spec.feature or ""))
-    ]
-    # Two coupled sound mode selects: one picks the genre group (Movie/Music/
-    # Game/Pure), the other lists the modes within the selected group. Both are
-    # driven entirely by what the receiver reports. Only created when the
-    # receiver advertises sound mode genres.
-    if discovery.sound_mode_genres:
-        entities.append(DenonAvrSoundModeGroupSelect(coordinator))
-        entities.append(DenonAvrSoundModeSelect(coordinator))
-    # Quick select presets, if the receiver reported any names.
-    if discovery.quick_select_names:
-        entities.append(DenonAvrQuickSelect(coordinator))
-    # One crossover select per speaker group the receiver reports a crossover
-    # for (SSCFR). Groups whose speakers are configured are enabled; the rest are
-    # registered but disabled by default, mirroring the channel trims/distances.
-    configured = discovery.configured_channels
-    profile = coordinator.device.profile
-    for group in sorted(coordinator.data.crossovers):
-        channels = profile.group_channels(group)
-        enabled = (not configured) or any(c in configured for c in channels)
-        entities.append(DenonAvrCrossover(coordinator, group, channels, enabled))
-    # Crossover speaker-selection (All / Individual) and the single All crossover
-    # it gates, when the receiver reports any crossovers.
-    if coordinator.data.crossovers:
-        entities.append(DenonAvrCrossoverSpeakerSelection(coordinator))
-        entities.append(DenonAvrCrossoverAll(coordinator))
-    # One size select (Large/Small) per regular speaker group the receiver
-    # reports (the count groups - subwoofer, surround back - are not sizes).
-    size_groups = profile.speakers.get("groups", {})
-    for group in sorted(g for g in coordinator.data.speaker_sizes if g in size_groups):
-        channels = profile.group_channels(group)
-        enabled = (not configured) or any(c in configured for c in channels)
-        entities.append(DenonAvrSpeakerSize(coordinator, group, channels, enabled))
-    # Number of subwoofers, when the receiver reports a subwoofer config (SWF).
-    if "SWF" in coordinator.data.speaker_sizes:
-        entities.append(DenonAvrSubwooferCount(coordinator))
-    # Manual graphic-EQ selects, on the EQ sub-device, when the receiver has a
-    # graphic EQ this profile can drive: the speaker-selection mode and the
-    # channel being adjusted (read per-channel via the config API's opt1 index).
-    if coordinator.device.graphic_eq.supported:
-        entities.append(DenonAvrEqSpeakerSelection(coordinator))
-        entities.append(DenonAvrEqChannel(coordinator))
-    # Multi-option video setup menu items (HDMI power-off, pass-through source,
-    # OSD, 4K/TV format) read/written over the /ajax config API, on the Video
-    # sub-device. Only those the receiver advertises are created.
-    video = coordinator.device.video_config
-    if video.supported:
-        entities.extend(
-            DenonAvrVideoSelect(coordinator, control)
-            for control in video.controls()
-            if control.get("kind") == "select" and video.present(control["id"])
-        )
-    # Speaker-setup /ajax selects (Amp Assign), on the Speakers sub-device. The
-    # amp-assign options are device-driven (keyed on the queried AmpType).
-    speakers = coordinator.device.speaker_config
-    if speakers.supported:
-        entities.extend(
-            DenonAvrVideoSelect(
-                coordinator, control, controller_attr="speaker_config", sub_device="speakers"
-            )
-            for control in speakers.controls()
-            if control.get("kind") == "select" and speakers.present(control["id"])
-        )
-    async_add_entities(entities)
+    factories = {
+        "control": lambda e: DenonAvrSelect(coordinator, e.params["spec"]),
+        "sound_mode_group": lambda e: DenonAvrSoundModeGroupSelect(coordinator),
+        "sound_mode": lambda e: DenonAvrSoundModeSelect(coordinator),
+        "quick_select": lambda e: DenonAvrQuickSelect(coordinator),
+        "crossover": lambda e: DenonAvrCrossover(coordinator, e.params["group"], e.params["channels"], e.enabled_default),
+        "crossover_speaker_selection": lambda e: DenonAvrCrossoverSpeakerSelection(coordinator),
+        "crossover_all": lambda e: DenonAvrCrossoverAll(coordinator),
+        "speaker_size": lambda e: DenonAvrSpeakerSize(coordinator, e.params["group"], e.params["channels"], e.enabled_default),
+        "subwoofer_count": lambda e: DenonAvrSubwooferCount(coordinator),
+        "eq_speaker_selection": lambda e: DenonAvrEqSpeakerSelection(coordinator),
+        "eq_channel": lambda e: DenonAvrEqChannel(coordinator),
+        "web_select": lambda e: DenonAvrVideoSelect(
+            coordinator,
+            e.params["control"],
+            controller_attr=e.params["controller_attr"],
+            sub_device=e.sub_device,
+        ),
+    }
+    async_add_entities(catalogue_entities(coordinator, "select", factories))
 
 
 class DenonAvrSelect(DenonAvrEntity, SelectEntity):
@@ -222,20 +182,24 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
         )
         self._group = group
         self._attr_entity_registry_enabled_default = enabled
-        discovery = coordinator.device.discovery
         crossover = coordinator.device.profile.crossover
         self._unit = crossover.get("unit", "Hz")
-        # The crossover grid is a fixed Denon protocol constant (same across the
-        # lineup; verified live). It is not device-variable, so it lives in the
-        # profile like every other enum's wire values - no runtime fetch needed.
-        self._values = [int(v) for v in crossover.get("values", [])]
-        self._attr_options = [self._format(v) for v in self._values]
         self._attr_name = (
             f"{group_name(coordinator.device.discovery, channels)} Crossover"
         )
 
     def _format(self, hertz: int) -> str:
-        return f"{hertz} {self._unit}"
+        return crossover_label(hertz, self._unit)
+
+    @property
+    def _values(self) -> list[int]:
+        # The receiver's own grid when it reports one (incl. 0 = Full Range),
+        # else the profile constant; re-evaluated so it follows the device.
+        return crossover_values(self.coordinator.device, self._group)
+
+    @property
+    def options(self) -> list[str]:
+        return [self._format(v) for v in self._values]
 
     @property
     def available(self) -> bool:
@@ -254,7 +218,7 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
         return self._format(hertz) if hertz in self._values else None
 
     async def async_select_option(self, option: str) -> None:
-        hertz = int(option.split()[0])
+        hertz = crossover_from_label(option)
         await self.coordinator.device.async_set_crossover(self._group, hertz)
 
 
@@ -301,10 +265,15 @@ class DenonAvrCrossoverAll(DenonAvrEntity, SelectEntity):
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_crossover_all", sub_device="speakers")
         self._attr_translation_key = "all_crossover"
-        crossover = coordinator.device.profile.crossover
-        self._unit = crossover.get("unit", "Hz")
-        self._values = [int(v) for v in crossover.get("values", [])]
-        self._attr_options = [f"{v} {self._unit}" for v in self._values]
+        self._unit = coordinator.device.profile.crossover.get("unit", "Hz")
+
+    @property
+    def _values(self) -> list[int]:
+        return crossover_values(self.coordinator.device)
+
+    @property
+    def options(self) -> list[str]:
+        return [crossover_label(v, self._unit) for v in self._values]
 
     @property
     def available(self) -> bool:
@@ -316,10 +285,10 @@ class DenonAvrCrossoverAll(DenonAvrEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         hertz = self.coordinator.data.values.get("crossover_all")
-        return f"{hertz} {self._unit}" if hertz in self._values else None
+        return crossover_label(hertz, self._unit) if hertz in self._values else None
 
     async def async_select_option(self, option: str) -> None:
-        await self.coordinator.device.async_set_crossover("ALL", int(option.split()[0]))
+        await self.coordinator.device.async_set_crossover("ALL", crossover_from_label(option))
 
 
 class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
@@ -354,6 +323,13 @@ class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
         )
 
     @property
+    def available(self) -> bool:
+        # Only where the receiver reports a size: newer firmware reports presence
+        # (YES/NO) instead, so the entity stays (never removed) but is unavailable.
+        token = self.coordinator.data.speaker_sizes.get(self._group)
+        return super().available and is_size_token(self.coordinator.device, token)
+
+    @property
     def current_option(self) -> str | None:
         token = self.coordinator.data.speaker_sizes.get(self._group)
         # Absent/count tokens map to no option, so no "invalid option" warning.
@@ -366,11 +342,11 @@ class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrSubwooferCount(DenonAvrEntity, SelectEntity):
-    """Number of subwoofers the receiver is configured for (None / 1 / 2).
+    """Number of subwoofers the receiver is configured for.
 
-    A telnet count group in the SSSPC speaker config (SSSPCSWF NON/1SP/2SP),
-    settable like a speaker size. The range is the standard 0-2 subwoofers of
-    this AVR class; a flagship supporting more would extend the token map.
+    A telnet count group in the SSSPC speaker config (SSSPCSWF <n>SP), settable
+    like a speaker size. The options follow the receiver: up to the number of
+    subwoofers it supports, and "None" with the absent token it uses itself.
     """
 
     _attr_entity_category = EntityCategory.CONFIG
@@ -378,12 +354,17 @@ class DenonAvrSubwooferCount(DenonAvrEntity, SelectEntity):
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_subwoofer_count", sub_device="speakers")
         self._attr_translation_key = "subwoofer_count"
-        # Wire tokens -> labels from the profile grammar, not hardcoded here.
-        self._labels = coordinator.device.profile.speakers.get(
-            "subwoofer_count", {"NON": "None", "1SP": "1", "2SP": "2"}
-        )
-        self._attr_options = list(self._labels.values())
-        self._label_to_token = {v: k for k, v in self._labels.items()}
+    @property
+    def _labels(self) -> dict[str, str]:
+        return subwoofer_count_options(self.coordinator.device)
+
+    @property
+    def options(self) -> list[str]:
+        return list(self._labels.values())
+
+    @property
+    def _label_to_token(self) -> dict[str, str]:
+        return {v: k for k, v in self._labels.items()}
 
     @property
     def current_option(self) -> str | None:

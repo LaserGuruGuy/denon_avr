@@ -21,7 +21,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec, eq_band_tag
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity
+from .entity import DenonAvrEntity, catalogue_entities
 from .helpers import control_sub_device
 
 # The control kinds that map to a number entity.
@@ -37,40 +37,16 @@ async def async_setup_entry(
     entry: DenonAvrConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create the adjustable number entities discovered for this receiver."""
+    """Create the number entities the entity catalogue lists for this receiver."""
 
     coordinator = entry.runtime_data
-    device = coordinator.device
-    discovery = device.discovery
-    entities: list[NumberEntity] = []
-
-    for spec in device.profile.controls.values():
-        if spec.kind not in _NUMBER_KINDS:
-            continue
-        if spec.scope == "feature" and not discovery.supports(spec.feature or ""):
-            continue
-        entities.append(DenonAvrNumber(coordinator, spec))
-
-    # One trim per known channel. Channels that the receiver reports as
-    # configured (from SSSPC) are enabled; the rest are registered but disabled
-    # by default so they stay out of the way yet can be enabled from the UI.
-    configured = discovery.configured_channels
-    codes = [c.code for c in discovery.channels] or sorted(
-        coordinator.data.channel_levels
-    )
-    for code in codes:
-        enabled = (not configured) or code in configured
-        entities.append(DenonAvrChannelTrim(coordinator, code, enabled))
-        entities.append(DenonAvrChannelDistance(coordinator, code, enabled))
-
-    # One number per manual graphic-EQ band, on the EQ sub-device, when the
-    # receiver has a graphic EQ this profile can drive. The bands reflect the
-    # channel picked by the EQ Channel select.
-    if device.graphic_eq.supported:
-        for label in device.graphic_eq.grammar.get("bands", []):
-            entities.append(DenonAvrEqBand(coordinator, label))
-
-    async_add_entities(entities)
+    factories = {
+        "control": lambda e: DenonAvrNumber(coordinator, e.params["spec"]),
+        "channel_trim": lambda e: DenonAvrChannelTrim(coordinator, e.params["code"], e.enabled_default),
+        "channel_distance": lambda e: DenonAvrChannelDistance(coordinator, e.params["code"], e.enabled_default),
+        "eq_band": lambda e: DenonAvrEqBand(coordinator, e.params["label"]),
+    }
+    async_add_entities(catalogue_entities(coordinator, "number", factories))
 
 
 class DenonAvrNumber(DenonAvrEntity, NumberEntity):

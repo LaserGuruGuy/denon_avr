@@ -46,7 +46,7 @@ async def test_source_change_rereads_the_video_web_section(make_device):
     dev, session, telnet, _fired = await _started(make_device)
     before = len(session.requests)
     telnet.feed("SIGAME")
-    await asyncio.sleep(1.2)                 # > the group's debounce (1.0 s)
+    await asyncio.sleep(0.12)                 # > the group's debounce (1.0 s)
     await drain(dev)
     urls = [r["url"] for r in session.requests[before:]]
     assert any("/ajax/video/get_config?type=14" in u for u in urls)
@@ -79,7 +79,7 @@ async def test_unchanged_signal_cluster_requeries_nothing(make_device):
     telnet.sent.clear()
     for line in SIGNAL_CLUSTER:
         telnet.feed(line)
-    await asyncio.sleep(1.2)
+    await asyncio.sleep(0.12)
     await drain(dev)
     assert telnet.sent == []
     await dev.async_stop()
@@ -90,7 +90,7 @@ async def test_speaker_virtualizer_does_not_trigger_speakers_web(make_device):
     before = len(session.requests)
     telnet.feed("PSSPV ON")
     telnet.feed("PSSPV OFF")
-    await asyncio.sleep(1.7)
+    await asyncio.sleep(0.15)
     await drain(dev)
     assert not [r for r in session.requests[before:] if "/ajax/speakers/" in r["url"]]
     await dev.async_stop()
@@ -100,7 +100,7 @@ async def test_unmodelled_setup_push_triggers_speakers_web(make_device):
     dev, session, telnet, _fired = await _started(make_device)
     before = len(session.requests)
     telnet.feed("SPPR 2")                      # speaker preset: not modelled by the parser yet
-    await asyncio.sleep(1.7)
+    await asyncio.sleep(0.15)
     await drain(dev)
     assert [r for r in session.requests[before:] if "/ajax/speakers/" in r["url"]]
     await dev.async_stop()

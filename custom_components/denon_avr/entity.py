@@ -8,6 +8,8 @@ receiver, so the entity ids naturally get the model based prefix (for example
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.helpers.device_registry import (
     CONNECTION_NETWORK_MAC,
     DeviceInfo,
@@ -16,6 +18,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import DenonAvrCoordinator
+from . import catalog
+
+_LOGGER = logging.getLogger(__name__)
 
 # Display names for the logical sub-devices grouped under the receiver. Each
 # keeps a cohesive subsystem on its own device page (mirroring the receiver's
@@ -43,12 +48,10 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
         device_info = self._device.discovery.device
         # Prefer the MAC as the stable identifier; then the serial number (also
         # stable), and only as a last resort the host, which can change.
-        identifier = (
-            device_info.mac_address
-            or device_info.serial_number
-            or self._device.host
+        identifier = catalog.device_identifier(
+            device_info.mac_address, device_info.serial_number, self._device.host
         )
-        self._attr_unique_id = f"{identifier}_{key}"
+        self._attr_unique_id = catalog.unique_id(identifier, key)
         if sub_device:
             # A logical sub-device linked to the main receiver by its registry id
             # (via_device_id); the deprecated via_device identifier tuple is
@@ -88,3 +91,25 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
         """Entities are available only while the telnet link is up."""
 
         return super().available and self.coordinator.available
+
+
+def catalogue_entities(coordinator, platform: str, factories: dict) -> list:
+    """Entities for one platform, as the catalogue lists them.
+
+    The catalogue is the single source of every unique_id: an entity whose own
+    key differs from its catalogue entry gets the catalogue key (and a warning),
+    so the id recorded in the registries can never drift silently.
+    """
+
+    device = coordinator.device
+    info = device.discovery.device
+    identifier = catalog.device_identifier(info.mac_address, info.serial_number, device.host)
+    entities = []
+    for entry in catalog.for_platform(device, platform):
+        entity = factories[entry.kind](entry)
+        expected = catalog.unique_id(identifier, entry.key)
+        if entity.unique_id != expected:
+            _LOGGER.warning("Entity key %s differs from the catalogue %s; using the catalogue", entity.unique_id, expected)
+            entity._attr_unique_id = expected
+        entities.append(entity)
+    return entities

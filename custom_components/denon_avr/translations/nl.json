@@ -57,6 +57,48 @@
       },
       "mode_info": {
         "name": "Modusinformatie"
+      },
+      "amp_mode": {
+        "name": "Versterkermodus",
+        "state": {
+          "9_1ch": "9.1ch",
+          "7_1ch_zone2": "7.1ch + ZONE2",
+          "7_1ch_zone3": "7.1ch + ZONE3",
+          "7_1ch_zone2_3_mono": "7.1ch + ZONE2/3-MONO",
+          "7_1ch_front_b": "7.1ch + Front B",
+          "7_1ch_bi_amp": "7.1ch (Bi-Amp)",
+          "11_1ch": "11.1ch",
+          "5_1ch_zone2_3": "5.1ch + ZONE2/3",
+          "5_1ch_bi_amp_zone2": "5.1ch (Bi-Amp) + ZONE2",
+          "5_1ch_full_bi_amp": "5.1ch Full Bi-Amp",
+          "custom": "Aangepast",
+          "preamplifier": "Voorversterker",
+          "5_1ch_front_lcr_bi_amp": "5.1ch (Front LCR Bi-Amp)"
+        },
+        "state_attributes": {
+          "mode_id": {
+            "name": "Modus-id"
+          },
+          "preamplifier": {
+            "name": "Alleen voorversterker"
+          }
+        }
+      },
+      "subwoofer_mode": {
+        "name": "Subwoofer-richtingsmodus",
+        "state": {
+          "standard": "Standaard",
+          "directional": "Richtinggevoelig"
+        }
+      },
+      "subwoofer_layout": {
+        "name": "Subwooferopstelling",
+        "state": {
+          "left_right": "Links/rechts",
+          "front_rear": "Voor/achter",
+          "fl_fr_rear": "LV/RV/achter",
+          "fl_fr_rl_rr": "LV/RV/LA/RA"
+        }
       }
     },
     "select": {

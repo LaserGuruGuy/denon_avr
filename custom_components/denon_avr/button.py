@@ -14,7 +14,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity
+from .entity import DenonAvrEntity, catalogue_entities
 
 
 async def async_setup_entry(
@@ -22,15 +22,15 @@ async def async_setup_entry(
     entry: DenonAvrConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create the graphic-EQ action buttons when the receiver supports them."""
+    """Create the buttons the entity catalogue lists for this receiver."""
 
     coordinator = entry.runtime_data
-    entities: list[ButtonEntity] = []
-    if coordinator.device.graphic_eq.supported:
-        entities.append(DenonAvrEqApply(coordinator))
-        entities.append(DenonAvrEqCurveCopy(coordinator))
-        entities.append(DenonAvrEqSetDefaults(coordinator))
-    async_add_entities(entities)
+    factories = {
+        "eq_apply": lambda e: DenonAvrEqApply(coordinator),
+        "eq_curve_copy": lambda e: DenonAvrEqCurveCopy(coordinator),
+        "eq_set_defaults": lambda e: DenonAvrEqSetDefaults(coordinator),
+    }
+    async_add_entities(catalogue_entities(coordinator, "button", factories))
 
 
 class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):

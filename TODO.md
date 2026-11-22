@@ -146,7 +146,13 @@ assign / speaker layout) is discovered AND followed at runtime. Never one househ
     YES/NO/NON, count groups 1-4, groups SHE/TPS/CHE, SSSPC per kind + per cycle, interrupted lists
     not duplicated. Still open (5c/6): crossover select option 0 = Full range, LPF 70/070, group FRW (no evidence
     of its code yet), size selects only where the receiver reports a size token (X3900H: YES only).
-  - [ ] 5c pure entity catalogue + one unique_id function + test against tests/golden/ha_registry;
+  - [x] 5c pure entity catalogue (catalog.py) + one unique_id function + test against both registries
+    (all 150 live X3900H ids and all X3600H ids except the retired sensor_amp_assign); platforms build
+    from it. Device-driven: crossover options incl. 0 = Full Range / 70 Hz, subwoofer count 1..
+    SubwooferNum with the receiver's own absent token, size selects unavailable where presence is
+    reported, quick select from Deviceinfo, SW2/FWL/FWR from the telnet level list; read-only sensors
+    amp mode (incl. pre-amplifier) and subwoofer mode/layout; en/nl translations for them.
+    Was:
     from the 5b review: quick select entity from Deviceinfo QuickSelect when SSQSNZMA is silent
     (X3900H), subwoofer count labels from by_count (1-4), size selects only where a size token is
     reported, crossover options from the device value list (incl. 0 = Full), LPF 70/070
@@ -199,3 +205,38 @@ Availability maps go into diagnostics (done in step 4). display=4 is active, lik
   dedicated sentinel (it is combined with "no open list" and the 0.4 s quiet gap already).
 - SSSWM ? is silent on the X3900H while SSSPCSWM carries the subwoofer mode -> step 6.
 - Setup load: the probe does not ask SI?/MS?, so the resync triggers the refresh groups once more.
+
+## From the owner's manuals (AVR-X3600H EU, AVC-X3900H EU online manuals, read 2026-11-22)
+Sources: https://manuals.denon.com/AVRX3600H/EU/EN/DRDZSYasydxfyy.php (Amp Assign),
+GFNFSYcrpfrlsu.php (Speaker Config.), GFNFSYaxhqtbzr.php (Bass), GFNFSYitmloggd.php (Crossovers);
+https://manuals.denon.com/AVCX3900H/EU/EN/GMISSYldtrlyhd.php (Amp Assign), DRDZSYyfgvveow.php
+(Front/Center/Surround/Surround Back), GMISSYqdkjlbbz.php (Subwoofers), GMISSYtggmpgvn.php (Subwoofer
+Mode), GMISSYbjvpcnxf.php (Subwoofer Layout), GFNFSYaxhqtbzr.php (Subwoofer Output), DRDZSYdbdgoqfu.php
+(Speaker Preset). The X3900H page bodies came through a summariser: option names likely right, verify.
+- Two speaker models, by generation (capability, not model): legacy SIZE per group (Large/Small/None);
+  Web Control PRESENCE per group (Yes/No) + CONNECTION ("Spkr + Pre-out" / "Pre-out Only") per group
+  (= SpeakerLayout item <Conn>). Catalogue (5c): size selects only for size-token groups; presence +
+  connection (read-only first) for the new generation.
+- Subwoofers: legacy 1-2 ("None", "1 spkr", "2 spkrs"); Web Control 1-4 ("No".."4 spkrs").
+  Subwoofer Mode Standard/Directional only with 2+ subs (SpeakerLayout item 16, SSSPCSWM STD);
+  Subwoofer Layout only in Directional (item 17, SSSPCSWL 2LR). Legacy "Subwoofer Mode" LFE/LFE+Main
+  (SSSWM) is called "Subwoofer Output" on Web Control (SSSWM ? silent on the X3900H -> live check).
+- Crossover: Web Control "Full Range" (telnet FUL, web 0) + 40..250; Front forced to Full Range
+  without subwoofer; others Full Range only if Front is. Legacy: "Full Band" shown (not settable) for
+  Large speakers in LFE mode -> map in 5c as a read-only state, never as a write.
+- LPF: legacy LPF for LFE 80..250; Web Control adds "Bass Extraction LPF" (40..250 incl. 70, only for
+  Full Range channels) next to LPF for LFE -> two settings; value lists from the device.
+- Pre-amp: Web Control "Preamplifier" (SpeakerLayout mode 17): every Connection is forced to
+  "Pre-out Only". Legacy: the EU manual does not list Pre Amplifier; the device-reported options decide
+  (silence is not absence). Owner: speaker outputs and pre-outs are separate, so pre-amp is not a
+  safety issue; the amp-assign select stays writable.
+- Speaker Preset 1/2 (Web Control, SPPR): stores the WHOLE speaker setup (layout, distances, levels,
+  crossovers, subwoofer output, LPF, distribution, front speaker, Audyssey/Dirac/Graphic EQ).
+  -> 5c/6: a preset switch must re-read everything speaker-related (telnet speaker_channel queries +
+  speakers web + graphic EQ + distances/levels); SPPR select via telnet.
+- Adding/removing a speaker after Audyssey disables MultEQ XT32 / Dynamic EQ / Dynamic Volume
+  (X3600H manual) -> every speaker-setup write in HA carries that warning (5f).
+- Web Control lists a Setup Menu; Audyssey measurement only on the on-screen menu.
+- From the 5c verification: catalogue_entities corrects only the unique_id; also check sub_device /
+  enabled_default of the created entity against the entry (5d). The SSSPCSWM/SWL token maps (2LR,
+  Directional token) must be verified live before they are fixed in the profile.

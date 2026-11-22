@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import enum
+import importlib
 import importlib.util
 import json
 import os
@@ -48,6 +49,21 @@ def _load_library() -> None:
 
 
 _load_library()
+
+
+def load_ha_module(name: str):
+    """Import one HA-free module of the integration package (e.g. ``catalog``)
+    without running the package ``__init__`` (which needs Home Assistant). The
+    package is a bare module object whose ``avr`` is the already loaded library."""
+    import types
+
+    pkg_name = "denon_avr_pkg"
+    if pkg_name not in sys.modules:
+        pkg = types.ModuleType(pkg_name)
+        pkg.__path__ = [str(LIB.parent)]
+        sys.modules[pkg_name] = pkg
+        sys.modules[f"{pkg_name}.avr"] = sys.modules["avr"]
+    return importlib.import_module(f"{pkg_name}.{name}")
 
 HOST = "192.0.2.10"
 
@@ -301,6 +317,20 @@ def no_network(monkeypatch):
     monkeypatch.setattr(socket.socket, "connect_ex", _refuse)
     monkeypatch.setattr(asyncio, "open_connection", _refuse_async)
     monkeypatch.setattr(asyncio.base_events.BaseEventLoop, "create_connection", _refuse_async)
+
+
+@pytest.fixture(autouse=True)
+def fast_refresh(monkeypatch):
+    """Scale the profile's refresh-group debounces down 20x. The relative delays,
+    and so the order of re-queries, are kept; the suite just does not wait seconds."""
+    import avr.protocol.profile as profile_module
+
+    original = profile_module.ProtocolProfile.refresh_groups.fget
+
+    def scaled(self):
+        return {k: dict(v, debounce=float(v.get("debounce", 1.0)) / 20) for k, v in original(self).items()}
+
+    monkeypatch.setattr(profile_module.ProtocolProfile, "refresh_groups", property(scaled))
 
 
 @pytest.fixture

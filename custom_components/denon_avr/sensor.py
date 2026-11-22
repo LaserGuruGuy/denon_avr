@@ -8,6 +8,7 @@ the per channel calibration levels. Which sensors exist depends on the device.
 from __future__ import annotations
 
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
@@ -18,7 +19,8 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import AvrState
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
-from .entity import DenonAvrEntity
+from .entity import DenonAvrEntity, catalogue_entities
+from .helpers import amp_mode, is_preamplifier, subwoofer_setup
 
 
 async def async_setup_entry(
@@ -26,25 +28,17 @@ async def async_setup_entry(
     entry: DenonAvrConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create the read only sensors discovered for this receiver."""
+    """Create the sensors the entity catalogue lists for this receiver."""
 
     coordinator = entry.runtime_data
-    device = coordinator.device
-    entities: list[SensorEntity] = []
-
-    # Audio information sensors, one per read only field in the profile. The
-    # display name comes from the translation files, keyed by the control id.
-    for control_id in device.profile.readonly:
-        entities.append(DenonAvrReadonlySensor(coordinator, control_id))
-
-    # The current sound mode as a diagnostic sensor (also on the media player).
-    entities.append(DenonAvrSoundModeSensor(coordinator))
-
-    # The current master volume as a read only dB value. The media player keeps
-    # the standard percentage control; this shows the actual level in dB.
-    entities.append(DenonAvrVolumeSensor(coordinator))
-
-    async_add_entities(entities)
+    factories = {
+        "readonly": lambda e: DenonAvrReadonlySensor(coordinator, e.params["control_id"]),
+        "sound_mode": lambda e: DenonAvrSoundModeSensor(coordinator),
+        "volume_db": lambda e: DenonAvrVolumeSensor(coordinator),
+        "amp_mode": lambda e: DenonAvrAmpModeSensor(coordinator),
+        "subwoofer_setup": lambda e: DenonAvrSubwooferSetupSensor(coordinator, e.params["which"]),
+    }
+    async_add_entities(catalogue_entities(coordinator, "sensor", factories))
 
 
 class DenonAvrReadonlySensor(DenonAvrEntity, SensorEntity):
@@ -95,3 +89,62 @@ class DenonAvrVolumeSensor(DenonAvrEntity, SensorEntity):
         # Show the level relative to the reference, matching the receiver's
         # relative (dB) display, for example -38.0 dB.
         return round(raw - self.coordinator.device.volume_reference, 1)
+
+
+class _EnumKeySensor(DenonAvrEntity, SensorEntity):
+    """A read-only enum sensor whose state is a stable, translated key.
+
+    The options are the profile's known keys plus, if the receiver reports an
+    id the profile does not know yet, that ``mode_<id>`` / ``option_<id>`` key,
+    so an unknown value is shown instead of dropped (silence is not absence).
+    """
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _known: list[str] = []
+
+    @property
+    def options(self) -> list[str]:
+        current = self.native_value
+        known = list(dict.fromkeys(self._known))
+        return known + [current] if current and current not in known else known
+
+
+class DenonAvrAmpModeSensor(_EnumKeySensor):
+    """The amplifier assign mode, incl. 'preamplifier' (the internal amplifiers off,
+    the receiver used only as a pre-amplifier). Read-only."""
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "sensor_amp_mode", sub_device="speakers")
+        self._attr_translation_key = "amp_mode"
+        grammar = coordinator.device.profile.grammar.get("speakers_web", {})
+        self._known = list(grammar.get("amp_modes", {}).get("keys", {}).values())
+
+    @property
+    def native_value(self) -> str | None:
+        return amp_mode(self.coordinator.device)[1]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        mode, _key = amp_mode(self.coordinator.device)
+        return {"mode_id": mode, "preamplifier": is_preamplifier(self.coordinator.device)}
+
+
+class DenonAvrSubwooferSetupSensor(_EnumKeySensor):
+    """Web Control subwoofer mode (Standard / Directional) or layout. Unavailable
+    while the receiver hides it (e.g. with a single subwoofer); never removed."""
+
+    def __init__(self, coordinator: DenonAvrCoordinator, which: str) -> None:
+        super().__init__(coordinator, f"sensor_subwoofer_{which}", sub_device="speakers")
+        self._which = which
+        self._attr_translation_key = f"subwoofer_{which}"
+        spec = coordinator.device.profile.grammar.get("speakers_web", {}).get("subwoofer_setup", {})
+        self._known = list(spec.get(f"{which}_keys", {}).values())
+
+    @property
+    def available(self) -> bool:
+        return super().available and subwoofer_setup(self.coordinator.device, self._which) is not None
+
+    @property
+    def native_value(self) -> str | None:
+        return subwoofer_setup(self.coordinator.device, self._which)

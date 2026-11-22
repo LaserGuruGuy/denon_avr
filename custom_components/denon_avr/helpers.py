@@ -114,3 +114,145 @@ def enum_options(discovery: Discovery, spec: ControlSpec) -> tuple[
     label_to_value = {label: value for label, value in pairs}
     value_to_label = {value: label for label, value in pairs}
     return options, label_to_value, value_to_label
+
+
+FULL_RANGE = "Full Range"
+
+
+def crossover_values(device, group: str | None = None) -> list[int]:
+    """The crossover frequencies to offer: the receiver's own list (setup web
+    document, e.g. including 0 = Full Range and 70 Hz) when it reports one,
+    otherwise the profile's protocol constant.
+
+    Full Range (0) per the owner's manual: the front group may use it; any other
+    group only while the front group is Full Range (or when it is its current
+    value already)."""
+
+    reported = device.speaker_config.value_list("crossover")
+    if reported:
+        values = [int(v) for v in reported if v.isdigit()]
+    else:
+        values = [int(v) for v in device.profile.crossover.get("values", [])]
+    if group is not None and 0 in values:
+        front = device.profile.speakers.get("front_group", "FRO")
+        crossovers = device.state.crossovers
+        if group != front and crossovers.get(front) != 0 and crossovers.get(group) != 0:
+            values = [v for v in values if v != 0]
+    return values
+
+
+def crossover_label(hertz: int, unit: str) -> str:
+    return FULL_RANGE if hertz == 0 else f"{hertz} {unit}"
+
+
+def crossover_from_label(label: str) -> int:
+    return 0 if label == FULL_RANGE else int(label.split()[0])
+
+
+def _absent_token_of_generation(device) -> str | None:
+    """The absent token this receiver's speaker grammar uses, judged from the front
+    group (always reported): a presence token (YES/NO) means the presence
+    generation ('NO'), a size token (LAR/SMA) the size generation ('NON')."""
+
+    speakers = device.profile.speakers
+    tokens = speakers.get("tokens", {})
+    front = device.state.speaker_sizes.get(speakers.get("front_group", "FRO"))
+    if front in tokens.get("presence", {}):
+        return next((t for t in tokens.get("absent", []) if t in tokens.get("presence", {})), None)
+    if front in tokens.get("size", []):
+        return next((t for t in tokens.get("absent", []) if t in tokens.get("size", [])), None)
+    return None
+
+
+def subwoofer_count_options(device) -> dict[str, str]:
+    """Wire token -> label for the number of subwoofers, derived from the receiver.
+
+    The counts run up to what the receiver supports (Deviceinfo SubwooferNum,
+    else the profile's count map). "None" uses the absent token of the
+    receiver's speaker grammar generation (NO with presence tokens, NON with
+    size tokens); when that is not known yet, "None" is not offered.
+    """
+
+    speakers = device.profile.speakers
+    by_count = speakers.get("count_groups", {}).get("SWF", {}).get("by_count", {})
+    highest = device.discovery.subwoofer_max or max((int(n) for n in by_count), default=2)
+    options: dict[str, str] = {}
+    none_token = _absent_token_of_generation(device)
+    if none_token:
+        options[none_token] = "None"
+    for n in range(1, highest + 1):
+        options[f"{n}SP"] = str(n)
+    return options
+
+
+def is_size_token(device, token: str | None) -> bool:
+    """True when the receiver reports a speaker SIZE (older firmware: LAR/SMA/NON);
+    newer firmware reports presence (YES/NO) instead, where a size select does not apply."""
+
+    return token in device.profile.speakers.get("tokens", {}).get("size", [])
+
+
+def _speakers_grammar(device) -> dict:
+    return device.profile.grammar.get("speakers_web", {})
+
+
+def amp_mode(device) -> tuple[str | None, str | None]:
+    """(assign mode id, stable key) as the receiver reports it: the Web Control
+    speaker layout (item 1) or the legacy Amp Assign field; (None, None) if unknown."""
+
+    speakers = device.speaker_config
+    item = speakers.collection("speaker_layout_assign").get("1")
+    mode = item.value if item is not None else speakers.value("amp_assign")
+    if not mode:
+        return None, None
+    keys = _speakers_grammar(device).get("amp_modes", {}).get("keys", {})
+    return mode, keys.get(mode, f"mode_{mode}")
+
+
+def is_preamplifier(device) -> bool | None:
+    mode, _key = amp_mode(device)
+    if mode is None:
+        return None
+    return mode in _speakers_grammar(device).get("amp_modes", {}).get("preamplifier", [])
+
+
+def _subwoofer_count(device) -> int:
+    by_count = device.profile.speakers.get("count_groups", {}).get("SWF", {}).get("by_count", {})
+    configured = device.discovery.configured_channels
+    return max((int(n) for n, codes in by_count.items() if codes and all(c in configured for c in codes)), default=0)
+
+
+def has_subwoofer_setup(device) -> bool:
+    """Capability: the receiver reports its subwoofer mode/layout (telnet SSSPCSWM /
+    SSSPCSWL, telnet first) or offers the Web Control speaker layout."""
+
+    telnet = _speakers_grammar(device).get("subwoofer_setup", {}).get("telnet", {})
+    sizes = device.state.speaker_sizes
+    return telnet.get("mode_group") in sizes or telnet.get("layout_group") in sizes or has_speaker_layout(device)
+
+
+def subwoofer_setup(device, which: str) -> str | None:
+    """Stable key of the subwoofer mode ("mode") or layout ("layout"), or None
+    while it does not apply (the manual: mode only with 2+ subwoofers, layout only
+    in Directional mode). Telnet first, the Web Control document second."""
+
+    spec = _speakers_grammar(device).get("subwoofer_setup", {})
+    telnet = spec.get("telnet", {})
+    if _subwoofer_count(device) < int(telnet.get("min_subwoofers", 2)):
+        return None
+    if which == "layout" and subwoofer_setup(device, "mode") != "directional":
+        return None
+    token = device.state.speaker_sizes.get(telnet.get(f"{which}_group", ""))
+    if token:
+        return telnet.get(f"{which}_tokens", {}).get(token, f"option_{token}")
+    item = device.speaker_config.collection("speaker_layout_config").get(spec.get(f"{which}_item", ""))
+    if item is None or not item.availability.present or not item.value:
+        return None
+    return spec.get(f"{which}_keys", {}).get(item.value, f"option_{item.value}")
+
+
+def has_speaker_layout(device) -> bool:
+    """The receiver reports the Web Control speaker layout menu (capability)."""
+
+    availability = device.speaker_config.availability_map().get("SpeakerLayout")
+    return availability is not None and availability.present

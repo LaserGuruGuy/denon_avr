@@ -88,8 +88,14 @@ class Discovery:
     sources: list[SourceDescriptor] = field(default_factory=list)
     channels: list[ChannelDescriptor] = field(default_factory=list)
     zones: list[ZoneDescriptor] = field(default_factory=list)
-    # Quick select presets discovered from the receiver (SSQSNZMA): number -> name.
+    # Quick select presets: number -> name. Seeded from the Deviceinfo
+    # QuickSelect block (capability + default names); telnet SSQSNZMA names
+    # replace them per number (telnet first). Some firmware is silent on
+    # SSQSNZMA, which must not hide the presets (silence is not absence).
     quick_select_names: dict[int, str] = field(default_factory=dict)
+    # Highest number of subwoofers the receiver supports (Deviceinfo
+    # SubwooferLevel/SubwooferNum), None when not reported. Capability, not setup.
+    subwoofer_max: int | None = None
     # Raw SSSPC speaker configuration (group code -> set of reported values) and
     # the derived set of configured channel codes. Both come from the receiver.
     speaker_config: dict[str, set[str]] = field(default_factory=dict)

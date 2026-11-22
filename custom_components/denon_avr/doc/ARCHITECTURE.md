@@ -19,6 +19,17 @@ HA-free client library (`custom_components/denon_avr/avr/`). The library could b
 - **Languages.** All user-facing text goes through Home Assistant translations
   (`strings.json`, `translations/`). The library returns stable keys, never sentences.
 
+## Entity catalogue (catalog.py)
+
+`catalog.build(device)` is a pure function (no Home Assistant) that lists every entity: platform, kind,
+key, sub-device and default enablement. The platforms only turn entries into entity objects. An entry's
+`key` is the entity's unique_id suffix, and `catalog.unique_id()` is the one place the full id is built.
+`tests/test_catalog.py` checks that every unique_id in the recorded Home Assistant registries
+(`tests/golden/ha_registry`) is still produced, so existing entities keep their id, history and settings.
+Capability decides whether an entity exists; user setup decides its default enablement and availability.
+Examples: a size select on firmware that reports presence (YES/NO) exists but is unavailable; channels
+come from Deviceinfo plus the receiver's telnet level list (e.g. a second subwoofer).
+
 ## Library layers (dependencies only point downwards)
 
 ```

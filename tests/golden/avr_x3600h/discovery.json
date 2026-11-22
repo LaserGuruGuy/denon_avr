@@ -680,6 +680,7 @@
    "NON"
   ]
  },
+ "subwoofer_max": 2,
  "volume": {
   "absolute_max": 98.0,
   "reference": 80.0,

@@ -573,7 +573,12 @@
    "Bypass"
   ]
  },
- "quick_select_names": {},
+ "quick_select_names": {
+  "1": "Quick Select 1",
+  "2": "Quick Select 2",
+  "3": "Quick Select 3",
+  "4": "Quick Select 4"
+ },
  "sound_mode_genres": {
   "GAM": "Game",
   "MOV": "Movie",
@@ -700,6 +705,7 @@
    "STD"
   ]
  },
+ "subwoofer_max": 4,
  "volume": {
   "absolute_max": 98.0,
   "reference": 80.0,
