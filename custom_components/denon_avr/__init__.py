@@ -14,7 +14,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
-from .avr.profile import load_profile
+from .avr import load_profile
 from .const import CONF_HOST, DOMAIN, PLATFORMS
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 

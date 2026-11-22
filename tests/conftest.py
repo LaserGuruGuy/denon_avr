@@ -231,12 +231,13 @@ class FakeProbe:
     def __init__(self, fixtures: FixtureSet) -> None:
         self.fixtures = fixtures
         self.queries: list[list[str]] = []
+        self.exclude: tuple[str, ...] = ()       # line prefixes to drop (simulate missing answers)
 
     async def __call__(self, host, queries, on_line, is_complete, **_kw):
         self.queries.append(list(queries))
         wanted = set(queries)
         for rec in self.fixtures.telnet_corpus:
-            if rec["after"] in wanted:
+            if rec["after"] in wanted and not rec["line"].startswith(self.exclude or ("\x00",)):
                 on_line(rec["line"])
                 if is_complete():
                     return
@@ -303,7 +304,7 @@ def make_device(monkeypatch):
 async def drain(device, rounds: int = 20) -> None:
     """Let scheduled tasks/debounce timers run so state settles deterministically."""
     for _ in range(rounds):
-        pending = [t for t in getattr(device, "_pending_tasks", set()) if not t.done()]
+        pending = [t for t in device._tasks.pending if not t.done()]
         if pending:
             await asyncio.gather(*pending, return_exceptions=True)
         await asyncio.sleep(0)

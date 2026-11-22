@@ -103,3 +103,38 @@ advertises the capability, so every item below is additive and self-gating.
 - Faster tests that do not depend on timing: a fake clock instead of the real 0.8 s / 0.1 s sleeps.
 - Wider redaction: 10/8, 172.16/12, IPv6, hostnames, SSID, HEOS pid.
 - (done) the synthetic X3600H set is replaced by a real capture.
+
+## Generic app: user setup is discovered and followed live (architect review 2026-11-22)
+Principle: protocol constants live in the profile; device capabilities are discovered;
+user setup (speakers, sizes, crossovers, subwoofers, sources, names, zones, presets, amp
+assign / speaker layout) is discovered AND followed at runtime. Never one household's setup.
+- must: introspection probe completes on each list's END, not after the first line
+  (pinned: test_known_probe_stops_early).
+- must: SSSPC rebuilt per response cycle; presence tokens per protocol version (YES/NO
+  next to NON/LAR/SMA) (pinned: test_known_x3900h_yes_no_speaker_grammar).
+- must: device-supplied value lists first (crossover grid incl. FUL/70, LPF 70, limits
+  "70" vs "070"), the profile only as label/token dictionary; unknown value = raw option.
+- must: speaker groups FRW/SHE/TPS/CHE, subwoofers SW3/SW4 from the device.
+- must: setup refresh group (SSSPC, SSCFR, SSFUN, SSSOD, SSQSN, amp assign) + entities
+  that follow setup live (capability -> entity exists; user setup -> available), dynamic
+  add; replace one-off disabled_by=INTEGRATION by availability.
+- should: zone names/sources per zone (globals type 7), Z2 sub-commands (CV/PS/SLP/QUICK)
+  not parsed as source, zone-2 HTTP fallback, distance unit (SSSDESTP), core controls only
+  when the setup has them (Front B, SSSWM).
+- tests: synthetic variations derived from the real corpora under tests/fixtures/synthetic/
+  (S1 speaker change at runtime, S2 YES/NO, S3 subwoofer count, S4 crossover FUL/70,
+  S5 source rename/hide/duplicate, S6 zones 1/3, S7 web 500/out-of-table values, S8 misc),
+  asserting invariants rather than goldens.
+- API coverage: 11080 web interface, SpeakerLayout/Crossovers/Distances/SpeakerPreset docs,
+  per-input 4K/8K, zone features, source management writes, quick select per zone, HEOS
+  favourites/groups, port 1256 (tcp_client.py is unused).
+
+## Refactor progress (plan v4)
+- [x] step 1: test safety net (fixtures X3900H + X3600H, goldens, layer guard, CI)
+- [x] step 2: 1:1 refactor into transport / protocol / services / facade; HA imports only `.avr`
+- [ ] step 3: webconfig endpoint probe (443 Location -> 10443 / 11080), lock, re-probe policy
+- [ ] step 4: schema engine for /ajax documents (variants, per-input collections, device value lists)
+- [ ] step 5: HA adapter (entity catalogue, Inputs device, live user-setup following, i18n)
+- [ ] step 6: telnet / 1256 parity; then live verification, docs, 1.2.0
+- later (from the step-2 review): HA-layer pyflakes warnings (select.py:225, const.py:12, sensor.py:19);
+  volume step default 0.5 from the profile; a public test hook instead of `_tasks.pending`.

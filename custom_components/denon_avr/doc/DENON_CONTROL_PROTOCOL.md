@@ -2,7 +2,7 @@
 
 A synthesised, model-annotated reference of the Denon/Marantz telnet (and a few
 HTTP/HEOS) control commands, used as the ground truth when extending this
-integration's protocol profile (`custom_components/denon_avr/avr/protocol_profile.json`).
+integration's protocol profile (`custom_components/denon_avr/avr/protocol/protocol_profile.json`).
 
 It lists the **superset** of commands across recent AV receiver generations. The
 integration only ever *populates* an entity when the specific connected receiver

@@ -1,0 +1,67 @@
+[
+ {
+  "code": "CBLSAT",
+  "name": "CBLSAT",
+  "visible": true
+ },
+ {
+  "code": "DVD",
+  "name": "DVD",
+  "visible": true
+ },
+ {
+  "code": "Blu-ray",
+  "name": "Blu-ray",
+  "visible": true
+ },
+ {
+  "code": "GAME",
+  "name": "GAME",
+  "visible": true
+ },
+ {
+  "code": "AUX1",
+  "name": "AUX1",
+  "visible": true
+ },
+ {
+  "code": "AUX2",
+  "name": "AUX2",
+  "visible": true
+ },
+ {
+  "code": "Media Player",
+  "name": "Media Player",
+  "visible": true
+ },
+ {
+  "code": "CD",
+  "name": "CD",
+  "visible": true
+ },
+ {
+  "code": "TUNER",
+  "name": "TUNER",
+  "visible": true
+ },
+ {
+  "code": "NETWORK",
+  "name": "NETWORK",
+  "visible": true
+ },
+ {
+  "code": "TV AUDIO",
+  "name": "TV AUDIO",
+  "visible": true
+ },
+ {
+  "code": "Bluetooth",
+  "name": "Bluetooth",
+  "visible": true
+ },
+ {
+  "code": "PHONO",
+  "name": "PHONO",
+  "visible": true
+ }
+]

@@ -7,8 +7,7 @@ what the receiver published; a humanised id is only a last resort.
 
 from __future__ import annotations
 
-from .avr.models import Discovery
-from .avr.profile import ControlSpec
+from .avr import ControlSpec, Discovery
 
 
 def humanize(text: str) -> str:

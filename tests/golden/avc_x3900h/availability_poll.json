@@ -21,6 +21,10 @@
   "volume_max_raw": null,
   "volume_raw": 43.0
  },
+ "poll_fallback_callbacks": [
+  false,
+  false
+ ],
  "poll_fallback_requests": [
   {
    "ssl": "default",

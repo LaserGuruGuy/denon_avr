@@ -27,7 +27,7 @@ import urllib.request
 from redact_fixtures import redact
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-PROFILE = ROOT / "custom_components" / "denon_avr" / "avr" / "protocol_profile.json"
+PROFILE = ROOT / "custom_components" / "denon_avr" / "avr" / "protocol" / "protocol_profile.json"
 
 GOFORM = (
     "/goform/Deviceinfo.xml",

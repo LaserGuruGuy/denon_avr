@@ -1,7 +1,7 @@
 """Constants for the Denon AVR integration.
 
 Only Home Assistant level constants live here. All protocol grammar is in
-avr/protocol_profile.json and all device specific configuration is discovered
+avr/protocol/protocol_profile.json and all device specific configuration is discovered
 from the receiver at runtime.
 """
 

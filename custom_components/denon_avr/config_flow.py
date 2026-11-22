@@ -21,8 +21,7 @@ from homeassistant.config_entries import (
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
 
-from .avr import DenonAvrDevice
-from .avr.profile import load_profile
+from .avr import DenonAvrDevice, load_profile
 from .const import (
     CONF_HOST,
     DOMAIN,

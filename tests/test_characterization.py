@@ -219,8 +219,24 @@ async def test_availability_poll_and_fallback(make_device, fixture):
     await asyncio.sleep(0.15)
     trace["poll_fallback_zone"] = dev.state.zones.get("main")
     trace["poll_fallback_requests"] = session.requests[before:]
+    trace["poll_fallback_callbacks"] = list(fired)
     assert_golden(fixture, "availability_poll", trace)
+    trigger = next(iter(next(iter(dev.profile.refresh_groups.values()))["on"]))
+    telnet.feed(trigger)                            # schedules a debounced re-query task
+    assert dev._tasks.pending
     await dev.async_stop()
+    assert not dev._tasks.pending, "async_stop must cancel every background task"
+
+
+@pytest.mark.parametrize("fixture", FIXTURE_SETS)
+async def test_fallback_sources_without_introspection(make_device, fixture):
+    """Without SSFUN/SSSOD answers the Deviceinfo source list is used (await_ready)."""
+    dev, _session, _telnet, _fx = make_device(fixture)
+    dev.test_probe.exclude = ("SSFUN", "SSSOD")
+    await dev.async_discover()
+    assert dev.discovery.sources == []
+    await dev.async_await_ready(timeout=0.2)
+    assert_golden(fixture, "fallback_sources", dev.discovery.sources)
 
 
 async def test_known_x3900h_crossover_gap(make_device):
@@ -237,4 +253,31 @@ async def test_known_x3900h_crossover_gap(make_device):
     assert "crossover_all" not in dev.state.values
     assert "FRO" not in dev.state.crossovers, "'FUL' (full range) is dropped silently"
     assert fx.file("ajax_speakers_6.xml") and 'mode="normal"' in fx.file("ajax_speakers_6.xml")
+    await dev.async_stop()
+
+
+@pytest.mark.parametrize("fixture", FIXTURE_SETS)
+async def test_known_probe_stops_early(make_device, fixture):
+    """Known v1.1.2 defect, pinned on purpose: the introspection probe is 'complete' after
+    the FIRST SSSPC/SSFUN line, so discovery holds only part of the user's speaker setup
+    (FL/FR) until the persistent resync fills it in. To be fixed by completing on each
+    list's END; this test must then be changed deliberately."""
+    dev, _session, _telnet, _fx = make_device(fixture)
+    discovery = await dev.async_discover()
+    assert sorted(discovery.configured_channels) == ["FL", "FR"]
+    assert list(discovery.speaker_config) == ["FRO"]
+
+
+async def test_known_x3900h_yes_no_speaker_grammar(make_device):
+    """Known v1.1.2 defect, pinned on purpose: the X3900H reports speaker presence as
+    YES/NO ('SSSPCSBK NO') while the profile only knows the absent token NON, so the
+    surround back channels count as configured although the user has none."""
+    dev, _session, telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    for rec in fx.telnet_corpus:
+        telnet.feed(rec["line"])
+    await drain(dev)
+    assert any(r["line"] == "SSSPCSBK NO" for r in fx.telnet_corpus)
+    assert sorted(dev.discovery.configured_channels) == ["C", "FL", "FR", "SBL", "SBR", "SL", "SR", "SW"]
     await dev.async_stop()

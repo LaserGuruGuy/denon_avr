@@ -16,7 +16,12 @@ python -m pytest -p no:anyio            # DENON_UPDATE_GOLDEN=1 to accept intend
   every setter's exact wire string and the web subsystems. A refactor must keep these byte-identical.
 * `golden/ha_registry/` is a reference snapshot of the HA entity surface (unique_ids): live X3900H and the
   removed X3600H. It is used to check the migration in later steps and is not asserted yet.
-* `test_layers.py` is the import-rule guard between layers. Its allowlist may only shrink.
+* `test_known_*` tests pin **known defects** of the current code on purpose, for example the X3900H crossover
+  mode, the probe that stops after the first line, and the YES/NO speaker grammar. They say "this is wrong
+  today", not "this is right". The fix must change them deliberately.
+* `test_layers.py` is the import-rule guard between layers (rules R1-R9, see
+  `custom_components/denon_avr/doc/ARCHITECTURE.md`). Its allowlist is empty and may only shrink.
+* `test_ports.py` checks that the transports satisfy the service ports.
 
 Fixtures never contain serial numbers, UUIDs, MAC device parts or LAN IPs. Captures are redacted
 automatically, and CI checks this.

@@ -19,8 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .avr import graphic_eq
-from .avr.profile import ControlSpec
+from .avr import ControlSpec, eq_band_tag
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
 from .helpers import control_sub_device
@@ -209,7 +208,7 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
 
     def __init__(self, coordinator: DenonAvrCoordinator, label: str) -> None:
         grammar = coordinator.device.graphic_eq.grammar
-        self._tag = graphic_eq.band_tag(grammar, label)
+        self._tag = eq_band_tag(grammar, label)
         super().__init__(coordinator, f"number_eq_{self._tag}", sub_device="eq")
         # The device is already named "... Graphic EQ", so the band name is just
         # the frequency (avoids a doubled "Graphic EQ EQ 63 Hz").

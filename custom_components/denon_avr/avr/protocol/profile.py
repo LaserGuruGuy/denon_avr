@@ -190,6 +190,11 @@ class ProtocolProfile:
 
         return self.introspection.get(key, {}).get("query")
 
+    def introspection_prefix(self, key: str) -> str | None:
+        """Return the line prefix of an introspection item, or None."""
+
+        return self.introspection.get(key, {}).get("prefix")
+
     def control(self, control_id: str) -> ControlSpec | None:
         """Return a control spec by id, or None when unknown."""
 

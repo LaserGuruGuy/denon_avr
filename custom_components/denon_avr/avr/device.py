@@ -1,30 +1,28 @@
-"""High level device API for the Denon AVR client library.
+"""DenonAvrDevice: the public facade and composition root of the client library.
 
-DenonAvrDevice is the public entry point. It combines the telnet transport, the
-HTTP transport, the protocol profile and the parser into a single object that:
-
-* discovers the receiver's identity and capabilities,
-* keeps a live AvrState updated from telnet push events,
-* resynchronises the full state on every (re)connection,
-* exposes high level, profile driven control methods,
-* notifies a single callback whenever the state or availability changes.
-
-All command encoding uses the profile, so no wire tokens live in this file.
+Wires the transports (transport/) into the services (services/) through their
+ports, owns the lifecycle and exposes the stable public API the Home Assistant
+layer uses. It contains no protocol grammar (protocol/) and no subsystem
+behaviour (services/); besides wiring it only derives a few identity and volume
+properties from discovery.
 """
 
 from __future__ import annotations
 
-import asyncio
-import logging
 from collections.abc import Callable
+from functools import partial
 
 import aiohttp
 
-from .codec import encode_centered, encode_half_step
-from .models import AvrState, Discovery, NowPlaying
-from .parser import TelnetParser, parse_device_info, parse_upnp_description
-from .profile import ProtocolProfile, load_profile
-from . import graphic_eq, video_config
+from .models import AvrState, DeviceInfo, Discovery
+from .protocol.profile import ProtocolProfile, load_profile
+from .protocol.telnet_parser import TelnetParser
+from .services.control import ControlService
+from .services.discovery import DiscoveryService
+from .services.graphic_eq import GraphicEqController
+from .services.runtime import BackgroundTasks, UpdateNotifier
+from .services.sync import StateSync
+from .services.webconfig_doc import WebConfigSectionController
 from .transport import (
     GoformClient,
     HeosClient,
@@ -33,11 +31,6 @@ from .transport import (
     WebConfigClient,
     async_probe,
 )
-
-_LOGGER = logging.getLogger(__name__)
-
-# Debounce window for collapsing a burst of telnet lines into one notification.
-_UPDATE_DEBOUNCE = 0.1
 
 
 class DenonAvrDevice:
@@ -48,68 +41,57 @@ class DenonAvrDevice:
         self._profile: ProtocolProfile = load_profile()
         self._discovery = Discovery()
         self._state = AvrState()
-        self._parser = TelnetParser(self._profile, self._discovery)
+        self._available = False
+        self._notifier = UpdateNotifier()
+        self._tasks = BackgroundTasks()
+        notify = self._notifier.schedule
+        grammar = self._profile.grammar
 
-        # Each wire protocol is a separate, isolated transport (see transport/):
-        # goform HTTP for discovery/poll, UPnP for firmware/serial, and telnet for
-        # live control. The length-framed TCP status channel is used only for a
-        # one-shot read at discovery (amp assignment).
+        # Transports: one isolated client per wire protocol (see transport/).
         self._goform = GoformClient(session, host)
         self._upnp = UpnpClient(session, host)
-        # Setup-interface config API (HTTPS 10443), used for the manual graphic
-        # EQ per-band values, which are not on the telnet channel. The EQ
-        # subsystem is encapsulated in its own controller (read/edit/apply),
-        # keeping it off this device's transport-orchestration surface.
         self._webconfig = WebConfigClient(session, host)
-        self._graphic_eq = graphic_eq.GraphicEqController(
+        # Web-config subsystems behind the ConfigDocumentPort.
+        self._graphic_eq = GraphicEqController(
             self._webconfig,
-            self._profile.grammar.get("graphic_eq", {}),
+            grammar.get("graphic_eq", {}),
             lambda: self._discovery.supports("GraphicEQ"),
-            self._schedule_update,
+            notify,
         )
-        # Video setup menus that have no telnet token (HDMI setup/CEC, ARC, OSD,
-        # 4K signal format, TV format), read/written via the same config API.
-        self._video_config = video_config.VideoConfigController(
-            self._webconfig,
-            self._profile.grammar.get("video_web", {}),
-            self._schedule_update,
-        )
-        # Speaker-setup settings with no telnet token (amp assign), same /ajax
-        # config API, different section.
-        self._speaker_config = video_config.VideoConfigController(
-            self._webconfig,
-            self._profile.grammar.get("speakers_web", {}),
-            self._schedule_update,
-        )
+        self._video_config = WebConfigSectionController(self._webconfig, grammar.get("video_web", {}), notify)
+        self._speaker_config = WebConfigSectionController(self._webconfig, grammar.get("speakers_web", {}), notify)
+
+        # The persistent telnet connection is the CommandSink. Its callbacks are
+        # bound late because the services that handle them need the sink first.
         self._telnet = TelnetClient(
             host,
-            on_line=self._handle_line,
-            on_connected=self._resynchronise,
+            on_line=lambda line: self._sync.handle_line(line),
+            on_connected=lambda: self._sync.resynchronise(),
             on_availability=self._handle_availability,
+        )
+        parser = TelnetParser(self._profile, self._discovery)
+        self._sync = StateSync(self._profile, self._discovery, self._state, parser, self._telnet, self._tasks, notify)
+        self._control = ControlService(
+            self._profile,
+            self._discovery,
+            self._telnet,
+            self._sync.refresh_current_sound_modes,
+            self.volume_effective_max,
+        )
+        self._discovery_service = DiscoveryService(
+            host,
+            self._profile,
+            self._discovery,
+            self._state,
+            parser,
+            self._goform.async_get_device_info,
+            self._upnp.async_get_description,
+            partial(async_probe, host),
+            (self._video_config, self._speaker_config),
         )
         # Auxiliary HEOS channel for network now-playing media and album art.
         # Isolated from control: if it never connects, only now-playing is absent.
-        self._heos = HeosClient(host, on_update=self._handle_now_playing)
-
-        self._update_callback: Callable[[], None] | None = None
-        self._update_handle: asyncio.TimerHandle | None = None
-        # Strong references to fire and forget tasks (delayed queries, OPSML
-        # refreshes). Without these, asyncio only keeps a weak reference and the
-        # task can be garbage collected before it runs.
-        self._pending_tasks: set[asyncio.Task] = set()
-        # Data driven coalesced re-query groups (profile 'refresh' section). The
-        # receiver does not push some derived state on every relevant change
-        # (audio format on a mode change, channel/speaker layout on a mode or
-        # source change, the signal dependent sound mode lists), so when a
-        # group's trigger prefix arrives its queries are re-sent after a short
-        # debounce. Coalescing avoids a query storm when several triggers arrive
-        # at once. A group is scheduled at most once until its re-query fires.
-        self._refresh_groups = self._profile.refresh_groups
-        self._refresh_scheduled: set[str] = set()
-        self._available = False
-        # Deviceinfo derived source list, used only if telnet introspection
-        # yields no sources (see async_discover / async_await_ready).
-        self._fallback_sources: list = []
+        self._heos = HeosClient(host, on_update=self._sync.handle_now_playing)
 
     # Public properties ----------------------------------------------------
 
@@ -152,9 +134,7 @@ class DenonAvrDevice:
 
     @property
     def volume_absolute_max(self) -> float:
-        return self._discovery.volume.get(
-            "absolute_max", self._profile.volume_max_fallback
-        )
+        return self._discovery.volume.get("absolute_max", self._profile.volume_max_fallback)
 
     def volume_effective_max(self, zone_id: str = "main") -> float:
         """The highest reachable raw volume: the receiver limit (MVMAX) or scale max."""
@@ -168,123 +148,40 @@ class DenonAvrDevice:
 
         return self._state.volume_display or "Relative"
 
+    @property
+    def graphic_eq(self) -> GraphicEqController:
+        """The manual graphic-EQ subsystem (read/edit/apply)."""
+
+        return self._graphic_eq
+
+    @property
+    def video_config(self) -> WebConfigSectionController:
+        """The /ajax video setup subsystem (HDMI setup, OSD, TV/4K format)."""
+
+        return self._video_config
+
+    @property
+    def speaker_config(self) -> WebConfigSectionController:
+        """The /ajax speaker setup subsystem (amp assign)."""
+
+        return self._speaker_config
+
     def register_update_callback(self, callback: Callable[[], None]) -> None:
         """Register the single callback invoked on state/availability changes."""
 
-        self._update_callback = callback
+        self._notifier.register(callback)
 
     # Lifecycle ------------------------------------------------------------
 
-    async def async_fetch_identity(self):
-        """Fetch just the device identity (model name, MAC) over HTTP.
+    async def async_fetch_identity(self) -> DeviceInfo:
+        """Device identity only (config flow / SSDP); raises ConnectionError."""
 
-        Used by the config flow (including SSDP discovery) to validate the
-        receiver and obtain the unique id without the heavier telnet probe that
-        full discovery performs. Raises ConnectionError when unreachable.
-        """
-
-        xml_text = await self._goform.async_get_device_info()
-        if xml_text is None:
-            raise ConnectionError(f"No Deviceinfo response from {self._host}")
-        return parse_device_info(xml_text).device
+        return await self._discovery_service.fetch_identity()
 
     async def async_discover(self) -> Discovery:
-        """Fetch the Deviceinfo document and populate the discovery model.
+        """Populate the discovery model; raises ConnectionError when unreachable."""
 
-        Raises ConnectionError when the receiver cannot be reached, so the
-        config flow can report a clear failure.
-        """
-
-        xml_text = await self._goform.async_get_device_info()
-        if xml_text is None:
-            raise ConnectionError(f"No Deviceinfo response from {self._host}")
-        # Tell the parser which feature blocks to read titles/labels from, using
-        # the feature names the profile associates with its controls.
-        feature_names = {
-            spec.feature for spec in self._profile.controls.values() if spec.feature
-        }
-        enum_features = {
-            spec.feature
-            for spec in self._profile.controls.values()
-            if spec.kind == "enum" and spec.feature
-        }
-        discovered = parse_device_info(
-            xml_text,
-            feature_names,
-            enum_features,
-            receiver_type=self._profile.receiver_type,
-        )
-        # Copy discovered data into our shared discovery object so the parser and
-        # entities keep referencing a single instance.
-        self._discovery.device = discovered.device
-        # Enrich the device identity with the firmware version and serial number,
-        # which the goform document omits but the UPnP description carries.
-        await self._async_fetch_version_info()
-        self._discovery.features = discovered.features
-        self._discovery.channels = discovered.channels
-        self._discovery.zones = discovered.zones
-        self._discovery.feature_names = discovered.feature_names
-        self._discovery.option_labels = discovered.option_labels
-        self._discovery.numeric_meta = discovered.numeric_meta
-        self._discovery.volume = discovered.volume
-        self._discovery.sound_mode_genres = discovered.sound_mode_genres
-        # Read the video setup config availability + values (over the /ajax API),
-        # and inject the menus that are present as discovery features so the
-        # telnet picture controls (gated on "PictureAdjust") are built at setup.
-        await self._video_config.discover()
-        self._discovery.features |= self._video_config.feature_flags()
-        # Speaker /ajax config (amp assign): no availability map, just read it.
-        await self._speaker_config.discover()
-        # The authoritative source list comes from the telnet SSFUN/SSSOD
-        # introspection (correct codes, names and visibility). Keep the Deviceinfo
-        # source list only as a fallback for models without that introspection.
-        self._fallback_sources = discovered.sources
-        self._discovery.sources = []
-        # Reliably populate the telnet-discovered parts of the model (sources,
-        # channels/speaker config, sound modes, quick selects) with a short
-        # dedicated telnet session, so entities are built correctly regardless of
-        # the persistent connection's later timing.
-        await self._async_probe_introspection()
-        return self._discovery
-
-    async def _async_fetch_version_info(self) -> None:
-        """Read firmware/serial and AIOS module versions from the UPnP document.
-
-        Best effort: the goform Deviceinfo document omits these, but the UPnP
-        (AIOS) description carries them. Any failure or missing field is left
-        unset rather than guessed.
-        """
-
-        xml_text = await self._upnp.async_get_description()
-        if not xml_text:
-            return
-        device = self._discovery.device
-        for attr, value in parse_upnp_description(xml_text).items():
-            if getattr(device, attr, None) is None:
-                setattr(device, attr, value)
-
-    async def _async_probe_introspection(self) -> None:
-        """Populate the telnet-discovered model over a short lived connection.
-
-        Separate from the persistent connection so discovery is deterministic at
-        setup time. The raw socket handling lives in the telnet transport; this
-        just supplies the queries and feeds the replies to the parser, stopping
-        once the sources and speaker configuration have arrived.
-        """
-
-        queries = [
-            spec["query"]
-            for spec in self._profile.introspection.values()
-            if spec.get("query")
-        ]
-        await async_probe(
-            self._host,
-            queries,
-            lambda line: self._parser.feed(line, self._state),
-            lambda: bool(
-                self._discovery.configured_channels and self._discovery.sources
-            ),
-        )
+        return await self._discovery_service.discover()
 
     async def async_start(self) -> None:
         """Start the telnet transport (which triggers the first resync)."""
@@ -294,190 +191,38 @@ class DenonAvrDevice:
         await self._heos.async_start()
 
     async def async_await_ready(self, timeout: float = 8.0) -> None:
-        """Wait, best effort, until the initial resync has populated state.
+        """Best effort wait until the initial resync has populated state."""
 
-        This lets the platforms build the right entities at setup time. We wait
-        for the core state, the channel calibration list (SSLEV) AND the speaker
-        configuration (SSSPC), because the latter decides which channel entities
-        are enabled by default. It never raises; on timeout it returns with
-        whatever has arrived so far (falling back to "all channels enabled").
-        """
-
-        loop = asyncio.get_running_loop()
-        deadline = loop.time() + timeout
-        while loop.time() < deadline:
-            if (
-                self._state.system_power is not None
-                and self._state.channel_levels
-                and self._discovery.configured_channels
-            ):
-                break
-            await asyncio.sleep(0.1)
-        # If the telnet introspection produced no sources, fall back to the
-        # Deviceinfo source list so the media player still has a source list.
-        if not self._discovery.sources and self._fallback_sources:
-            self._discovery.sources = self._fallback_sources
+        await self._discovery_service.await_ready(timeout)
 
     async def async_stop(self) -> None:
-        """Stop the telnet transport and cancel any pending notification."""
+        """Stop the transports and cancel any pending notification or task."""
 
-        if self._update_handle is not None:
-            self._update_handle.cancel()
-            self._update_handle = None
-        for task in list(self._pending_tasks):
-            task.cancel()
-        self._pending_tasks.clear()
+        self._notifier.cancel()
+        self._tasks.cancel_all()
         await self._telnet.async_stop()
         await self._heos.async_stop()
 
     async def async_poll(self) -> None:
-        """HTTP reconciliation poll, used by the coordinator as a safety net.
+        """HTTP reconciliation poll, used by the coordinator as a safety net."""
 
-        When telnet is connected this only confirms reachability. When telnet is
-        down it recovers the core zone state so entities do not go blank.
-        """
-
-        main_path = self._profile.zones.get(
-            "status_lite_main", "/goform/formMainZone_MainZoneXmlStatusLite.xml"
+        await self._sync.async_reconcile(
+            self._goform.async_get_status,
+            lambda: self._telnet.connected,
+            (self._graphic_eq.refresh, self._video_config.refresh, self._speaker_config.refresh),
         )
-        status = await self._goform.async_get_status(main_path)
-        if status is None:
-            # HTTP unreachable; rely on the telnet availability signal.
-            return
-        # The volume display mode (Absolute/Relative) is only exposed over HTTP,
-        # so always capture it, even while telnet is the source for everything else.
-        display = status.get("volume_display")
-        if display is not None and display != self._state.volume_display:
-            self._state.volume_display = str(display)
-            self._schedule_update()
-        if not self._telnet.connected:
-            self._apply_http_status("main", status)
-            self._schedule_update()
-        # Refresh the manual graphic EQ per-band values (non-disruptive; a no-op
-        # unless the receiver advertises a graphic EQ this profile can drive).
-        await self._graphic_eq.refresh()
-        # Refresh the video setup menu values (non-disruptive; no-op unless the
-        # receiver advertises a video config API this profile can drive).
-        await self._video_config.refresh()
-        # Refresh the speaker setup menu values (amp assign).
-        await self._speaker_config.refresh()
-
-    # Telnet callbacks -----------------------------------------------------
-
-    def _handle_line(self, line: str) -> None:
-        """Feed a received telnet line to the parser and notify on change."""
-
-        if self._parser.feed(line, self._state):
-            self._schedule_update()
-        # The receiver pushes OPSMLALL (all groups) when the sound mode context
-        # changes, e.g. after a genre group switch, but never pushes OPSML (the
-        # current group's selectable modes). When an OPSMLALL push completes,
-        # re-query OPSML so the per group Sound Mode list follows the change.
-        if line.startswith("OPSMLALL"):
-            remainder = line[len("OPSMLALL") :].strip()
-            if remainder.startswith(self._profile.list_terminator):
-                self._create_task(self._query_current_sound_modes())
-        # Data driven refresh: any group whose trigger prefix this line matches
-        # gets a coalesced re-query. This keeps state the receiver does not
-        # re-push on every change in sync - the signal dependent sound mode
-        # lists on an audio format change, and the audio information and
-        # channel/speaker layout on a sound mode (MS) or source (SI) change.
-        for group_id, group in self._refresh_groups.items():
-            on = group.get("on")
-            if on and line.startswith(tuple(on)):
-                self._schedule_refresh(group_id)
-
-    def _handle_now_playing(self, snapshot: dict) -> None:
-        """Apply a HEOS now-playing snapshot and notify listeners."""
-
-        self._state.now_playing = NowPlaying(**snapshot)
-        self._schedule_update()
 
     def _handle_availability(self, available: bool) -> None:
-        """React to the telnet link going up or down."""
-
         self._available = available
-        self._schedule_update()
-
-    async def _resynchronise(self) -> None:
-        """Query the full state after connecting so nothing is stale."""
-
-        for command in self._resync_queries():
-            await self._telnet.async_send(command)
+        self._notifier.schedule()
 
     def _resync_queries(self) -> list[str]:
-        """Build the list of query commands used to resynchronise state."""
+        """The resync query list (kept for the characterization tests)."""
 
-        queries: list[str] = []
+        return self._sync.resync_queries()
 
-        def add(query: str | None) -> None:
-            if query and query not in queries:
-                queries.append(query)
+    # Control (delegates to the ControlService) ------------------------------
 
-        # Introspection first so the source and channel lists (which entities
-        # are built from) arrive as early as possible after connecting.
-        for spec in self._profile.introspection.values():
-            add(spec.get("query"))
-        # Core controls (main zone) are always present.
-        for spec in self._profile.controls_by_scope("core"):
-            add(spec.query)
-        # Additional zones use the 'Z<index>' query, one per discovered zone.
-        prefix = self._profile.zones.get("additional_prefix", "Z")
-        for zone in self._discovery.zones:
-            if not zone.is_main:
-                add(f"{prefix}{zone.index}?")
-        # Read only audio information.
-        for spec in self._profile.readonly.values():
-            add(spec.get("query"))
-        # Feature controls, only those the receiver advertises. Some controls
-        # have several queries (a list query and a read query, e.g. channel
-        # calibration via SSLEV plus live trims via CV); send all of them.
-        for spec in self._profile.feature_controls():
-            if spec.feature and self._discovery.supports(spec.feature):
-                add(spec.query)
-                add(spec.get("list_query"))
-                add(spec.get("read_query"))
-        return queries
-
-    # Notification ---------------------------------------------------------
-
-    def _schedule_update(self) -> None:
-        """Debounce state notifications so a burst becomes a single update."""
-
-        if self._update_callback is None:
-            return
-        loop = asyncio.get_running_loop()
-        if self._update_handle is not None:
-            self._update_handle.cancel()
-        self._update_handle = loop.call_later(_UPDATE_DEBOUNCE, self._fire_update)
-
-    def _fire_update(self) -> None:
-        self._update_handle = None
-        if self._update_callback is not None:
-            self._update_callback()
-
-    def _apply_http_status(self, zone_id: str, status: dict[str, object]) -> None:
-        """Apply a parsed StatusLite snapshot to a zone (fallback path)."""
-
-        zone = self._state.zone(zone_id)
-        if "power" in status:
-            zone.power = bool(status["power"])
-        if "muted" in status:
-            zone.muted = bool(status["muted"])
-        if "source" in status:
-            zone.source = str(status["source"])
-        if "volume_db" in status:
-            zone.volume_raw = self._profile.volume_reference + float(
-                status["volume_db"]  # type: ignore[arg-type]
-            )
-
-    # Control methods ------------------------------------------------------
-
-    async def _send(self, command: str) -> None:
-        await self._telnet.async_send(command)
-
-    # Network media transport, routed to the HEOS channel. No-ops when HEOS is
-    # not connected or no network source is playing.
     async def async_media_play(self) -> None:
         await self._heos.async_play()
 
@@ -493,355 +238,50 @@ class DenonAvrDevice:
     async def async_media_previous(self) -> None:
         await self._heos.async_previous()
 
-    @property
-    def graphic_eq(self) -> graphic_eq.GraphicEqController:
-        """The manual graphic-EQ subsystem (read/edit/apply). See GraphicEqController."""
-
-        return self._graphic_eq
-
-    @property
-    def video_config(self) -> video_config.VideoConfigController:
-        """The /ajax video setup subsystem (HDMI setup, OSD, TV/4K format)."""
-
-        return self._video_config
-
-    @property
-    def speaker_config(self) -> video_config.VideoConfigController:
-        """The /ajax speaker setup subsystem (amp assign)."""
-
-        return self._speaker_config
-
-    def _zone(self, zone_id: str):
-        """Return the discovered ZoneDescriptor for a zone id, if any."""
-
-        for zone in self._discovery.zones:
-            if zone.id == zone_id:
-                return zone
-        return None
-
-    def _additional_zone_prefix(self, zone_id: str) -> str | None:
-        """Return the 'Z<index>' prefix for a non main zone, or None."""
-
-        zone = self._zone(zone_id)
-        if zone is None or zone.is_main:
-            return None
-        base = self._profile.zones.get("additional_prefix", "Z")
-        return f"{base}{zone.index}"
-
     async def async_set_power(self, zone_id: str, on: bool) -> None:
-        """Turn a zone on or off using that zone's power control."""
-
-        prefix = self._additional_zone_prefix(zone_id)
-        if prefix is None:
-            spec = self._profile.control("main_power")
-            if spec is None:
-                return
-            token = spec.get("on", "ON") if on else spec.get("off", "OFF")
-            await self._send(f"{spec.prefix}{token}")
-            return
-        zones = self._profile.zones
-        token = zones.get("power_on", "ON") if on else zones.get("power_off", "OFF")
-        await self._send(f"{prefix}{token}")
+        await self._control.set_power(zone_id, on)
 
     async def async_set_system_power(self, on: bool) -> None:
-        """Set the overall system standby power."""
-
-        spec = self._profile.control("system_power")
-        if spec is None:
-            return
-        token = spec.get("on", "ON") if on else spec.get("off", "STANDBY")
-        await self._send(f"{spec.prefix}{token}")
+        await self._control.set_system_power(on)
 
     async def async_set_volume_level(self, zone_id: str, level: float) -> None:
-        """Set the volume for a zone from a 0..1 level."""
-
-        raw = self._level_to_raw(zone_id, level)
-        await self.async_set_volume_raw(zone_id, raw)
+        await self._control.set_volume_level(zone_id, level)
 
     async def async_set_volume_raw(self, zone_id: str, raw: float) -> None:
-        """Set a zone's volume to a raw scale value (clamped to the reachable max)."""
-
-        raw = max(0.0, min(raw, self.volume_effective_max(zone_id)))
-        encoded = encode_half_step(raw)
-        prefix = self._additional_zone_prefix(zone_id)
-        if prefix is None:
-            spec = self._profile.control("main_volume")
-            if spec is not None:
-                await self._send(f"{spec.prefix}{encoded}")
-        else:
-            # Additional zones set the volume through their overloaded prefix.
-            await self._send(f"{prefix}{encoded}")
+        await self._control.set_volume_raw(zone_id, raw)
 
     async def async_volume_step(self, zone_id: str, up: bool) -> None:
-        """Nudge the main zone volume up or down by one step."""
-
-        if zone_id != "main":
-            return
-        spec = self._profile.control("main_volume")
-        if spec is None:
-            return
-        token = spec.get("up") if up else spec.get("down")
-        if token:
-            await self._send(token)
+        await self._control.volume_step(zone_id, up)
 
     async def async_set_mute(self, zone_id: str, muted: bool) -> None:
-        """Mute or unmute a zone."""
-
-        prefix = self._additional_zone_prefix(zone_id)
-        if prefix is None:
-            spec = self._profile.control("main_mute")
-            if spec is None:
-                return
-            token = spec.get("on", "ON") if muted else spec.get("off", "OFF")
-            await self._send(f"{spec.prefix}{token}")
-        else:
-            # Additional zones mute through their overloaded prefix (Z2MUON/OFF).
-            zones = self._profile.zones
-            mute_token = zones.get("mute_token", "MU")
-            on_off = zones.get("mute_on", "ON") if muted else zones.get("mute_off", "OFF")
-            await self._send(f"{prefix}{mute_token}{on_off}")
+        await self._control.set_mute(zone_id, muted)
 
     async def async_select_source(self, zone_id: str, name: str) -> None:
-        """Select an input source by its display name."""
-
-        code = self._discovery.source_code(name) or name
-        prefix = self._additional_zone_prefix(zone_id)
-        if prefix is None:
-            spec = self._profile.control("main_source")
-            if spec is not None:
-                await self._send(f"{spec.prefix}{code}")
-        else:
-            await self._send(f"{prefix}{code}")
+        await self._control.select_source(zone_id, name)
 
     async def async_select_sound_mode(self, name: str) -> None:
-        """Select a surround / sound mode by its display name.
-
-        The wire token is often not the plain display name (for example
-        'Dolby Audio - Dolby Surround' is sent as 'DOLBY AUDIO-DSUR'). Use the
-        deterministic profile override when the token differs, otherwise the
-        upper cased display name, which works for the simple modes.
-        """
-
-        spec = self._profile.control("sound_mode")
-        if spec is None:
-            return
-        await self._send(f"{spec.prefix}{self._resolve_sound_mode_wire(name)}")
-        await self._refresh_current_sound_modes()
-
-    def _resolve_sound_mode_wire(self, name: str) -> str:
-        """Resolve the MS wire token for a sound mode display name.
-
-        Order: the deterministic profile override, then the upper cased display
-        name (which works for the simple modes).
-        """
-
-        override = self._profile.sound_mode_wire_overrides.get(name)
-        if override:
-            return override
-        return name.upper()
-
-    def _current_sound_modes_query(self) -> str | None:
-        """The OPSML query token from the profile, or None if unavailable."""
-
-        return self._profile.introspection_query("current_sound_modes")
-
-    async def _query_current_sound_modes(self) -> None:
-        """Send a single OPSML query to refresh the current-context mode list."""
-
-        query = self._current_sound_modes_query()
-        if query:
-            await self._send(query)
-
-    def _schedule_refresh(self, group_id: str) -> None:
-        """Coalesce a refresh group's re-query into one delayed send.
-
-        The receiver emits a burst of events for a single change (several signal
-        events for one format change; several MS/SI lines for one mode/source
-        switch); a short debounce collapses them into one re-query and lets the
-        receiver settle on the new state before querying. A group is scheduled
-        at most once until its re-query fires.
-        """
-
-        if group_id in self._refresh_scheduled:
-            return
-        group = self._refresh_groups.get(group_id)
-        if not group:
-            return
-        self._refresh_scheduled.add(group_id)
-        queries = list(group.get("queries", []))
-        debounce = float(group.get("debounce", 1.0))
-
-        async def _refresh() -> None:
-            try:
-                await asyncio.sleep(debounce)
-                for query in queries:
-                    await self._send(query)
-            except asyncio.CancelledError:
-                pass
-            finally:
-                self._refresh_scheduled.discard(group_id)
-
-        self._create_task(_refresh())
-
-    async def _refresh_current_sound_modes(self) -> None:
-        """Re-query the current-context mode list after a mode/group change.
-
-        The receiver pushes OPSMLALL (not OPSML) on a change, so the OPSML list
-        must be pulled. A query sent immediately can race the receiver still
-        switching; the OPSMLALL push handler (see _handle_line) re-queries once
-        the switch settles, and a delayed query here is a further safety net.
-        Both are best effort.
-        """
-
-        query = self._current_sound_modes_query()
-        if not query:
-            return
-        await self._send(query)
-        self._schedule_delayed_query(query, 0.8)
-
-    def _create_task(self, coro) -> None:
-        """Schedule a fire and forget coroutine, keeping a strong reference.
-
-        asyncio holds only a weak reference to bare tasks, so a task started
-        without keeping its reference can be garbage collected before it runs.
-        Tracking it here (and discarding on completion) keeps it alive and lets
-        async_stop cancel anything still pending.
-        """
-
-        task = asyncio.ensure_future(coro)
-        self._pending_tasks.add(task)
-        task.add_done_callback(self._pending_tasks.discard)
-
-    def _schedule_delayed_query(self, query: str, delay: float) -> None:
-        """Fire and forget a telnet query after a short delay."""
-
-        async def _later() -> None:
-            try:
-                await asyncio.sleep(delay)
-                await self._send(query)
-            except asyncio.CancelledError:
-                pass
-
-        self._create_task(_later())
+        await self._control.select_sound_mode(name)
 
     async def async_select_quick_select(self, number: int) -> None:
-        """Recall a main zone quick select preset by its number."""
-
-        await self._send(f"MSQUICK{int(number)}")
+        await self._control.select_quick_select(number)
 
     async def async_select_sound_mode_group(self, code: str) -> None:
-        """Switch the receiver to a sound mode genre group by its code.
-
-        Uses the genre command from the profile (MOVIE/MUSIC/GAME/PURE DIRECT).
-        The receiver then auto resolves the actual mode for the current signal.
-        """
-
-        wire = self._profile.sound_mode_genre_commands.get(code)
-        spec = self._profile.control("sound_mode")
-        if wire and spec is not None:
-            await self._send(f"{spec.prefix}{wire}")
-            await self._refresh_current_sound_modes()
+        await self._control.select_sound_mode_group(code)
 
     async def async_set_control(self, control_id: str, value: object) -> None:
-        """Set any profile driven feature control to a new value.
-
-        The `value` interpretation depends on the control kind: a bool for
-        on/off, a wire token for enum, a dB offset for level, an int for
-        signed_int, and minutes (0 = off) for minutes.
-        """
-
-        spec = self._profile.control(control_id)
-        if spec is None:
-            return
-        argument = self._encode_control_value(spec, value)
-        if argument is None:
-            return
-        await self._send(f"{spec.prefix}{argument}")
+        await self._control.set_control(control_id, value)
 
     async def async_set_channel_trim(self, code: str, db: float) -> None:
-        """Set a per channel volume trim in dB via the CV command."""
-
-        spec = self._profile.control("channel_level")
-        if spec is None:
-            return
-        raw = self._profile.level_reference + db
-        set_prefix = spec.get("set_prefix", "CV")
-        await self._send(f"{set_prefix}{code} {encode_half_step(raw)}")
+        await self._control.set_channel_trim(code, db)
 
     async def async_set_channel_distance(self, code: str, meters: float) -> None:
-        """Set a per channel speaker distance via the SSSDE command."""
-
-        spec = self._profile.introspection.get("channel_distances", {})
-        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSSDE"
-        divisor = self._profile.distance.get("divisor", 100) or 100
-        raw = max(0, int(round(meters * divisor)))
-        await self._send(f"{set_prefix}{code} {raw:04d}")
+        await self._control.set_channel_distance(code, meters)
 
     async def async_set_crossover(self, group: str, hertz: int) -> None:
-        """Set a speaker group's crossover frequency via the SSCFR command.
-
-        The frequency is zero padded to the protocol width (e.g. 80 -> '080').
-        The receiver only accepts values from its discrete grid; sending one off
-        the grid is silently ignored, so callers pass a value from the profile's
-        crossover set.
-        """
-
-        spec = self._profile.introspection.get("crossover", {})
-        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSCFR"
-        width = int(self._profile.crossover.get("width", 3) or 3)
-        await self._send(f"{set_prefix}{group} {int(hertz):0{width}d}")
+        await self._control.set_crossover(group, hertz)
 
     async def async_set_crossover_mode(self, mode: str) -> None:
-        """Set the crossover speaker-selection mode ('IDV' per-group / 'ALL').
-
-        Sent as '<prefix> <mode>' (e.g. 'SSCFR IDV'); this gates whether the
-        per-group crossovers or the single All crossover applies on the receiver.
-        """
-
-        spec = self._profile.introspection.get("crossover", {})
-        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSCFR"
-        await self._send(f"{set_prefix} {mode}")
+        await self._control.set_crossover_mode(mode)
 
     async def async_set_speaker_size(self, group: str, token: str) -> None:
-        """Set a speaker group's size (Large/Small) via the SSSPC command."""
-
-        spec = self._profile.introspection.get("speaker_config", {})
-        set_prefix = spec.get("set_prefix") or spec.get("prefix") or "SSSPC"
-        await self._send(f"{set_prefix}{group} {token}")
-
-    # Encoding helpers -----------------------------------------------------
-
-    def _level_to_raw(self, zone_id: str, level: float) -> float:
-        """Convert a 0..1 level to the raw volume scale using the reported max."""
-
-        level = max(0.0, min(1.0, level))
-        ceiling = self.volume_effective_max(zone_id)
-        return round(level * ceiling * 2) / 2
-
-    def _encode_control_value(self, spec, value: object) -> str | None:
-        """Encode a Python value into the wire argument for a control."""
-
-        kind = spec.kind
-        if kind == "onoff":
-            return spec.get("on", "ON") if value else spec.get("off", "OFF")
-        if kind == "enum":
-            return str(value)
-        if kind == "level":
-            raw = self._profile.level_reference + float(value)  # type: ignore[arg-type]
-            return encode_half_step(raw)
-        if kind == "centered":
-            # Fixed-width integer offset around a centre (picture controls).
-            width = int(spec.get("width", 3))
-            return encode_centered(float(value), int(spec.get("center", 0)), width)
-        if kind == "signed_int":
-            return str(int(value))  # type: ignore[arg-type]
-        if kind == "integer":
-            # Zero pad to the wire width the receiver expects (e.g. 3 for PSDELAY).
-            width = int(spec.get("width", 0) or 0)
-            return str(int(value)).zfill(width)  # type: ignore[arg-type]
-        if kind == "minutes":
-            minutes = int(value)  # type: ignore[arg-type]
-            if minutes <= 0:
-                return spec.get("off", "OFF")
-            return f"{minutes:03d}"
-        return str(value)
+        await self._control.set_speaker_size(group, token)

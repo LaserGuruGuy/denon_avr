@@ -12,8 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .avr import graphic_eq
-from .avr.profile import ControlSpec
+from .avr import ControlSpec, eq_channel_options
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity
 from .helpers import control_sub_device, enum_options, group_name
@@ -475,7 +474,7 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
 
     def _options(self) -> list[tuple[int, str]]:
         eq = self.coordinator.device.graphic_eq.state
-        return graphic_eq.channel_options(
+        return eq_channel_options(
             self._grammar, eq.speaker_selection, eq.selectable
         )
 

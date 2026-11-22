@@ -1,16 +1,26 @@
-"""Architecture guard: import rules between layers (stdlib ast, no extra tooling).
+"""Architecture guard: import rules between the layers (stdlib ast, no extra tooling).
 
-Rules (see doc/ARCHITECTURE.md once written):
+avr/ layers, dependencies only downwards:
+  transport/  I/O per wire protocol          -> ..const only
+  protocol/   pure grammar, codecs, parsers  -> protocol siblings, ..models, ..const
+  services/   subsystems over ports          -> protocol, models, const, siblings
+  device.py   facade + composition root      -> everything in avr/
+  models.py, const.py                        -> nothing in avr/ (leaf modules)
+
+Rules:
   R1  nothing under avr/ imports homeassistant
-  R2  avr/transport/* imports only ..const from the library (transports never import
-      each other, the profile, the parser or models)
-  R3  pure protocol modules (codec, parser, profile, models) never import aiohttp,
-      asyncio or the transport package
-  R4  the Home Assistant layer imports the library only through the package surface
-      (``.avr``), never its internal modules
+  R2  transport/* imports only ..const from the library
+  R3  protocol/* is pure: no aiohttp/asyncio/socket, nothing from transport/ or services/
+  R4  the Home Assistant layer imports the library only through the package surface ``.avr``
+  R5  services/* never import transport/ or aiohttp/socket (they only know ports)
+  R6  only device.py (the composition root) imports transport/
+  R7  models.py and const.py are leaves (no imports from the library)
+  R8  transport/, protocol/ and services/ never import the facade (device.py)
+  R9  no absolute self-imports (custom_components.denon_avr...), they bypass these rules
 
-ALLOWED lists today's known violations. It is a ratchet: a new violation fails, and an
-entry that no longer occurs must be removed from ALLOWED (so the list only shrinks).
+ALLOWED lists known violations. It is a ratchet: a new violation fails, and an entry
+that no longer occurs must be removed (so the list only shrinks). It is empty since the
+step-2 refactor.
 """
 
 from __future__ import annotations
@@ -20,22 +30,9 @@ import pathlib
 
 PKG = pathlib.Path(__file__).resolve().parents[1] / "custom_components" / "denon_avr"
 LIB = PKG / "avr"
-PURE = {"codec.py", "parser.py", "profile.py", "models.py", "const.py"}
+IO_MODULES = ("aiohttp", "asyncio", "socket")
 
-# (rule, module, imported) - known in v1.1.2; shrink during the refactor.
-ALLOWED = {
-    ("R4", "__init__.py", ".avr.profile"),
-    ("R4", "config_flow.py", ".avr.profile"),
-    ("R4", "helpers.py", ".avr.models"),
-    ("R4", "helpers.py", ".avr.profile"),
-    ("R4", "media_player.py", ".avr.models"),
-    ("R4", "number.py", ".avr.graphic_eq"),
-    ("R4", "number.py", ".avr.profile"),
-    ("R4", "select.py", ".avr.graphic_eq"),
-    ("R4", "select.py", ".avr.profile"),
-    ("R4", "sensor.py", ".avr.models"),
-    ("R4", "switch.py", ".avr.profile"),
-}
+ALLOWED: set[tuple[str, str, str]] = set()
 
 
 def _imports(path: pathlib.Path) -> set[str]:
@@ -61,22 +58,36 @@ def _imports(path: pathlib.Path) -> set[str]:
     return out
 
 
+def _is_io(imp: str) -> bool:
+    return any(imp == m or imp.startswith(m + ".") for m in IO_MODULES)
+
+
 def _violations() -> set[tuple[str, str, str]]:
     found: set[tuple[str, str, str]] = set()
     for path in sorted(LIB.rglob("*.py")):
-        rel = str(path.relative_to(PKG))
-        imps = _imports(path)
-        for imp in imps:
+        rel = path.relative_to(LIB)
+        name = str(path.relative_to(PKG))
+        layer = rel.parts[0] if len(rel.parts) > 1 else rel.name
+        for imp in _imports(path):
             if imp == "homeassistant" or imp.startswith("homeassistant."):
-                found.add(("R1", rel, imp))
-        if path.parent.name == "transport" and path.name != "__init__.py":
-            for imp in imps:
-                if imp.startswith(".") and imp not in ("..const",):
-                    found.add(("R2", rel, imp))
-        if path.parent == LIB and path.name in PURE:
-            for imp in imps:
-                if imp in ("aiohttp", "asyncio") or imp.startswith((".transport", "aiohttp.")):
-                    found.add(("R3", rel, imp))
+                found.add(("R1", name, imp))
+            if layer == "transport":
+                outside = imp.startswith("..") and imp != "..const" and not imp.startswith("..const.")
+                sibling = path.name != "__init__.py" and imp.startswith(".") and not imp.startswith("..")
+                if outside or sibling:      # transports never import each other or upper layers
+                    found.add(("R2", name, imp))
+            if layer in ("transport", "protocol", "services") and imp.startswith(("..device", "...device")):
+                found.add(("R8", name, imp))
+            if imp.startswith("custom_components"):
+                found.add(("R9", name, imp))
+            if layer == "protocol" and (_is_io(imp) or imp.startswith(("..transport", "..services", "..device"))):
+                found.add(("R3", name, imp))
+            if layer == "services" and (imp.startswith("..transport") or imp in ("aiohttp", "socket") or imp.startswith("aiohttp.")):
+                found.add(("R5", name, imp))
+            if layer not in ("device.py", "transport") and imp.startswith((".transport", "..transport")):
+                found.add(("R6", name, imp))
+            if layer in ("models.py", "const.py") and imp.startswith("."):
+                found.add(("R7", name, imp))
     for path in sorted(PKG.glob("*.py")):
         for imp in _imports(path):
             if imp.startswith(".avr."):
