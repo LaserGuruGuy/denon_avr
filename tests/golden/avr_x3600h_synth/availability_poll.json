@@ -1,0 +1,68 @@
+{
+ "after_drop": {
+  "available": false,
+  "callbacks": [
+   false
+  ]
+ },
+ "after_start": {
+  "available": true,
+  "callbacks": [
+   true
+  ]
+ },
+ "burst_callbacks": [
+  true
+ ],
+ "poll_connected_zone": {
+  "muted": false,
+  "power": true,
+  "source": "TV",
+  "volume_max_raw": null,
+  "volume_raw": 43.0
+ },
+ "poll_fallback_requests": [
+  {
+   "ssl": "default",
+   "timeout_total": 8.0,
+   "url": "http://192.0.2.10:8080/goform/formMainZone_MainZoneXmlStatusLite.xml"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
+   "url": "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=0&opt2=0"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
+   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=3"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
+   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=7"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
+   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=8"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
+   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+  },
+  {
+   "ssl": false,
+   "timeout_total": 8.0,
+   "url": "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+  }
+ ],
+ "poll_fallback_zone": {
+  "muted": false,
+  "power": true,
+  "source": "TV",
+  "volume_max_raw": null,
+  "volume_raw": 43.0
+ }
+}

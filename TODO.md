@@ -93,3 +93,13 @@ advertises the capability, so every item below is additive and self-gating.
 - **may — goform AppCommand.** The `/goform/AppCommand.xml` batch API returns empty
   on this firmware generation; on models where it works it could replace some
   polling. Not needed today (telnet push + StatusLite cover it).
+
+## Test safety net: follow-ups from the step-1 architecture review
+- HA layer tests (pytest-homeassistant-custom-component): coordinator, entity availability,
+  unique_ids against tests/golden/ha_registry, diagnostics redaction.
+- More layer rules: pure modules import only pure modules/const; services never import
+  concrete transports; the library never imports `..` outside avr/.
+- Telnet transport tests (framing, CR split, queue, reconnect) through a fake open_connection.
+- Faster tests that do not depend on timing: a fake clock instead of the real 0.8 s / 0.1 s sleeps.
+- Wider redaction: 10/8, 172.16/12, IPv6, hostnames, SSID, HEOS pid.
+- Replace the synthetic X3600H set with a real capture (tools/capture_fixtures.py).

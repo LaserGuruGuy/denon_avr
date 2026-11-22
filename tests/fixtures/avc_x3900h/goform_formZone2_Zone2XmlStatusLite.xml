@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<item>
+<Power><value>OFF</value></Power>
+<InputFuncSelect><value>SOURCE</value></InputFuncSelect>
+<VolumeDisplay><value>Relative</value></VolumeDisplay>
+<MasterVolume><value>-40</value></MasterVolume>
+<Mute><value>off</value></Mute>
+</item>

@@ -1,0 +1,162 @@
+{
+ "graphic_eq": {
+  "supported": true
+ },
+ "speaker_config": {
+  "controls": {
+   "amp_assign": {
+    "available": true,
+    "options": {
+     "1": "9.1ch",
+     "12": "11.1ch",
+     "14": "5.1ch (Bi-Amp) + ZONE2",
+     "17": "Pre Amplifier",
+     "2": "7.1ch + ZONE2",
+     "6": "7.1ch + Front B",
+     "7": "7.1ch (Bi-Amp)"
+    },
+    "present": true,
+    "value": "6"
+   },
+   "floor_layout": {
+    "available": true,
+    "options": {
+     "1": "5ch",
+     "2": "5ch & SB"
+    },
+    "present": true,
+    "value": "1"
+   },
+   "height_speaker": {
+    "available": true,
+    "options": {
+     "1": "Height None / Dolby None",
+     "2": "Height None / Dolby 2ch"
+    },
+    "present": true,
+    "value": "1"
+   }
+  },
+  "feature_flags": [],
+  "supported": true
+ },
+ "video_config": {
+  "controls": {
+   "arc": {
+    "available": true,
+    "options": {},
+    "present": true,
+    "value": "1"
+   },
+   "hdmi_control": {
+    "available": true,
+    "options": {},
+    "present": true,
+    "value": "1"
+   },
+   "hdmi_pass_through": {
+    "available": false,
+    "options": {},
+    "present": true,
+    "value": "1"
+   },
+   "hdmi_power_off_control": {
+    "available": true,
+    "options": {
+     "1": "All",
+     "2": "Video",
+     "3": "Off"
+    },
+    "present": true,
+    "value": "1"
+   },
+   "hdmi_power_saving": {
+    "available": true,
+    "options": {},
+    "present": true,
+    "value": "2"
+   },
+   "hdmi_signal_format": {
+    "available": true,
+    "options": {
+     "1": "Standard",
+     "2": "Enhanced",
+     "3": "Custom",
+     "4": "8K Enhanced"
+    },
+    "present": true,
+    "value": "2"
+   },
+   "osd_info": {
+    "available": true,
+    "options": {},
+    "present": true,
+    "value": "1"
+   },
+   "osd_now_playing": {
+    "available": true,
+    "options": {
+     "1": "Always On",
+     "2": "Auto Off"
+    },
+    "present": true,
+    "value": "1"
+   },
+   "osd_volume": {
+    "available": true,
+    "options": {
+     "1": "Bottom",
+     "2": "Top",
+     "3": "Off"
+    },
+    "present": true,
+    "value": "1"
+   },
+   "pass_through_source": {
+    "available": true,
+    "options": {
+     "1": "Last",
+     "2": "AAP",
+     "3": "Media Player",
+     "4": "VIS",
+     "5": "NOOT",
+     "7": "MIES"
+    },
+    "present": true,
+    "value": "1"
+   },
+   "rc_select": {
+    "available": true,
+    "options": {
+     "1": "Power On + Source",
+     "2": "Source Select Only"
+    },
+    "present": true,
+    "value": "1"
+   },
+   "smart_menu": {
+    "available": false,
+    "options": {},
+    "present": false,
+    "value": ""
+   },
+   "tv_audio_switching": {
+    "available": true,
+    "options": {},
+    "present": true,
+    "value": "1"
+   },
+   "tv_format": {
+    "available": true,
+    "options": {
+     "1": "NTSC",
+     "2": "PAL"
+    },
+    "present": true,
+    "value": "1"
+   }
+  },
+  "feature_flags": [],
+  "supported": true
+ }
+}

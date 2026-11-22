@@ -1,0 +1,31 @@
+{
+ "host_redacted": true,
+ "captured": "2026-11-22T17:02:34",
+ "documents": {
+  "goform/goform/Deviceinfo.xml": 200,
+  "goform/goform/formMainZone_MainZoneXmlStatusLite.xml": 200,
+  "goform/goform/formZone2_Zone2XmlStatusLite.xml": 200,
+  "upnp/upnp/desc/aios_device/aios_device.xml": 200,
+  "ajax/video/1": 200,
+  "ajax/video/3": 200,
+  "ajax/video/4": 200,
+  "ajax/video/7": 200,
+  "ajax/video/8": 500,
+  "ajax/video/9": 200,
+  "ajax/video/11": 200,
+  "ajax/video/12": 200,
+  "ajax/video/13": 200,
+  "ajax/video/14": 200,
+  "ajax/audio/1": 200,
+  "ajax/audio/3": 200,
+  "ajax/audio/10": 200,
+  "ajax/speakers/1": 200,
+  "ajax/speakers/2": 500,
+  "ajax/speakers/3": 500,
+  "ajax/speakers/15": 200,
+  "ajax/speakers/17": 200,
+  "ajax/globals/1": 200,
+  "ajax/globals/7": 200
+ },
+ "telnet_lines": 697
+}

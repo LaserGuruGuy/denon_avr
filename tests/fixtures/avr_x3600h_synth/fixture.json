@@ -1,0 +1,14 @@
+{
+ "description": "SYNTHETIC reconstruction of an AVR-X3600H (firmware 3.88.614) for the legacy code paths. NOT recorded from a real X3600H (none available): goform/UPnP/telnet are the X3900H captures with model name/firmware swapped (same control-protocol family: CommApiVers 0301, Gen 0002); the setup-UI documents model the legacy HTTPS 10443 interface as the current 1.1.2 parser expects it (no gray attribute, global 4K format type 8, Amp Assign speakers type 2). Replace with real captures when an X3600H is available.",
+ "webconfig": {
+  "scheme": "https",
+  "port": 10443
+ },
+ "synthetic": true,
+ "synthetic_details": {
+  "telnet_corpus.json": "X3900H corpus plus 'SSCFR IDV' and 'SSCFRALL 080' (records marked synthetic) as documented in protocol_profile.json introspection.crossover (observed on the X3600H when the integration was written).",
+  "ajax_audio_10.xml": "Graphic EQ document in the shape graphic_eq.parse reads (SpeakerSelection, SelectableSpeaker/Each, AdjustEQ/Channel + Eq63Hz..Eq16kHz in tenths of dB).",
+  "ajax_video_*.xml / ajax_speakers_2.xml": "Legacy setup-UI shapes as the 1.1.2 parser expects them."
+ },
+ "evidence_note": "Goldens of this set pin what the CURRENT CODE does with legacy-shaped input. They are not evidence of real X3600H behaviour; they guard the legacy code paths against refactor regressions."
+}

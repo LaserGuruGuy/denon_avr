@@ -1,0 +1,8 @@
+[
+ "async_start",
+ "async_play",
+ "async_pause",
+ "async_stop_playback",
+ "async_next",
+ "async_previous"
+]

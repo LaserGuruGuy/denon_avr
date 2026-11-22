@@ -1,0 +1,449 @@
+{
+ "channel_distance:C=3.2": [
+  "SSSDEC 0320"
+ ],
+ "channel_distance:SW=3.2": [
+  "SSSDESW 0320"
+ ],
+ "channel_trim:C=+1.0": [
+  "CVC 51"
+ ],
+ "channel_trim:SW=+1.0": [
+  "CVSW 51"
+ ],
+ "control:all_zone_stereo=False": [
+  "MNZST OFF"
+ ],
+ "control:all_zone_stereo=True": [
+  "MNZST ON"
+ ],
+ "control:aspect_ratio='FUL'": [
+  "VSASPFUL"
+ ],
+ "control:aspect_ratio='NRM'": [
+  "VSASPNRM"
+ ],
+ "control:audio_delay=0": [
+  "PSDELAY 000"
+ ],
+ "control:audio_delay=10": [
+  "PSDELAY 010"
+ ],
+ "control:auto_lip_sync=False": [
+  "SSHOSALS OFF"
+ ],
+ "control:auto_lip_sync=True": [
+  "SSHOSALS ON"
+ ],
+ "control:bass=-2.0": [
+  "PSBAS 48"
+ ],
+ "control:bass=0.0": [
+  "PSBAS 50"
+ ],
+ "control:bass=1.5": [
+  "PSBAS 515"
+ ],
+ "control:brightness=-5": [
+  "PVBR 045"
+ ],
+ "control:brightness=0": [
+  "PVBR 050"
+ ],
+ "control:brightness=5": [
+  "PVBR 055"
+ ],
+ "control:center_spread=False": [
+  "PSCES OFF"
+ ],
+ "control:center_spread=True": [
+  "PSCES ON"
+ ],
+ "control:cinema_eq=False": [
+  "PSCINEMA EQ.OFF"
+ ],
+ "control:cinema_eq=True": [
+  "PSCINEMA EQ.ON"
+ ],
+ "control:containment_amount=0": [
+  "PSCNTAMT 00"
+ ],
+ "control:containment_amount=10": [
+  "PSCNTAMT 10"
+ ],
+ "control:contrast=-5": [
+  "PVCN 045"
+ ],
+ "control:contrast=0": [
+  "PVCN 050"
+ ],
+ "control:contrast=5": [
+  "PVCN 055"
+ ],
+ "control:dialog_control=0": [
+  "PSDIC 00"
+ ],
+ "control:dialog_control=10": [
+  "PSDIC 10"
+ ],
+ "control:dialog_level=-2.0": [
+  "PSDIL 48"
+ ],
+ "control:dialog_level=0.0": [
+  "PSDIL 50"
+ ],
+ "control:dialog_level=1.5": [
+  "PSDIL 515"
+ ],
+ "control:dimmer='BRI'": [
+  "DIM BRI"
+ ],
+ "control:dimmer='OFF'": [
+  "DIM OFF"
+ ],
+ "control:dts_neural_x=False": [
+  "PSNEURAL OFF"
+ ],
+ "control:dts_neural_x=True": [
+  "PSNEURAL ON"
+ ],
+ "control:dynamic_compression='AUTO'": [
+  "PSDRC AUTO"
+ ],
+ "control:dynamic_compression='OFF'": [
+  "PSDRC OFF"
+ ],
+ "control:dynamic_eq=False": [
+  "PSDYNEQ OFF"
+ ],
+ "control:dynamic_eq=True": [
+  "PSDYNEQ ON"
+ ],
+ "control:dynamic_volume='HEV'": [
+  "PSDYNVOL HEV"
+ ],
+ "control:dynamic_volume='OFF'": [
+  "PSDYNVOL OFF"
+ ],
+ "control:eco_mode='OFF'": [
+  "ECOOFF"
+ ],
+ "control:eco_mode='ON'": [
+  "ECOON"
+ ],
+ "control:effect_level=0": [
+  "PSEFF 00"
+ ],
+ "control:effect_level=10": [
+  "PSEFF 10"
+ ],
+ "control:enhancer=0": [
+  "PVENH 00"
+ ],
+ "control:enhancer=10": [
+  "PVENH 10"
+ ],
+ "control:front_speaker='A+B'": [
+  "PSFRONT A+B"
+ ],
+ "control:front_speaker='SPA'": [
+  "PSFRONT SPA"
+ ],
+ "control:graphic_eq=False": [
+  "PSGEQ OFF"
+ ],
+ "control:graphic_eq=True": [
+  "PSGEQ ON"
+ ],
+ "control:hdmi_audio_out='AMP'": [
+  "VSAUDIO AMP"
+ ],
+ "control:hdmi_audio_out='TV'": [
+  "VSAUDIO TV"
+ ],
+ "control:hdmi_video_output='2'": [
+  "VSMONI2"
+ ],
+ "control:hdmi_video_output='AUTO'": [
+  "VSMONIAUTO"
+ ],
+ "control:headphone_eq=False": [
+  "PSHEQ OFF"
+ ],
+ "control:headphone_eq=True": [
+  "PSHEQ ON"
+ ],
+ "control:input_mode='EARC'": [
+  "SDEARC"
+ ],
+ "control:input_mode='NO'": [
+  "SDNO"
+ ],
+ "control:lfe=-1": [
+  "PSLFE -1"
+ ],
+ "control:lfe=3": [
+  "PSLFE 3"
+ ],
+ "control:loudness_management=False": [
+  "PSLOM OFF"
+ ],
+ "control:loudness_management=True": [
+  "PSLOM ON"
+ ],
+ "control:low_frequency_containment=False": [
+  "PSLFC OFF"
+ ],
+ "control:low_frequency_containment=True": [
+  "PSLFC ON"
+ ],
+ "control:lpf_for_lfe='080'": [
+  "SSLFL 080"
+ ],
+ "control:lpf_for_lfe='250'": [
+  "SSLFL 250"
+ ],
+ "control:main_mute=False": [
+  "MUOFF"
+ ],
+ "control:main_mute=True": [
+  "MUON"
+ ],
+ "control:main_power=False": [
+  "ZMOFF"
+ ],
+ "control:main_power=True": [
+  "ZMON"
+ ],
+ "control:multeq='AUDYSSEY'": [
+  "PSMULTEQ:AUDYSSEY"
+ ],
+ "control:multeq='OFF'": [
+  "PSMULTEQ:OFF"
+ ],
+ "control:muting_level='040'": [
+  "SSVCTZMAMLV 040"
+ ],
+ "control:muting_level='MUT'": [
+  "SSVCTZMAMLV MUT"
+ ],
+ "control:noise_reduction='HI'": [
+  "PVDNR HI"
+ ],
+ "control:noise_reduction='OFF'": [
+  "PVDNR OFF"
+ ],
+ "control:picture_mode='NGT'": [
+  "PVNGT"
+ ],
+ "control:picture_mode='OFF'": [
+  "PVOFF"
+ ],
+ "control:reference_level_offset='0'": [
+  "PSREFLEV 0"
+ ],
+ "control:reference_level_offset='15'": [
+  "PSREFLEV 15"
+ ],
+ "control:resolution_hdmi='4KF'": [
+  "VSSCH4KF"
+ ],
+ "control:resolution_hdmi='AUTO'": [
+  "VSSCHAUTO"
+ ],
+ "control:restorer='HI'": [
+  "PSRSTR HI"
+ ],
+ "control:restorer='OFF'": [
+  "PSRSTR OFF"
+ ],
+ "control:room_size='L'": [
+  "PSRSZ L"
+ ],
+ "control:room_size='S'": [
+  "PSRSZ S"
+ ],
+ "control:saturation=-5": [
+  "PVST 045"
+ ],
+ "control:saturation=0": [
+  "PVST 050"
+ ],
+ "control:saturation=5": [
+  "PVST 055"
+ ],
+ "control:sleep_timer=0": [
+  "SLPOFF"
+ ],
+ "control:sleep_timer=30": [
+  "SLP030"
+ ],
+ "control:speaker_virtualizer=False": [
+  "PSSPV OFF"
+ ],
+ "control:speaker_virtualizer=True": [
+  "PSSPV ON"
+ ],
+ "control:subwoofer_level=-2.0": [
+  "PSSWL 48"
+ ],
+ "control:subwoofer_level=0.0": [
+  "PSSWL 50"
+ ],
+ "control:subwoofer_level=1.5": [
+  "PSSWL 515"
+ ],
+ "control:subwoofer_mode='L+M'": [
+  "SSSWM L+M"
+ ],
+ "control:subwoofer_mode='LFE'": [
+  "SSSWM LFE"
+ ],
+ "control:subwoofer_switch=False": [
+  "PSSWR OFF"
+ ],
+ "control:subwoofer_switch=True": [
+  "PSSWR ON"
+ ],
+ "control:tone_control=False": [
+  "PSTONE CTRL OFF"
+ ],
+ "control:tone_control=True": [
+  "PSTONE CTRL ON"
+ ],
+ "control:treble=-2.0": [
+  "PSTRE 48"
+ ],
+ "control:treble=0.0": [
+  "PSTRE 50"
+ ],
+ "control:treble=1.5": [
+  "PSTRE 515"
+ ],
+ "control:video_mode='AUTO'": [
+  "VSVPMAUTO"
+ ],
+ "control:video_mode='MOVI'": [
+  "VSVPMMOVI"
+ ],
+ "control:volume_limit='080'": [
+  "SSVCTZMALIM 080"
+ ],
+ "control:volume_limit='OFF'": [
+  "SSVCTZMALIM OFF"
+ ],
+ "control:volume_scale='ABS'": [
+  "SSVCTZMADIS ABS"
+ ],
+ "control:volume_scale='REL'": [
+  "SSVCTZMADIS REL"
+ ],
+ "crossover:ALL=80": [
+  "SSCFRALL 080"
+ ],
+ "crossover:BKD=120": [
+  "SSCFRBKD 120"
+ ],
+ "crossover:CEN=120": [
+  "SSCFRCEN 120"
+ ],
+ "crossover_mode=ALL": [
+  "SSCFR ALL"
+ ],
+ "crossover_mode=IDV": [
+  "SSCFR IDV"
+ ],
+ "mute:main=on": [
+  "MUON"
+ ],
+ "mute:zone2=on": [
+  "Z2MUON"
+ ],
+ "power:main=off": [
+  "ZMOFF"
+ ],
+ "power:main=on": [
+  "ZMON"
+ ],
+ "power:zone2=off": [
+  "Z2OFF"
+ ],
+ "power:zone2=on": [
+  "Z2ON"
+ ],
+ "quick_select=1": [
+  "MSQUICK1"
+ ],
+ "sound_mode=Multi Ch In": [
+  "MSMULTI CH IN",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "sound_mode=Multi In + DSurr": [
+  "MSMULTI IN + DSURR",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "sound_mode=Stereo": [
+  "MSSTEREO",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "sound_mode_group=GAM": [
+  "MSGAME",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "sound_mode_group=MOV": [
+  "MSMOVIE",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "sound_mode_group=MUS": [
+  "MSMUSIC",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "sound_mode_group=PUR": [
+  "MSPURE DIRECT",
+  "OPSML ?",
+  "OPSML ?"
+ ],
+ "source:main=VIS": [
+  "SIBD"
+ ],
+ "source:main=TV Audio": [
+  "SITV"
+ ],
+ "source:zone2=VIS": [
+  "Z2BD"
+ ],
+ "source:zone2=TV Audio": [
+  "Z2TV"
+ ],
+ "speaker_size:CEN=SMA": [
+  "SSSPCCEN SMA"
+ ],
+ "speaker_size:FRO=SMA": [
+  "SSSPCFRO SMA"
+ ],
+ "system_power=off": [
+  "PWSTANDBY"
+ ],
+ "volume_level:main=0.5": [
+  "MV35"
+ ],
+ "volume_level:zone2=0.5": [
+  "Z249"
+ ],
+ "volume_raw:main=45.5": [
+  "MV455"
+ ],
+ "volume_raw:zone2=45.5": [
+  "Z2455"
+ ],
+ "volume_step:main=up": [
+  "MVUP"
+ ],
+ "volume_step:zone2=up": []
+}

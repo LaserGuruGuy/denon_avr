@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _format_mac(raw: str | None) -> str | None:
-    """Format a bare MAC such as '0005CDBDFD0C' as '00:05:cd:bd:fd:0c'."""
+    """Format a bare MAC such as '0005CD000001' as '00:05:cd:00:00:01'."""
 
     if not raw:
         return None

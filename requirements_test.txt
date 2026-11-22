@@ -1,0 +1,4 @@
+# Test dependencies for the HA-free avr library, pinned for reproducible goldens.
+pytest==9.2.0
+pytest-asyncio==1.5.0
+aiohttp==3.14.5

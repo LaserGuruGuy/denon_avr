@@ -1,0 +1,143 @@
+{
+ "geq:apply": [
+  "https://192.0.2.10:10443/ajax/audio/set_config?type=10&data=%3CGraphicEQ%3E%3CAdjustEQ%3E%3CChannel%3E1%3C%2FChannel%3E%3CEq63Hz%3E0%3C%2FEq63Hz%3E%3CEq125Hz%3E-15%3C%2FEq125Hz%3E%3CEq250Hz%3E5%3C%2FEq250Hz%3E%3CEq500Hz%3E0%3C%2FEq500Hz%3E%3CEq1kHz%3E20%3C%2FEq1kHz%3E%3CEq2kHz%3E-5%3C%2FEq2kHz%3E%3CEq4kHz%3E0%3C%2FEq4kHz%3E%3CEq8kHz%3E-15%3C%2FEq8kHz%3E%3CEq16kHz%3E10%3C%2FEq16kHz%3E%3C%2FAdjustEQ%3E%3C%2FGraphicEQ%3E",
+  "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=1&opt2=0"
+ ],
+ "geq:curve_copy": [
+  "https://192.0.2.10:10443/ajax/audio/set_config?type=10&data=%3CGraphicEQ%3E%3CCurveCopy%3E1%3C%2FCurveCopy%3E%3C%2FGraphicEQ%3E",
+  "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=0&opt2=0"
+ ],
+ "geq:refresh": [
+  "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=0&opt2=0"
+ ],
+ "geq:set_channel=1": [
+  "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=1&opt2=0"
+ ],
+ "geq:set_defaults": [
+  "https://192.0.2.10:10443/ajax/audio/set_config?type=10&data=%3CGraphicEQ%3E%3CSetDefaults%3E1%3C%2FSetDefaults%3E%3C%2FGraphicEQ%3E",
+  "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=0&opt2=0"
+ ],
+ "geq:set_speaker_selection=2": [
+  "https://192.0.2.10:10443/ajax/audio/set_config?type=10&data=%3CGraphicEQ%3E%3CSpeakerSelection%3E2%3C%2FSpeakerSelection%3E%3C%2FGraphicEQ%3E",
+  "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=0&opt2=0"
+ ],
+ "geq_state": {
+  "bands": {
+   "Eq125Hz": -1.0,
+   "Eq16kHz": 1.0,
+   "Eq1kHz": 2.0,
+   "Eq250Hz": 0.5,
+   "Eq2kHz": -0.5,
+   "Eq4kHz": 0.0,
+   "Eq500Hz": 0.0,
+   "Eq63Hz": 0.0,
+   "Eq8kHz": -1.5
+  },
+  "channel_index": 0,
+  "selectable": "111110000000000000000000",
+  "speaker_selection": "2"
+ },
+ "speaker_config:amp_assign=17": [
+  "https://192.0.2.10:10443/ajax/speakers/set_config?type=2&data=%3CAmpAssign%3E%3CAssignMode%3E17%3C%2FAssignMode%3E%3C%2FAmpAssign%3E",
+  "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+ ],
+ "speaker_config:floor_layout=2": [
+  "https://192.0.2.10:10443/ajax/speakers/set_config?type=2&data=%3CAmpAssign%3E%3CFloorLayout%3E2%3C%2FFloorLayout%3E%3C%2FAmpAssign%3E",
+  "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+ ],
+ "speaker_config:height_speaker=2": [
+  "https://192.0.2.10:10443/ajax/speakers/set_config?type=2&data=%3CAmpAssign%3E%3CHeightSpeaker%3E2%3C%2FHeightSpeaker%3E%3C%2FAmpAssign%3E",
+  "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+ ],
+ "video_config:arc=1": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CARC%3E1%3C%2FARC%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:hdmi_control=1": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CHDMIControl%3E1%3C%2FHDMIControl%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:hdmi_pass_through=1": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CHDMIPassThrough%3E1%3C%2FHDMIPassThrough%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:hdmi_power_off_control=3": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CPowerOffControl%3E3%3C%2FPowerOffControl%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:hdmi_power_saving=2": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CPowerSaving%3E2%3C%2FPowerSaving%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:hdmi_signal_format=4": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=8&data=%3CFormat%3E4%3C%2FFormat%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:osd_info=1": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3CInfo%3E1%3C%2FInfo%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:osd_now_playing=2": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3CNowPlaying%3E2%3C%2FNowPlaying%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:osd_volume=3": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3CVolume%3E3%3C%2FVolume%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:pass_through_source=7": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CPassThroughSource%3E%3CSource%3E7%3C%2FSource%3E%3C%2FPassThroughSource%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:rc_select=2": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CRCSelect%3E2%3C%2FRCSelect%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:tv_audio_switching=1": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=3&data=%3CTVAudioSwitching%3E1%3C%2FTVAudioSwitching%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ],
+ "video_config:tv_format=2": [
+  "https://192.0.2.10:10443/ajax/video/set_config?type=9&data=%3CTVFormat%3E2%3C%2FTVFormat%3E",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=3",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=7",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=8",
+  "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ ]
+}

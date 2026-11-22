@@ -1,0 +1,3523 @@
+[
+ {
+  "t": 0.002,
+  "after": "SSFUN ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 0.042,
+  "after": "SSFUN ?",
+  "line": "SSFUNBD VIS"
+ },
+ {
+  "t": 0.058,
+  "after": "SSFUN ?",
+  "line": "SSFUNTV TV Audio"
+ },
+ {
+  "t": 0.058,
+  "after": "SSFUN ?",
+  "line": "SSFUNSAT/CBL AAP"
+ },
+ {
+  "t": 0.061,
+  "after": "SSFUN ?",
+  "line": "SSFUNMPLAY Media Player"
+ },
+ {
+  "t": 0.073,
+  "after": "SSFUN ?",
+  "line": "SSFUNGAME1 NOOT"
+ },
+ {
+  "t": 0.076,
+  "after": "SSFUN ?",
+  "line": "SSFUNAUX1 AUX1"
+ },
+ {
+  "t": 0.082,
+  "after": "SSFUN ?",
+  "line": "SSFUNCD BOOM"
+ },
+ {
+  "t": 0.095,
+  "after": "SSFUN ?",
+  "line": "SSFUNAUX2 MIES"
+ },
+ {
+  "t": 0.096,
+  "after": "SSFUN ?",
+  "line": "SSFUNPHONO Phono"
+ },
+ {
+  "t": 0.105,
+  "after": "SSFUN ?",
+  "line": "SSFUNTUNER Tuner"
+ },
+ {
+  "t": 0.113,
+  "after": "SSFUN ?",
+  "line": "SSFUN END"
+ },
+ {
+  "t": 0.117,
+  "after": "SSFUN ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 0.13,
+  "after": "SSFUN ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 0.175,
+  "after": "SSFUN ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 0.184,
+  "after": "SSFUN ?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 0.225,
+  "after": "SSFUN ?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 0.27,
+  "after": "SSFUN ?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 0.312,
+  "after": "SSFUN ?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 0.356,
+  "after": "SSFUN ?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 0.389,
+  "after": "SSSOD ?",
+  "line": "SSSODBD USE"
+ },
+ {
+  "t": 0.395,
+  "after": "SSSOD ?",
+  "line": "SSSODTV USE"
+ },
+ {
+  "t": 0.402,
+  "after": "SSSOD ?",
+  "line": "SSSODSAT/CBL USE"
+ },
+ {
+  "t": 0.409,
+  "after": "SSSOD ?",
+  "line": "SSSODMPLAY USE"
+ },
+ {
+  "t": 0.416,
+  "after": "SSSOD ?",
+  "line": "SSSODGAME1 USE"
+ },
+ {
+  "t": 0.424,
+  "after": "SSSOD ?",
+  "line": "SSSODAUX1 DEL"
+ },
+ {
+  "t": 0.431,
+  "after": "SSSOD ?",
+  "line": "SSSODCD USE"
+ },
+ {
+  "t": 0.438,
+  "after": "SSSOD ?",
+  "line": "SSSODAUX2 USE"
+ },
+ {
+  "t": 0.446,
+  "after": "SSSOD ?",
+  "line": "SSSODPHONO DEL"
+ },
+ {
+  "t": 0.452,
+  "after": "SSSOD ?",
+  "line": "SSSODTUNER DEL"
+ },
+ {
+  "t": 0.459,
+  "after": "SSSOD ?",
+  "line": "SSSODNET USE"
+ },
+ {
+  "t": 0.467,
+  "after": "SSSOD ?",
+  "line": "SSSOD END"
+ },
+ {
+  "t": 0.474,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 0.482,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 0.525,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 0.567,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 0.61,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 0.655,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 0.698,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 0.743,
+  "after": "SSSOD ?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 0.758,
+  "after": "SSLEV ?",
+  "line": "SSLEVFL 50"
+ },
+ {
+  "t": 0.768,
+  "after": "SSLEV ?",
+  "line": "SSLEVFR 50"
+ },
+ {
+  "t": 0.775,
+  "after": "SSLEV ?",
+  "line": "SSLEVCH 50"
+ },
+ {
+  "t": 0.78,
+  "after": "SSLEV ?",
+  "line": "SSLEVC 50"
+ },
+ {
+  "t": 0.789,
+  "after": "SSLEV ?",
+  "line": "SSLEVSL 50"
+ },
+ {
+  "t": 0.796,
+  "after": "SSLEV ?",
+  "line": "SSLEVSR 50"
+ },
+ {
+  "t": 0.803,
+  "after": "SSLEV ?",
+  "line": "SSLEVSBL 50"
+ },
+ {
+  "t": 0.809,
+  "after": "SSLEV ?",
+  "line": "SSLEVSBR 50"
+ },
+ {
+  "t": 0.817,
+  "after": "SSLEV ?",
+  "line": "SSLEVSB 50"
+ },
+ {
+  "t": 0.826,
+  "after": "SSLEV ?",
+  "line": "SSLEVFHL 50"
+ },
+ {
+  "t": 0.832,
+  "after": "SSLEV ?",
+  "line": "SSLEVFHR 50"
+ },
+ {
+  "t": 0.84,
+  "after": "SSLEV ?",
+  "line": "SSLEVTFL 50"
+ },
+ {
+  "t": 0.845,
+  "after": "SSLEV ?",
+  "line": "SSLEVTFR 50"
+ },
+ {
+  "t": 0.853,
+  "after": "SSLEV ?",
+  "line": "SSLEVTML 50"
+ },
+ {
+  "t": 0.859,
+  "after": "SSLEV ?",
+  "line": "SSLEVTMR 50"
+ },
+ {
+  "t": 0.866,
+  "after": "SSLEV ?",
+  "line": "SSLEVFDL 50"
+ },
+ {
+  "t": 0.875,
+  "after": "SSLEV ?",
+  "line": "SSLEVFDR 50"
+ },
+ {
+  "t": 0.882,
+  "after": "SSLEV ?",
+  "line": "SSLEVSDL 50"
+ },
+ {
+  "t": 0.888,
+  "after": "SSLEV ?",
+  "line": "SSLEVSDR 50"
+ },
+ {
+  "t": 0.897,
+  "after": "SSLEV ?",
+  "line": "SSLEVFWL 50"
+ },
+ {
+  "t": 0.902,
+  "after": "SSLEV ?",
+  "line": "SSLEVFWR 50"
+ },
+ {
+  "t": 0.911,
+  "after": "SSLEV ?",
+  "line": "SSLEVTRL 50"
+ },
+ {
+  "t": 0.916,
+  "after": "SSLEV ?",
+  "line": "SSLEVTRR 50"
+ },
+ {
+  "t": 0.925,
+  "after": "SSLEV ?",
+  "line": "SSLEVRHL 50"
+ },
+ {
+  "t": 0.931,
+  "after": "SSLEV ?",
+  "line": "SSLEVRHR 50"
+ },
+ {
+  "t": 0.941,
+  "after": "SSLEV ?",
+  "line": "SSLEVBDL 50"
+ },
+ {
+  "t": 0.946,
+  "after": "SSLEV ?",
+  "line": "SSLEVBDR 50"
+ },
+ {
+  "t": 0.954,
+  "after": "SSLEV ?",
+  "line": "SSLEVSHL 50"
+ },
+ {
+  "t": 0.962,
+  "after": "SSLEV ?",
+  "line": "SSLEVSHR 50"
+ },
+ {
+  "t": 0.967,
+  "after": "SSLEV ?",
+  "line": "SSLEVTS 50"
+ },
+ {
+  "t": 0.974,
+  "after": "SSLEV ?",
+  "line": "SSLEVSW 50"
+ },
+ {
+  "t": 0.981,
+  "after": "SSLEV ?",
+  "line": "SSLEVSW2 59"
+ },
+ {
+  "t": 0.988,
+  "after": "SSLEV ?",
+  "line": "SSLEVSW3 50"
+ },
+ {
+  "t": 0.994,
+  "after": "SSLEV ?",
+  "line": "SSLEVSW4 50"
+ },
+ {
+  "t": 1.004,
+  "after": "SSLEV ?",
+  "line": "SSLEV END"
+ },
+ {
+  "t": 1.01,
+  "after": "SSLEV ?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 1.016,
+  "after": "SSLEV ?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 1.023,
+  "after": "SSLEV ?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 1.029,
+  "after": "SSLEV ?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 1.063,
+  "after": "SSLEV ?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 1.104,
+  "after": "SSLEV ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 1.133,
+  "after": "SSSDE ?",
+  "line": "SSSDEFL 0360"
+ },
+ {
+  "t": 1.143,
+  "after": "SSSDE ?",
+  "line": "SSSDEFR 0360"
+ },
+ {
+  "t": 1.148,
+  "after": "SSSDE ?",
+  "line": "SSSDEC 0360"
+ },
+ {
+  "t": 1.156,
+  "after": "SSSDE ?",
+  "line": "SSSDESL 0300"
+ },
+ {
+  "t": 1.163,
+  "after": "SSSDE ?",
+  "line": "SSSDESR 0300"
+ },
+ {
+  "t": 1.172,
+  "after": "SSSDE ?",
+  "line": "SSSDESW 0360"
+ },
+ {
+  "t": 1.177,
+  "after": "SSSDE ?",
+  "line": "SSSDESW2 0360"
+ },
+ {
+  "t": 1.184,
+  "after": "SSSDE ?",
+  "line": "SSSDESW3 0360"
+ },
+ {
+  "t": 1.193,
+  "after": "SSSDE ?",
+  "line": "SSSDESW4 0360"
+ },
+ {
+  "t": 1.198,
+  "after": "SSSDE ?",
+  "line": "SSSDESBL 0300"
+ },
+ {
+  "t": 1.206,
+  "after": "SSSDE ?",
+  "line": "SSSDESBR 0300"
+ },
+ {
+  "t": 1.214,
+  "after": "SSSDE ?",
+  "line": "SSSDESB 0300"
+ },
+ {
+  "t": 1.218,
+  "after": "SSSDE ?",
+  "line": "SSSDEFHL 0360"
+ },
+ {
+  "t": 1.226,
+  "after": "SSSDE ?",
+  "line": "SSSDEFHR 0360"
+ },
+ {
+  "t": 1.235,
+  "after": "SSSDE ?",
+  "line": "SSSDETFL 0300"
+ },
+ {
+  "t": 1.242,
+  "after": "SSSDE ?",
+  "line": "SSSDETFR 0300"
+ },
+ {
+  "t": 1.253,
+  "after": "SSSDE ?",
+  "line": "SSSDETML 0300"
+ },
+ {
+  "t": 1.258,
+  "after": "SSSDE ?",
+  "line": "SSSDETMR 0300"
+ },
+ {
+  "t": 1.264,
+  "after": "SSSDE ?",
+  "line": "SSSDEFDL 0360"
+ },
+ {
+  "t": 1.269,
+  "after": "SSSDE ?",
+  "line": "SSSDEFDR 0360"
+ },
+ {
+  "t": 1.277,
+  "after": "SSSDE ?",
+  "line": "SSSDESDL 0300"
+ },
+ {
+  "t": 1.284,
+  "after": "SSSDE ?",
+  "line": "SSSDESDR 0300"
+ },
+ {
+  "t": 1.29,
+  "after": "SSSDE ?",
+  "line": "SSSDETRL 0300"
+ },
+ {
+  "t": 1.298,
+  "after": "SSSDE ?",
+  "line": "SSSDETRR 0300"
+ },
+ {
+  "t": 1.306,
+  "after": "SSSDE ?",
+  "line": "SSSDERHL 0300"
+ },
+ {
+  "t": 1.314,
+  "after": "SSSDE ?",
+  "line": "SSSDERHR 0300"
+ },
+ {
+  "t": 1.321,
+  "after": "SSSDE ?",
+  "line": "SSSDEBDL 0300"
+ },
+ {
+  "t": 1.329,
+  "after": "SSSDE ?",
+  "line": "SSSDEBDR 0300"
+ },
+ {
+  "t": 1.335,
+  "after": "SSSDE ?",
+  "line": "SSSDESHL 0300"
+ },
+ {
+  "t": 1.343,
+  "after": "SSSDE ?",
+  "line": "SSSDESHR 0300"
+ },
+ {
+  "t": 1.35,
+  "after": "SSSDE ?",
+  "line": "SSSDETS 0300"
+ },
+ {
+  "t": 1.355,
+  "after": "SSSDE ?",
+  "line": "SSSDECH 0360"
+ },
+ {
+  "t": 1.363,
+  "after": "SSSDE ?",
+  "line": "SSSDESTP 01M"
+ },
+ {
+  "t": 1.371,
+  "after": "SSSDE ?",
+  "line": "SSSDE END"
+ },
+ {
+  "t": 1.382,
+  "after": "SSSDE ?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 1.387,
+  "after": "SSSDE ?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 1.394,
+  "after": "SSSDE ?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 1.403,
+  "after": "SSSDE ?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 1.426,
+  "after": "SSSDE ?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 1.47,
+  "after": "SSSDE ?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 1.497,
+  "after": "SSSPC ?",
+  "line": "SSSPCFRO YES"
+ },
+ {
+  "t": 1.504,
+  "after": "SSSPC ?",
+  "line": "SSSPCCEN YES"
+ },
+ {
+  "t": 1.512,
+  "after": "SSSPC ?",
+  "line": "SSSPCSUA YES"
+ },
+ {
+  "t": 1.518,
+  "after": "SSSPC ?",
+  "line": "SSSPCSBK NO"
+ },
+ {
+  "t": 1.528,
+  "after": "SSSPC ?",
+  "line": "SSSPCSBK 2SP"
+ },
+ {
+  "t": 1.534,
+  "after": "SSSPC ?",
+  "line": "SSSPCSWM STD"
+ },
+ {
+  "t": 1.539,
+  "after": "SSSPC ?",
+  "line": "SSSPCSWL 2LR"
+ },
+ {
+  "t": 1.548,
+  "after": "SSSPC ?",
+  "line": "SSSPCSWF 1SP"
+ },
+ {
+  "t": 1.555,
+  "after": "SSSPC ?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 1.584,
+  "after": "SSSPC ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 1.604,
+  "after": "SSSPC ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 1.629,
+  "after": "SSSPC ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 1.672,
+  "after": "SSSPC ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 1.715,
+  "after": "SSSPC ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 1.759,
+  "after": "SSSPC ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 1.98,
+  "after": "SSCFR ?",
+  "line": "SSCFRFRO FUL"
+ },
+ {
+  "t": 1.986,
+  "after": "SSCFR ?",
+  "line": "SSCFRCEN 080"
+ },
+ {
+  "t": 1.992,
+  "after": "SSCFR ?",
+  "line": "SSCFRSUA FUL"
+ },
+ {
+  "t": 2.0,
+  "after": "SSCFR ?",
+  "line": "SSCFRSBK 080"
+ },
+ {
+  "t": 2.006,
+  "after": "SSCFR ?",
+  "line": "SSCFRFRH 080"
+ },
+ {
+  "t": 2.014,
+  "after": "SSCFR ?",
+  "line": "SSCFRTFR 080"
+ },
+ {
+  "t": 2.023,
+  "after": "SSCFR ?",
+  "line": "SSCFRTPM 080"
+ },
+ {
+  "t": 2.029,
+  "after": "SSCFR ?",
+  "line": "SSCFRFRD 080"
+ },
+ {
+  "t": 2.034,
+  "after": "SSCFR ?",
+  "line": "SSCFRSUD 080"
+ },
+ {
+  "t": 2.043,
+  "after": "SSCFR ?",
+  "line": "SSCFRTPR 080"
+ },
+ {
+  "t": 2.05,
+  "after": "SSCFR ?",
+  "line": "SSCFRRHE 080"
+ },
+ {
+  "t": 2.058,
+  "after": "SSCFR ?",
+  "line": "SSCFRBKD 080"
+ },
+ {
+  "t": 2.065,
+  "after": "SSCFR ?",
+  "line": "SSCFRSHE 080"
+ },
+ {
+  "t": 2.071,
+  "after": "SSCFR ?",
+  "line": "SSCFRTPS 080"
+ },
+ {
+  "t": 2.079,
+  "after": "SSCFR ?",
+  "line": "SSCFRCHE 080"
+ },
+ {
+  "t": 2.085,
+  "after": "SSCFR ?",
+  "line": "SSCFR IDV",
+  "synthetic": true
+ },
+ {
+  "t": 2.085,
+  "after": "SSCFR ?",
+  "line": "SSCFRALL 080",
+  "synthetic": true
+ },
+ {
+  "t": 2.085,
+  "after": "SSCFR ?",
+  "line": "SSCFR END"
+ },
+ {
+  "t": 2.536,
+  "after": "SSSMG ?",
+  "line": "SSSMG PUR"
+ },
+ {
+  "t": 3.363,
+  "after": "MSQUICK ?",
+  "line": "MSQUICK0"
+ },
+ {
+  "t": 3.809,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 3.854,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV020Multi Ch In"
+ },
+ {
+  "t": 3.897,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV030Multi In + DSurr"
+ },
+ {
+  "t": 3.938,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 3.982,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 4.025,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 4.072,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 4.115,
+  "after": "OPSMLALL ?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 4.158,
+  "after": "OPSML ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 4.203,
+  "after": "OPSML ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 4.25,
+  "after": "OPSML ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 4.295,
+  "after": "OPSML ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 4.304,
+  "after": "OPSML ?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 4.346,
+  "after": "OPSML ?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 4.38,
+  "after": "OPSML ?",
+  "line": "SSINFAISSIG 02"
+ },
+ {
+  "t": 4.394,
+  "after": "OPSML ?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 4.442,
+  "after": "OPSML ?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 4.449,
+  "after": "OPSML ?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 4.504,
+  "after": "OPSML ?",
+  "line": "SSINFAISFSV 48K"
+ },
+ {
+  "t": 4.522,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 4.566,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 4.597,
+  "after": "SSINFAISSIG ?",
+  "line": "SSINFAISSIG 02"
+ },
+ {
+  "t": 4.618,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 4.649,
+  "after": "SSINFAISSIG ?",
+  "line": "SSINFAISFOR 3/2/.1"
+ },
+ {
+  "t": 4.662,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 4.709,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 4.717,
+  "after": "SSINFAISSIG ?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 4.781,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 4.786,
+  "after": "SSINFAISSIG ?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 4.814,
+  "after": "SSINFAISSIG ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 4.872,
+  "after": "SSINFAISSIG ?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 4.886,
+  "after": "SSINFAISFSV ?",
+  "line": "CVFL 50"
+ },
+ {
+  "t": 4.891,
+  "after": "SSINFAISFSV ?",
+  "line": "CVFR 50"
+ },
+ {
+  "t": 4.9,
+  "after": "SSINFAISFSV ?",
+  "line": "CVC 50"
+ },
+ {
+  "t": 4.907,
+  "after": "SSINFAISFSV ?",
+  "line": "CVSW 50"
+ },
+ {
+  "t": 4.913,
+  "after": "SSINFAISFSV ?",
+  "line": "CVSL 50"
+ },
+ {
+  "t": 4.921,
+  "after": "SSINFAISFSV ?",
+  "line": "CVSR 50"
+ },
+ {
+  "t": 4.928,
+  "after": "SSINFAISFSV ?",
+  "line": "CVEND"
+ },
+ {
+  "t": 4.963,
+  "after": "SSINFAISFSV ?",
+  "line": "DCAUTO"
+ },
+ {
+  "t": 4.974,
+  "after": "SSINFAISFSV ?",
+  "line": "SSINFAISFSV 48K"
+ },
+ {
+  "t": 4.987,
+  "after": "SSINFAISFSV ?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 5.006,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFL 50"
+ },
+ {
+  "t": 5.012,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFR 50"
+ },
+ {
+  "t": 5.019,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVCH 50"
+ },
+ {
+  "t": 5.028,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVC 50"
+ },
+ {
+  "t": 5.034,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSL 50"
+ },
+ {
+  "t": 5.039,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSR 50"
+ },
+ {
+  "t": 5.047,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSBL 50"
+ },
+ {
+  "t": 5.056,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSBR 50"
+ },
+ {
+  "t": 5.061,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSB 50"
+ },
+ {
+  "t": 5.069,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFHL 50"
+ },
+ {
+  "t": 5.078,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFHR 50"
+ },
+ {
+  "t": 5.083,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTFL 50"
+ },
+ {
+  "t": 5.09,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTFR 50"
+ },
+ {
+  "t": 5.1,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTML 50"
+ },
+ {
+  "t": 5.106,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTMR 50"
+ },
+ {
+  "t": 5.112,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFDL 50"
+ },
+ {
+  "t": 5.12,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFDR 50"
+ },
+ {
+  "t": 5.128,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSDL 50"
+ },
+ {
+  "t": 5.135,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSDR 50"
+ },
+ {
+  "t": 5.143,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFWL 50"
+ },
+ {
+  "t": 5.146,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVFWR 50"
+ },
+ {
+  "t": 5.157,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTRL 50"
+ },
+ {
+  "t": 5.167,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTRR 50"
+ },
+ {
+  "t": 5.168,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVRHL 50"
+ },
+ {
+  "t": 5.178,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVRHR 50"
+ },
+ {
+  "t": 5.187,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVBDL 50"
+ },
+ {
+  "t": 5.195,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVBDR 50"
+ },
+ {
+  "t": 5.203,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSHL 50"
+ },
+ {
+  "t": 5.209,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSHR 50"
+ },
+ {
+  "t": 5.216,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVTS 50"
+ },
+ {
+  "t": 5.226,
+  "after": "SSINFAISFSV ?",
+  "line": "SSLEVSW 50"
+ },
+ {
+  "t": 5.231,
+  "after": "SSINFAISFOR ?",
+  "line": "SSLEVSW2 59"
+ },
+ {
+  "t": 5.239,
+  "after": "SSINFAISFOR ?",
+  "line": "SSLEVSW3 50"
+ },
+ {
+  "t": 5.246,
+  "after": "SSINFAISFOR ?",
+  "line": "SSLEVSW4 50"
+ },
+ {
+  "t": 5.254,
+  "after": "SSINFAISFOR ?",
+  "line": "SSLEV END"
+ },
+ {
+  "t": 5.262,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 5.269,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCFRO YES"
+ },
+ {
+  "t": 5.278,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCCEN YES"
+ },
+ {
+  "t": 5.283,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCSUA YES"
+ },
+ {
+  "t": 5.291,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCSBK NO"
+ },
+ {
+  "t": 5.299,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCSBK 2SP"
+ },
+ {
+  "t": 5.309,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCSWM STD"
+ },
+ {
+  "t": 5.318,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCSWL 2LR"
+ },
+ {
+  "t": 5.324,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSPCSWF 1SP"
+ },
+ {
+  "t": 5.332,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 5.34,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 5.347,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRFRO FUL"
+ },
+ {
+  "t": 5.354,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRCEN 080"
+ },
+ {
+  "t": 5.36,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRSUA FUL"
+ },
+ {
+  "t": 5.367,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRSBK 080"
+ },
+ {
+  "t": 5.375,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRFRH 080"
+ },
+ {
+  "t": 5.382,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRTFR 080"
+ },
+ {
+  "t": 5.393,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRTPM 080"
+ },
+ {
+  "t": 5.401,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRFRD 080"
+ },
+ {
+  "t": 5.41,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRSUD 080"
+ },
+ {
+  "t": 5.415,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRTPR 080"
+ },
+ {
+  "t": 5.424,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRRHE 080"
+ },
+ {
+  "t": 5.431,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRBKD 080"
+ },
+ {
+  "t": 5.435,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRSHE 080"
+ },
+ {
+  "t": 5.445,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRTPS 080"
+ },
+ {
+  "t": 5.453,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRCHE 080"
+ },
+ {
+  "t": 5.457,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFR IDV",
+  "synthetic": true
+ },
+ {
+  "t": 5.457,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFRALL 080",
+  "synthetic": true
+ },
+ {
+  "t": 5.457,
+  "after": "SSINFAISFOR ?",
+  "line": "SSCFR END"
+ },
+ {
+  "t": 5.464,
+  "after": "SSINFAISFOR ?",
+  "line": "SSINFAISFOR 3/2/.1"
+ },
+ {
+  "t": 5.474,
+  "after": "SSINFAISFOR ?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 5.479,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDEFL 0360"
+ },
+ {
+  "t": 5.487,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDEFR 0360"
+ },
+ {
+  "t": 5.495,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDEC 0360"
+ },
+ {
+  "t": 5.504,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESL 0300"
+ },
+ {
+  "t": 5.509,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESR 0300"
+ },
+ {
+  "t": 5.516,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESW 0360"
+ },
+ {
+  "t": 5.526,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESW2 0360"
+ },
+ {
+  "t": 5.53,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESW3 0360"
+ },
+ {
+  "t": 5.537,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESW4 0360"
+ },
+ {
+  "t": 5.547,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESBL 0300"
+ },
+ {
+  "t": 5.551,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESBR 0300"
+ },
+ {
+  "t": 5.56,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDESB 0300"
+ },
+ {
+  "t": 5.566,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDEFHL 0360"
+ },
+ {
+  "t": 5.573,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDEFHR 0360"
+ },
+ {
+  "t": 5.58,
+  "after": "SSINFAISFOR ?",
+  "line": "SSSDETFL 0300"
+ },
+ {
+  "t": 5.592,
+  "after": "SYSDA ?",
+  "line": "SSSDETFR 0300"
+ },
+ {
+  "t": 5.6,
+  "after": "SYSDA ?",
+  "line": "SSSDETML 0300"
+ },
+ {
+  "t": 5.608,
+  "after": "SYSDA ?",
+  "line": "SSSDETMR 0300"
+ },
+ {
+  "t": 5.614,
+  "after": "SYSDA ?",
+  "line": "SSSDEFDL 0360"
+ },
+ {
+  "t": 5.621,
+  "after": "SYSDA ?",
+  "line": "SSSDEFDR 0360"
+ },
+ {
+  "t": 5.629,
+  "after": "SYSDA ?",
+  "line": "SSSDESDL 0300"
+ },
+ {
+  "t": 5.635,
+  "after": "SYSDA ?",
+  "line": "SSSDESDR 0300"
+ },
+ {
+  "t": 5.643,
+  "after": "SYSDA ?",
+  "line": "SSSDETRL 0300"
+ },
+ {
+  "t": 5.651,
+  "after": "SYSDA ?",
+  "line": "SSSDETRR 0300"
+ },
+ {
+  "t": 5.656,
+  "after": "SYSDA ?",
+  "line": "SSSDERHL 0300"
+ },
+ {
+  "t": 5.663,
+  "after": "SYSDA ?",
+  "line": "SSSDERHR 0300"
+ },
+ {
+  "t": 5.671,
+  "after": "SYSDA ?",
+  "line": "SSSDEBDL 0300"
+ },
+ {
+  "t": 5.678,
+  "after": "SYSDA ?",
+  "line": "SSSDEBDR 0300"
+ },
+ {
+  "t": 5.685,
+  "after": "SYSDA ?",
+  "line": "SSSDESHL 0300"
+ },
+ {
+  "t": 5.694,
+  "after": "SYSDA ?",
+  "line": "SSSDESHR 0300"
+ },
+ {
+  "t": 5.698,
+  "after": "SYSDA ?",
+  "line": "SSSDETS 0300"
+ },
+ {
+  "t": 5.706,
+  "after": "SYSDA ?",
+  "line": "SSSDECH 0360"
+ },
+ {
+  "t": 5.715,
+  "after": "SYSDA ?",
+  "line": "SSSDESTP 01M"
+ },
+ {
+  "t": 5.72,
+  "after": "SYSDA ?",
+  "line": "SSSDE END"
+ },
+ {
+  "t": 5.727,
+  "after": "SYSDA ?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 5.736,
+  "after": "SYSDA ?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 5.742,
+  "after": "SYSDA ?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 5.747,
+  "after": "SYSDA ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 5.755,
+  "after": "SYSDA ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 5.763,
+  "after": "SYSDA ?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 5.768,
+  "after": "SYSDA ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 5.796,
+  "after": "SYSDA ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 5.804,
+  "after": "SYSDA ?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 5.846,
+  "after": "SYSDA ?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 5.889,
+  "after": "SYSDA ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 5.934,
+  "after": "SYSDA ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 5.98,
+  "after": "SYSMI ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 5.987,
+  "after": "SYSMI ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 6.039,
+  "after": "SYSMI ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 6.082,
+  "after": "SYSMI ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 6.43,
+  "after": "SYSMI ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 6.471,
+  "after": "PW?",
+  "line": "PWON"
+ },
+ {
+  "t": 6.538,
+  "after": "PW?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 6.584,
+  "after": "PW?",
+  "line": "OPSMLALL MOV020Multi Ch In"
+ },
+ {
+  "t": 6.626,
+  "after": "PW?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 6.671,
+  "after": "PW?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 6.72,
+  "after": "PW?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 6.763,
+  "after": "PW?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 6.769,
+  "after": "PW?",
+  "line": "OPSMLALL MOV030Multi In + DSurr"
+ },
+ {
+  "t": 6.813,
+  "after": "PW?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 6.845,
+  "after": "ZM?",
+  "line": "ZMON"
+ },
+ {
+  "t": 6.864,
+  "after": "ZM?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 6.902,
+  "after": "ZM?",
+  "line": "SLPOFF"
+ },
+ {
+  "t": 6.919,
+  "after": "ZM?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 6.962,
+  "after": "ZM?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 7.006,
+  "after": "ZM?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 7.048,
+  "after": "ZM?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 7.094,
+  "after": "ZM?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 7.137,
+  "after": "ZM?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 7.18,
+  "after": "ZM?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 7.206,
+  "after": "MV?",
+  "line": "MV43"
+ },
+ {
+  "t": 7.215,
+  "after": "MV?",
+  "line": "MVMAX 70"
+ },
+ {
+  "t": 7.24,
+  "after": "MV?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 7.283,
+  "after": "MV?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 7.326,
+  "after": "MV?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 7.369,
+  "after": "MV?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 7.413,
+  "after": "MV?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 7.457,
+  "after": "MV?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 7.498,
+  "after": "MV?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 7.542,
+  "after": "MV?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 7.576,
+  "after": "MU?",
+  "line": "MUOFF"
+ },
+ {
+  "t": 7.597,
+  "after": "MU?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 7.64,
+  "after": "MU?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 7.681,
+  "after": "MU?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 7.727,
+  "after": "MU?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 7.769,
+  "after": "MU?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 7.813,
+  "after": "MU?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 7.856,
+  "after": "MU?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 7.9,
+  "after": "MU?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 7.927,
+  "after": "SI?",
+  "line": "SITV"
+ },
+ {
+  "t": 7.947,
+  "after": "SI?",
+  "line": "SVOFF"
+ },
+ {
+  "t": 7.959,
+  "after": "SI?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 7.99,
+  "after": "SI?",
+  "line": "SVBD"
+ },
+ {
+  "t": 7.995,
+  "after": "SI?",
+  "line": "VSSCHOFF"
+ },
+ {
+  "t": 8.004,
+  "after": "SI?",
+  "line": "VSVPMAUTO"
+ },
+ {
+  "t": 8.028,
+  "after": "SI?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 8.057,
+  "after": "SI?",
+  "line": "OPALSSET ON"
+ },
+ {
+  "t": 8.065,
+  "after": "SI?",
+  "line": "OPALSDSP ON"
+ },
+ {
+  "t": 8.074,
+  "after": "SI?",
+  "line": "OPALSVAL 000"
+ },
+ {
+  "t": 8.084,
+  "after": "SI?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 8.127,
+  "after": "SI?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 8.17,
+  "after": "SI?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 8.214,
+  "after": "SI?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 8.435,
+  "after": "MS?",
+  "line": "MSMULTI CH IN"
+ },
+ {
+  "t": 8.449,
+  "after": "MS?",
+  "line": "PSDRC OFF"
+ },
+ {
+  "t": 8.458,
+  "after": "MS?",
+  "line": "PSLFE 00"
+ },
+ {
+  "t": 8.469,
+  "after": "MS?",
+  "line": "PSBAS 50"
+ },
+ {
+  "t": 8.48,
+  "after": "MS?",
+  "line": "PSTRE 50"
+ },
+ {
+  "t": 8.489,
+  "after": "MS?",
+  "line": "PSTONE CTRL OFF"
+ },
+ {
+  "t": 8.925,
+  "after": "SV?",
+  "line": "SVOFF"
+ },
+ {
+  "t": 8.963,
+  "after": "SV?",
+  "line": "SVBD"
+ },
+ {
+  "t": 8.971,
+  "after": "SV?",
+  "line": "VSSCHOFF"
+ },
+ {
+  "t": 8.981,
+  "after": "SV?",
+  "line": "VSVPMAUTO"
+ },
+ {
+  "t": 8.995,
+  "after": "SV?",
+  "line": "SSINFAISSIG 02"
+ },
+ {
+  "t": 9.033,
+  "after": "SV?",
+  "line": "OPALSSET ON"
+ },
+ {
+  "t": 9.041,
+  "after": "SV?",
+  "line": "OPALSDSP ON"
+ },
+ {
+  "t": 9.048,
+  "after": "SV?",
+  "line": "OPALSVAL 000"
+ },
+ {
+  "t": 9.06,
+  "after": "SV?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 9.119,
+  "after": "SV?",
+  "line": "SSINFAISFSV 48K"
+ },
+ {
+  "t": 9.162,
+  "after": "SV?",
+  "line": "SSINFAISFOR 3/2/.1"
+ },
+ {
+  "t": 9.255,
+  "after": "SV?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 9.305,
+  "after": "PSBAS ?",
+  "line": "PSBAS 50"
+ },
+ {
+  "t": 9.372,
+  "after": "PSBAS ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 9.47,
+  "after": "PSBAS ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 9.509,
+  "after": "PSBAS ?",
+  "line": "CVFL 50"
+ },
+ {
+  "t": 9.516,
+  "after": "PSBAS ?",
+  "line": "CVFR 50"
+ },
+ {
+  "t": 9.524,
+  "after": "PSBAS ?",
+  "line": "CVC 50"
+ },
+ {
+  "t": 9.529,
+  "after": "PSBAS ?",
+  "line": "CVSW 50"
+ },
+ {
+  "t": 9.537,
+  "after": "PSBAS ?",
+  "line": "CVSL 50"
+ },
+ {
+  "t": 9.544,
+  "after": "PSBAS ?",
+  "line": "CVSR 50"
+ },
+ {
+  "t": 9.55,
+  "after": "PSBAS ?",
+  "line": "CVEND"
+ },
+ {
+  "t": 9.579,
+  "after": "PSBAS ?",
+  "line": "SSLEVFL 50"
+ },
+ {
+  "t": 9.588,
+  "after": "PSBAS ?",
+  "line": "SSLEVFR 50"
+ },
+ {
+  "t": 9.594,
+  "after": "PSBAS ?",
+  "line": "SSLEVCH 50"
+ },
+ {
+  "t": 9.601,
+  "after": "PSBAS ?",
+  "line": "SSLEVC 50"
+ },
+ {
+  "t": 9.608,
+  "after": "PSBAS ?",
+  "line": "SSLEVSL 50"
+ },
+ {
+  "t": 9.613,
+  "after": "PSTRE ?",
+  "line": "SSLEVSR 50"
+ },
+ {
+  "t": 9.629,
+  "after": "PSTRE ?",
+  "line": "SSLEVSBL 50"
+ },
+ {
+  "t": 9.635,
+  "after": "PSTRE ?",
+  "line": "SSLEVSBR 50"
+ },
+ {
+  "t": 9.641,
+  "after": "PSTRE ?",
+  "line": "SSLEVSB 50"
+ },
+ {
+  "t": 9.648,
+  "after": "PSTRE ?",
+  "line": "SSLEVFHL 50"
+ },
+ {
+  "t": 9.654,
+  "after": "PSTRE ?",
+  "line": "SSLEVFHR 50"
+ },
+ {
+  "t": 9.661,
+  "after": "PSTRE ?",
+  "line": "SSLEVTFL 50"
+ },
+ {
+  "t": 9.671,
+  "after": "PSTRE ?",
+  "line": "SSLEVTFR 50"
+ },
+ {
+  "t": 9.675,
+  "after": "PSTRE ?",
+  "line": "SSLEVTML 50"
+ },
+ {
+  "t": 9.688,
+  "after": "PSTRE ?",
+  "line": "SSLEVTMR 50"
+ },
+ {
+  "t": 9.694,
+  "after": "PSTRE ?",
+  "line": "SSLEVFDL 50"
+ },
+ {
+  "t": 9.702,
+  "after": "PSTRE ?",
+  "line": "SSLEVFDR 50"
+ },
+ {
+  "t": 9.71,
+  "after": "PSTRE ?",
+  "line": "SSLEVSDL 50"
+ },
+ {
+  "t": 9.715,
+  "after": "PSTRE ?",
+  "line": "SSLEVSDR 50"
+ },
+ {
+  "t": 9.725,
+  "after": "PSTRE ?",
+  "line": "SSLEVFWL 50"
+ },
+ {
+  "t": 9.729,
+  "after": "PSTRE ?",
+  "line": "SSLEVFWR 50"
+ },
+ {
+  "t": 9.739,
+  "after": "PSTRE ?",
+  "line": "SSLEVTRL 50"
+ },
+ {
+  "t": 9.747,
+  "after": "PSTRE ?",
+  "line": "SSLEVTRR 50"
+ },
+ {
+  "t": 9.751,
+  "after": "PSTRE ?",
+  "line": "SSLEVRHL 50"
+ },
+ {
+  "t": 9.76,
+  "after": "PSTRE ?",
+  "line": "SSLEVRHR 50"
+ },
+ {
+  "t": 9.767,
+  "after": "PSTRE ?",
+  "line": "SSLEVBDL 50"
+ },
+ {
+  "t": 9.773,
+  "after": "PSTRE ?",
+  "line": "SSLEVBDR 50"
+ },
+ {
+  "t": 9.781,
+  "after": "PSTRE ?",
+  "line": "SSLEVSHL 50"
+ },
+ {
+  "t": 9.787,
+  "after": "PSTRE ?",
+  "line": "SSLEVSHR 50"
+ },
+ {
+  "t": 9.794,
+  "after": "PSTRE ?",
+  "line": "SSLEVTS 50"
+ },
+ {
+  "t": 9.802,
+  "after": "PSTRE ?",
+  "line": "SSLEVSW 50"
+ },
+ {
+  "t": 9.809,
+  "after": "PSTRE ?",
+  "line": "SSLEVSW2 59"
+ },
+ {
+  "t": 9.815,
+  "after": "PSTRE ?",
+  "line": "SSLEVSW3 50"
+ },
+ {
+  "t": 9.823,
+  "after": "PSTRE ?",
+  "line": "SSLEVSW4 50"
+ },
+ {
+  "t": 9.832,
+  "after": "PSTRE ?",
+  "line": "SSLEV END"
+ },
+ {
+  "t": 9.836,
+  "after": "PSTRE ?",
+  "line": "DCAUTO"
+ },
+ {
+  "t": 9.846,
+  "after": "PSTRE ?",
+  "line": "PSTRE 50"
+ },
+ {
+  "t": 9.851,
+  "after": "PSTRE ?",
+  "line": "SSSPCFRO YES"
+ },
+ {
+  "t": 9.86,
+  "after": "PSTRE ?",
+  "line": "SSSPCCEN YES"
+ },
+ {
+  "t": 9.868,
+  "after": "PSTRE ?",
+  "line": "SSSPCSUA YES"
+ },
+ {
+  "t": 9.874,
+  "after": "PSTRE ?",
+  "line": "SSSPCSBK NO"
+ },
+ {
+  "t": 9.88,
+  "after": "PSTRE ?",
+  "line": "SSSPCSBK 2SP"
+ },
+ {
+  "t": 9.889,
+  "after": "PSTRE ?",
+  "line": "SSSPCSWM STD"
+ },
+ {
+  "t": 9.897,
+  "after": "PSTRE ?",
+  "line": "SSSPCSWL 2LR"
+ },
+ {
+  "t": 9.902,
+  "after": "PSTRE ?",
+  "line": "SSSPCSWF 1SP"
+ },
+ {
+  "t": 9.911,
+  "after": "PSTRE ?",
+  "line": "SSCFRFRO FUL"
+ },
+ {
+  "t": 9.917,
+  "after": "PSTRE ?",
+  "line": "SSCFRCEN 080"
+ },
+ {
+  "t": 9.923,
+  "after": "PSTRE ?",
+  "line": "SSCFRSUA FUL"
+ },
+ {
+  "t": 9.932,
+  "after": "PSTRE ?",
+  "line": "SSCFRSBK 080"
+ },
+ {
+  "t": 9.937,
+  "after": "PSTRE ?",
+  "line": "SSCFRFRH 080"
+ },
+ {
+  "t": 9.944,
+  "after": "PSTRE ?",
+  "line": "SSCFRTFR 080"
+ },
+ {
+  "t": 9.951,
+  "after": "PSTRE ?",
+  "line": "SSCFRTPM 080"
+ },
+ {
+  "t": 9.96,
+  "after": "PSTRE ?",
+  "line": "SSCFRFRD 080"
+ },
+ {
+  "t": 9.966,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRSUD 080"
+ },
+ {
+  "t": 9.973,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRTPR 080"
+ },
+ {
+  "t": 9.98,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRRHE 080"
+ },
+ {
+  "t": 9.987,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRBKD 080"
+ },
+ {
+  "t": 9.995,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRSHE 080"
+ },
+ {
+  "t": 10.003,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRTPS 080"
+ },
+ {
+  "t": 10.009,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRCHE 080"
+ },
+ {
+  "t": 10.015,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFR IDV",
+  "synthetic": true
+ },
+ {
+  "t": 10.015,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFRALL 080",
+  "synthetic": true
+ },
+ {
+  "t": 10.015,
+  "after": "PSTONE CTRL ?",
+  "line": "SSCFR END"
+ },
+ {
+  "t": 10.025,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEFL 0360"
+ },
+ {
+  "t": 10.035,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEFR 0360"
+ },
+ {
+  "t": 10.043,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEC 0360"
+ },
+ {
+  "t": 10.05,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESL 0300"
+ },
+ {
+  "t": 10.056,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESR 0300"
+ },
+ {
+  "t": 10.066,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESW 0360"
+ },
+ {
+  "t": 10.07,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESW2 0360"
+ },
+ {
+  "t": 10.079,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESW3 0360"
+ },
+ {
+  "t": 10.087,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESW4 0360"
+ },
+ {
+  "t": 10.091,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESBL 0300"
+ },
+ {
+  "t": 10.1,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESBR 0300"
+ },
+ {
+  "t": 10.11,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESB 0300"
+ },
+ {
+  "t": 10.119,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEFHL 0360"
+ },
+ {
+  "t": 10.128,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEFHR 0360"
+ },
+ {
+  "t": 10.133,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETFL 0300"
+ },
+ {
+  "t": 10.142,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETFR 0300"
+ },
+ {
+  "t": 10.148,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETML 0300"
+ },
+ {
+  "t": 10.156,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETMR 0300"
+ },
+ {
+  "t": 10.162,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEFDL 0360"
+ },
+ {
+  "t": 10.169,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEFDR 0360"
+ },
+ {
+  "t": 10.175,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESDL 0300"
+ },
+ {
+  "t": 10.183,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESDR 0300"
+ },
+ {
+  "t": 10.19,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETRL 0300"
+ },
+ {
+  "t": 10.195,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETRR 0300"
+ },
+ {
+  "t": 10.205,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDERHL 0300"
+ },
+ {
+  "t": 10.211,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDERHR 0300"
+ },
+ {
+  "t": 10.219,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEBDL 0300"
+ },
+ {
+  "t": 10.225,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDEBDR 0300"
+ },
+ {
+  "t": 10.232,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESHL 0300"
+ },
+ {
+  "t": 10.238,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESHR 0300"
+ },
+ {
+  "t": 10.248,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDETS 0300"
+ },
+ {
+  "t": 10.256,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDECH 0360"
+ },
+ {
+  "t": 10.261,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDESTP 01M"
+ },
+ {
+  "t": 10.269,
+  "after": "PSTONE CTRL ?",
+  "line": "SSSDE END"
+ },
+ {
+  "t": 10.275,
+  "after": "PSTONE CTRL ?",
+  "line": "PSTONE CTRL OFF"
+ },
+ {
+  "t": 10.283,
+  "after": "PSTONE CTRL ?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 10.288,
+  "after": "PSTONE CTRL ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 10.296,
+  "after": "PSTONE CTRL ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 10.301,
+  "after": "PSTONE CTRL ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 10.321,
+  "after": "PSTONE CTRL ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 10.333,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV020Multi Ch In"
+ },
+ {
+  "t": 10.34,
+  "after": "PSDRC ?",
+  "line": "PSDRC OFF"
+ },
+ {
+  "t": 10.381,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV030Multi In + DSurr"
+ },
+ {
+  "t": 10.425,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 10.468,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 10.51,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 10.553,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 10.596,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 10.64,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 10.686,
+  "after": "PSDRC ?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 10.701,
+  "after": "PSLFE ?",
+  "line": "PSLFE 00"
+ },
+ {
+  "t": 10.739,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 10.783,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 10.826,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 10.868,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 10.91,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 10.957,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 10.998,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 11.044,
+  "after": "PSLFE ?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 11.075,
+  "after": "PSDYNEQ ?",
+  "line": "PSDYNEQ OFF"
+ },
+ {
+  "t": 11.102,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 11.145,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 11.189,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 11.233,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 11.277,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 11.318,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 11.361,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 11.405,
+  "after": "PSDYNEQ ?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 11.447,
+  "after": "PSGEQ ?",
+  "line": "PSGEQ OFF"
+ },
+ {
+  "t": 11.459,
+  "after": "PSGEQ ?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 11.502,
+  "after": "PSGEQ ?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 11.545,
+  "after": "PSGEQ ?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 11.588,
+  "after": "PSGEQ ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 11.635,
+  "after": "PSGEQ ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 11.679,
+  "after": "PSGEQ ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 11.722,
+  "after": "PSGEQ ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 11.765,
+  "after": "PSGEQ ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 12.116,
+  "after": "PSRSZ ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 12.559,
+  "after": "PSHEQ ?",
+  "line": "PSHEQ OFF"
+ },
+ {
+  "t": 13.395,
+  "after": "PSDYNVOL ?",
+  "line": "PSDYNVOL OFF"
+ },
+ {
+  "t": 13.827,
+  "after": "PSREFLEV ?",
+  "line": "PSREFLEV 0"
+ },
+ {
+  "t": 14.146,
+  "after": "PSREFLEV ?",
+  "line": "SSINFAISSIG 02"
+ },
+ {
+  "t": 14.199,
+  "after": "PSLOM ?",
+  "line": "OPINFINS 22222211111111000000"
+ },
+ {
+  "t": 14.252,
+  "after": "PSLOM ?",
+  "line": "PSLOM OFF"
+ },
+ {
+  "t": 14.329,
+  "after": "PSLOM ?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 14.399,
+  "after": "PSLOM ?",
+  "line": "OPINFASP 22222200000000000000000000000000"
+ },
+ {
+  "t": 14.616,
+  "after": "PSCINEMA EQ. ?",
+  "line": "PSCINEMA EQ.OFF"
+ },
+ {
+  "t": 15.057,
+  "after": "PSMULTEQ: ?",
+  "line": "PSMULTEQ:OFF"
+ },
+ {
+  "t": 15.164,
+  "after": "PSMULTEQ: ?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 15.208,
+  "after": "PSMULTEQ: ?",
+  "line": "OPSMLALL MOV020Multi Ch In"
+ },
+ {
+  "t": 15.249,
+  "after": "PSMULTEQ: ?",
+  "line": "OPSMLALL MOV030Multi In + DSurr"
+ },
+ {
+  "t": 15.294,
+  "after": "PSMULTEQ: ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 15.339,
+  "after": "PSMULTEQ: ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 15.385,
+  "after": "PSMULTEQ: ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 15.421,
+  "after": "PSRSTR ?",
+  "line": "PSRSTR OFF"
+ },
+ {
+  "t": 15.446,
+  "after": "PSRSTR ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 15.454,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 15.498,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 15.537,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 15.583,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 15.625,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 15.668,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 15.711,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 15.754,
+  "after": "PSRSTR ?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 15.768,
+  "after": "PSSWR ?",
+  "line": "PSSWR ON"
+ },
+ {
+  "t": 15.81,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 15.854,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 15.897,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 15.94,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 15.985,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 16.027,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 16.069,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 16.114,
+  "after": "PSSWR ?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 16.127,
+  "after": "PSSWL ?",
+  "line": "PSSWL 50"
+ },
+ {
+  "t": 16.167,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 16.209,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 16.252,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 16.297,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 16.341,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 16.381,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 16.427,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 16.47,
+  "after": "PSSWL ?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 16.501,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMADIS REL"
+ },
+ {
+  "t": 16.507,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMAMLV MUT"
+ },
+ {
+  "t": 16.515,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMALIM 70"
+ },
+ {
+  "t": 16.523,
+  "after": "SSVCTZMA ?",
+  "line": "SSVCTZMAPON LAS"
+ },
+ {
+  "t": 16.537,
+  "after": "SSVCTZMA ?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 16.581,
+  "after": "SSVCTZMA ?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 16.624,
+  "after": "SSVCTZMA ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 16.67,
+  "after": "SSVCTZMA ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 16.713,
+  "after": "SSVCTZMA ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 16.756,
+  "after": "SSVCTZMA ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 16.799,
+  "after": "SSVCTZMA ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 17.15,
+  "after": "MNZST ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 17.803,
+  "after": "PSFRONT?",
+  "line": "SSFRSDST SPB"
+ },
+ {
+  "t": 17.809,
+  "after": "PSFRONT?",
+  "line": "PSFRONT SPB"
+ },
+ {
+  "t": 18.238,
+  "after": "SSLFL ?",
+  "line": "SSLFL 120"
+ },
+ {
+  "t": 19.09,
+  "after": "ECO?",
+  "line": "ECOON"
+ },
+ {
+  "t": 19.17,
+  "after": "ECO?",
+  "line": "SSINFAISSIG 02"
+ },
+ {
+  "t": 19.261,
+  "after": "ECO?",
+  "line": "OPINFINS 22222211111111000000"
+ },
+ {
+  "t": 19.308,
+  "after": "ECO?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 19.375,
+  "after": "ECO?",
+  "line": "OPINFASP 22222200000000000000000000000000"
+ },
+ {
+  "t": 19.59,
+  "after": "PSSPV ?",
+  "line": "PSSPV OFF"
+ },
+ {
+  "t": 20.006,
+  "after": "PSCES ?",
+  "line": "PSCES OFF"
+ },
+ {
+  "t": 20.2,
+  "after": "PSCES ?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 20.242,
+  "after": "PSCES ?",
+  "line": "OPSMLALL MOV020Multi Ch In"
+ },
+ {
+  "t": 20.29,
+  "after": "PSCES ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 20.334,
+  "after": "PSCES ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 20.378,
+  "after": "PSCES ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 20.427,
+  "after": "PSNEURAL ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 20.435,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MOV030Multi In + DSurr"
+ },
+ {
+  "t": 20.442,
+  "after": "PSNEURAL ?",
+  "line": "PSNEURAL ON"
+ },
+ {
+  "t": 20.488,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 20.533,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 20.574,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 20.619,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 20.662,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 20.705,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 20.747,
+  "after": "PSNEURAL ?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 20.786,
+  "after": "PSLFC ?",
+  "line": "PSLFC OFF"
+ },
+ {
+  "t": 20.802,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 20.845,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 20.892,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 20.933,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 20.976,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 21.021,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 21.064,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 21.106,
+  "after": "PSLFC ?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 21.12,
+  "after": "PSEFF ?",
+  "line": "PSEFF 00"
+ },
+ {
+  "t": 21.159,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 21.202,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 21.245,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 21.291,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 21.336,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 21.379,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 21.422,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 21.463,
+  "after": "PSEFF ?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 21.501,
+  "after": "PSCNTAMT ?",
+  "line": "PSCNTAMT 04"
+ },
+ {
+  "t": 21.523,
+  "after": "PSCNTAMT ?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 21.567,
+  "after": "PSCNTAMT ?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 21.607,
+  "after": "PSCNTAMT ?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 21.652,
+  "after": "PSCNTAMT ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 21.697,
+  "after": "PSCNTAMT ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 21.741,
+  "after": "PSCNTAMT ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 21.784,
+  "after": "PSCNTAMT ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 21.828,
+  "after": "PSCNTAMT ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 21.866,
+  "after": "PSDELAY ?",
+  "line": "PSDELAY 000"
+ },
+ {
+  "t": 22.193,
+  "after": "PSDELAY ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 22.251,
+  "after": "PSDIC ?",
+  "line": "PSDIC 00"
+ },
+ {
+  "t": 22.701,
+  "after": "DIM ?",
+  "line": "DIM BRI"
+ },
+ {
+  "t": 23.132,
+  "after": "VSVPM ?",
+  "line": "VSVPMAUTO"
+ },
+ {
+  "t": 24.214,
+  "after": "PVCN ?",
+  "line": "SSINFAISSIG 02"
+ },
+ {
+  "t": 24.305,
+  "after": "PVCN ?",
+  "line": "OPINFINS 22222211111111000000"
+ },
+ {
+  "t": 24.35,
+  "after": "PVBR ?",
+  "line": "SYSDA PCM"
+ },
+ {
+  "t": 24.423,
+  "after": "PVBR ?",
+  "line": "OPINFASP 22222200000000000000000000000000"
+ },
+ {
+  "t": 25.268,
+  "after": "PVENH ?",
+  "line": "OPSMLALL MOV010Stereo"
+ },
+ {
+  "t": 25.313,
+  "after": "PVENH ?",
+  "line": "OPSMLALL MOV020Multi Ch In"
+ },
+ {
+  "t": 25.358,
+  "after": "PVENH ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 25.403,
+  "after": "PVENH ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 25.449,
+  "after": "PVENH ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 25.495,
+  "after": "PVENH ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 25.501,
+  "after": "PVENH ?",
+  "line": "OPSMLALL MOV030Multi In + DSurr"
+ },
+ {
+  "t": 25.544,
+  "after": "PVENH ?",
+  "line": "OPSMLALL MOV040Multi In + Neural:X"
+ },
+ {
+  "t": 25.589,
+  "after": "PVENH ?",
+  "line": "OPSMLALL MOV050Multi In + Virtual:X"
+ },
+ {
+  "t": 25.633,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MOV060AURO Surround"
+ },
+ {
+  "t": 25.678,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MOV070Multi Ch Stereo"
+ },
+ {
+  "t": 25.719,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MOV080Mono Movie"
+ },
+ {
+  "t": 25.766,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MUS090Stereo"
+ },
+ {
+  "t": 25.809,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MUS100Multi Ch In"
+ },
+ {
+  "t": 25.858,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MUS110Multi In + DSurr"
+ },
+ {
+  "t": 25.895,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MUS120Multi In + Neural:X"
+ },
+ {
+  "t": 25.939,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MUS130Multi In + Virtual:X"
+ },
+ {
+  "t": 25.982,
+  "after": "PVDNR ?",
+  "line": "OPSMLALL MUS140AURO Surround"
+ },
+ {
+  "t": 26.01,
+  "after": "VSMONI ?",
+  "line": "VSMONI1"
+ },
+ {
+  "t": 26.033,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL MUS150Multi Ch Stereo"
+ },
+ {
+  "t": 26.076,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL MUS160Rock Arena"
+ },
+ {
+  "t": 26.122,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL MUS170Jazz Club"
+ },
+ {
+  "t": 26.163,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL MUS180Matrix"
+ },
+ {
+  "t": 26.206,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL GAM190Stereo"
+ },
+ {
+  "t": 26.249,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL GAM200Multi Ch In"
+ },
+ {
+  "t": 26.296,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL GAM210Multi In + DSurr"
+ },
+ {
+  "t": 26.341,
+  "after": "VSMONI ?",
+  "line": "OPSMLALL GAM220Multi In + Neural:X"
+ },
+ {
+  "t": 26.384,
+  "after": "VSASP ?",
+  "line": "OPSMLALL GAM230Multi In + Virtual:X"
+ },
+ {
+  "t": 26.425,
+  "after": "VSASP ?",
+  "line": "OPSMLALL GAM240AURO Surround"
+ },
+ {
+  "t": 26.469,
+  "after": "VSASP ?",
+  "line": "OPSMLALL GAM250Multi Ch Stereo"
+ },
+ {
+  "t": 26.513,
+  "after": "VSASP ?",
+  "line": "OPSMLALL GAM260Video Game"
+ },
+ {
+  "t": 26.559,
+  "after": "VSASP ?",
+  "line": "OPSMLALL PUR270Direct"
+ },
+ {
+  "t": 26.602,
+  "after": "VSASP ?",
+  "line": "OPSMLALL PUR280Pure Direct"
+ },
+ {
+  "t": 26.646,
+  "after": "VSASP ?",
+  "line": "OPSMLALL PUR291Multi Ch In"
+ },
+ {
+  "t": 26.688,
+  "after": "VSASP ?",
+  "line": "OPSMLALL END"
+ },
+ {
+  "t": 26.731,
+  "after": "VSASP ?",
+  "line": "OPSML 010Direct"
+ },
+ {
+  "t": 26.762,
+  "after": "VSAUDIO ?",
+  "line": "VSAUDIO AMP"
+ },
+ {
+  "t": 26.79,
+  "after": "VSAUDIO ?",
+  "line": "OPSML 020Pure Direct"
+ },
+ {
+  "t": 26.836,
+  "after": "VSAUDIO ?",
+  "line": "OPSML 031Auto"
+ },
+ {
+  "t": 26.879,
+  "after": "VSAUDIO ?",
+  "line": "OPSML END"
+ },
+ {
+  "t": 27.229,
+  "after": "VSAUDIO ?",
+  "line": "SYSMI Multi Ch In"
+ },
+ {
+  "t": 27.273,
+  "after": "VSSCH ?",
+  "line": "VSSCHOFF"
+ },
+ {
+  "t": 27.702,
+  "after": "SD?",
+  "line": "SDEARC"
+ },
+ {
+  "t": 28.118,
+  "after": "CV?",
+  "line": "CVFL 50"
+ },
+ {
+  "t": 28.124,
+  "after": "CV?",
+  "line": "CVFR 50"
+ },
+ {
+  "t": 28.131,
+  "after": "CV?",
+  "line": "CVC 50"
+ },
+ {
+  "t": 28.139,
+  "after": "CV?",
+  "line": "CVSW 50"
+ },
+ {
+  "t": 28.145,
+  "after": "CV?",
+  "line": "CVSL 50"
+ },
+ {
+  "t": 28.152,
+  "after": "CV?",
+  "line": "CVSR 50"
+ },
+ {
+  "t": 28.16,
+  "after": "CV?",
+  "line": "CVEND"
+ },
+ {
+  "t": 28.187,
+  "after": "CV?",
+  "line": "DCAUTO"
+ }
+]

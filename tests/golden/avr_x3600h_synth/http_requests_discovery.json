@@ -1,0 +1,42 @@
+[
+ {
+  "ssl": "default",
+  "timeout_total": 8.0,
+  "url": "http://192.0.2.10:8080/goform/Deviceinfo.xml"
+ },
+ {
+  "ssl": "default",
+  "timeout_total": 8.0,
+  "url": "http://192.0.2.10:60006/upnp/desc/aios_device/aios_device.xml"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/video/get_config?type=1"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/video/get_config?type=3"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/video/get_config?type=7"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/video/get_config?type=8"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+ }
+]

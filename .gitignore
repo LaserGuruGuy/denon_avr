@@ -5,3 +5,4 @@ __pycache__/
 .vscode/
 .idea/
 launch.json
+.pytest_cache/
