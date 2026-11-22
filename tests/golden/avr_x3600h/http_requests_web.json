@@ -10,6 +10,30 @@
   "url": "http://192.0.2.10:60006/upnp/desc/aios_device/aios_device.xml"
  },
  {
+  "allow_redirects": false,
+  "ssl": false,
+  "timeout_total": 2.0,
+  "url": "http://192.0.2.10/"
+ },
+ {
+  "allow_redirects": false,
+  "ssl": false,
+  "timeout_total": 2.0,
+  "url": "https://192.0.2.10:10443/"
+ },
+ {
+  "allow_redirects": false,
+  "ssl": false,
+  "timeout_total": 2.0,
+  "url": "https://192.0.2.10/"
+ },
+ {
+  "allow_redirects": false,
+  "ssl": false,
+  "timeout_total": 2.0,
+  "url": "https://192.0.2.10:10443/"
+ },
+ {
   "ssl": false,
   "timeout_total": 8.0,
   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=1"
@@ -33,6 +57,11 @@
   "ssl": false,
   "timeout_total": 8.0,
   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=9"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/speakers/get_config?type=1"
  },
  {
   "ssl": false,

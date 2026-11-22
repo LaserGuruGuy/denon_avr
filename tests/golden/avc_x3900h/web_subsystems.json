@@ -50,38 +50,38 @@
  "video_config": {
   "controls": {
    "arc": {
-    "available": false,
+    "available": true,
     "options": {},
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "hdmi_control": {
-    "available": false,
+    "available": true,
     "options": {},
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "hdmi_pass_through": {
     "available": false,
     "options": {},
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "hdmi_power_off_control": {
-    "available": false,
+    "available": true,
     "options": {
      "1": "All",
      "2": "Video",
      "3": "Off"
     },
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "hdmi_power_saving": {
-    "available": false,
+    "available": true,
     "options": {},
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "2"
    },
    "hdmi_signal_format": {
     "available": false,
@@ -95,56 +95,63 @@
     "value": null
    },
    "osd_info": {
-    "available": false,
+    "available": true,
     "options": {},
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "osd_now_playing": {
-    "available": false,
+    "available": true,
     "options": {
      "1": "Always On",
      "2": "Auto Off"
     },
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "osd_volume": {
-    "available": false,
+    "available": true,
     "options": {
      "1": "Bottom",
      "2": "Top",
      "3": "Off"
     },
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "pass_through_source": {
-    "available": false,
-    "options": {},
-    "present": false,
-    "value": null
+    "available": true,
+    "options": {
+     "1": "Last",
+     "2": "AAP",
+     "3": "Media Player",
+     "4": "VIS",
+     "5": "NOOT",
+     "7": "MIES"
+    },
+    "present": true,
+    "value": "1"
    },
    "rc_select": {
-    "available": false,
+    "available": true,
     "options": {
      "1": "Power On + Source",
      "2": "Source Select Only"
     },
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "smart_menu": {
     "available": false,
     "options": {},
     "present": false,
-    "value": null
+    "value": ""
    },
    "tv_audio_switching": {
-    "available": false,
+    "available": true,
     "options": {},
-    "present": false,
-    "value": null
+    "present": true,
+    "value": "1"
    },
    "tv_format": {
     "available": false,

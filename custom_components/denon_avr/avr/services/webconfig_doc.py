@@ -87,11 +87,15 @@ class WebConfigSectionController:
 
         if not self.supported:
             return
-        previous = self._fields
+        previous = (self._avail, self._fields)
+        # Re-read the availability map too: menus appear, gray out or disappear
+        # with the user's setup, and the entities must follow that live.
+        if "availability_type" in self._grammar:
+            await self._read_availability()
         await self._read_menus()
         # This runs on every reconcile poll; only notify when a value actually
         # changed so we do not write HA state each interval for no reason.
-        if self._fields != previous:
+        if (self._avail, self._fields) != previous:
             self._on_update()
 
     async def _read_availability(self) -> None:

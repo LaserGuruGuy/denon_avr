@@ -149,6 +149,22 @@ class DenonAvrDevice:
         return self._state.volume_display or "Relative"
 
     @property
+    def configuration_url(self) -> str | None:
+        """The receiver's setup web interface, once located (None before / when absent)."""
+
+        endpoint = self._webconfig.endpoint
+        return f"{endpoint.base_url}/" if endpoint is not None else None
+
+    @property
+    def setup_interface(self) -> dict[str, object] | None:
+        """How the setup web interface was located (diagnostics; no host)."""
+
+        endpoint = self._webconfig.endpoint
+        if endpoint is None:
+            return None
+        return {"scheme": endpoint.scheme, "port": endpoint.port, "source": endpoint.source}
+
+    @property
     def graphic_eq(self) -> GraphicEqController:
         """The manual graphic-EQ subsystem (read/edit/apply)."""
 

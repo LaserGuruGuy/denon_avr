@@ -80,7 +80,7 @@ def _register_main_device(
         sw_version=device.firmware_version,
         hw_version=device.hardware_type,
         serial_number=device.serial_number,
-        configuration_url=f"https://{coordinator.device.host}:10443/",
+        configuration_url=coordinator.device.configuration_url or f"http://{coordinator.device.host}/",
     )
     coordinator.main_device_id = entry_device.id
 

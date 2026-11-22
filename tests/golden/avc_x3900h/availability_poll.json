@@ -34,32 +34,27 @@
   {
    "ssl": false,
    "timeout_total": 8.0,
-   "url": "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=0&opt2=0"
+   "url": "http://192.0.2.10:11080/ajax/audio/get_config?type=10&opt1=0&opt2=0"
   },
   {
    "ssl": false,
    "timeout_total": 8.0,
-   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=3"
+   "url": "http://192.0.2.10:11080/ajax/video/get_config?type=1"
   },
   {
    "ssl": false,
    "timeout_total": 8.0,
-   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=7"
+   "url": "http://192.0.2.10:11080/ajax/video/get_config?type=3"
   },
   {
    "ssl": false,
    "timeout_total": 8.0,
-   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=8"
+   "url": "http://192.0.2.10:11080/ajax/video/get_config?type=7"
   },
   {
    "ssl": false,
    "timeout_total": 8.0,
-   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=9"
-  },
-  {
-   "ssl": false,
-   "timeout_total": 8.0,
-   "url": "https://192.0.2.10:10443/ajax/speakers/get_config?type=2"
+   "url": "http://192.0.2.10:11080/ajax/speakers/get_config?type=1"
   }
  ],
  "poll_fallback_zone": {

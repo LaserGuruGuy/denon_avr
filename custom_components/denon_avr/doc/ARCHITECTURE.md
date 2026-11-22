@@ -9,6 +9,11 @@ HA-free client library (`custom_components/denon_avr/avr/`). The library could b
   report, never by model name. User setup (speakers, sizes, crossovers, subwoofers, sources and
   their names, zones, presets, amp assign or speaker layout) is discovered from the device and
   followed at runtime. The code never assumes one household's configuration.
+- **Telnet first.** The documented control protocols are the primary channels: telnet (port 23,
+  with push) and, where needed, JSON over TCP (port 1256). The setup web interface (`/ajax`) is a
+  secondary supplement, used only for settings those protocols cannot serve, after a live check.
+  Hard-coding is the last resort. Every web-backed grammar section states this in `channel_policy`,
+  and `tests/test_channel_policy.py` enforces it.
 - **Data first.** Fixed protocol grammar lives in `protocol/protocol_profile.json`. Value lists
   the device supplies take precedence over the profile, which then only provides labels.
 - **Languages.** All user-facing text goes through Home Assistant translations
@@ -46,6 +51,19 @@ Enforced by `tests/test_layers.py`. The allowlist is empty and may only shrink.
 | R9 | no absolute self-imports |
 
 `tests/test_ports.py` checks that the transports structurally satisfy the ports.
+
+## Locating the setup web interface
+
+Interface generations serve the setup UI on different endpoints (HTTPS 10443 on the legacy app,
+plain HTTP 11080 on "Web Control"). Both put an nginx front on port 80/443 that redirects `/` to it.
+`transport/webconfig/endpoint.py` follows that redirect chain (at most 3 hops, e.g. http -> https ->
+:10443), only on the same host over http or https. It never accepts a front port (80/443) or a port of
+another receiver service (telnet, HEOS, JSON, goform, UPnP), and it verifies that the target answers.
+Otherwise it falls back to the known endpoints. The probes run concurrently with a 2 s timeout within
+a 6 s budget. `WebConfigClient` locates the interface on first use,
+serialises the requests, and after a transport failure locates it again, at most once per 5 minutes.
+Which settings exist is then decided by the receiver's own availability documents, never by the model.
+The device link in HA (`configuration_url`) is the located interface.
 
 ## Safety net
 

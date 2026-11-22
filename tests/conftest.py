@@ -101,11 +101,23 @@ class FixtureSet:
     def telnet_corpus(self) -> list[dict]:
         return json.loads(self.file("telnet_corpus.json") or "[]")
 
-    def http(self, url: str) -> tuple[int, str] | None:
-        """Response for a URL, or None when the endpoint is unreachable (no listener)."""
+    def http(self, url: str) -> tuple[int, str, dict] | tuple[int, str] | None:
+        """Response for a URL, or None when the endpoint is unreachable (no listener).
+
+        Models what was observed on the receiver: the nginx front on port 80/443
+        redirects ``/`` to the setup web interface (fixture.json ``root_redirect``),
+        the interface itself answers ``/`` and ``/ajax`` on its own scheme and port.
+        """
         parts = urlsplit(url)
         port = parts.port
         web = self.meta.get("webconfig")          # {"scheme": .., "port": ..} or absent
+        redirect = self.meta.get("root_redirect")
+        if port is None and parts.path in ("", "/"):
+            if not redirect:
+                return None
+            return 301, "", {"Location": redirect.replace("<host>", parts.hostname)}
+        if web and parts.scheme == web["scheme"] and port == web["port"] and parts.path in ("", "/"):
+            return 200, "<html><title>setup</title></html>"
         if port in (8080,):
             body = self.file("goform_" + parts.path.rsplit("/", 1)[-1])
         elif port == 60006:
@@ -124,9 +136,10 @@ class FixtureSet:
 
 
 class _FakeResponse:
-    def __init__(self, status: int, body: str) -> None:
+    def __init__(self, status: int, body: str, headers: dict | None = None) -> None:
         self.status = status
         self._body = body
+        self.headers = headers or {}
 
     async def text(self) -> str:
         return self._body
@@ -157,6 +170,7 @@ class FakeSession:
             "url": url,
             "ssl": kwargs.get("ssl", "default"),
             "timeout_total": getattr(timeout, "total", timeout),
+            **({"allow_redirects": kwargs["allow_redirects"]} if "allow_redirects" in kwargs else {}),
         })
         resp = self.fixtures.http(url.replace("/set_config", "/get_config") if "/set_config" in url else url)
         if resp is not None and "/set_config" in url:

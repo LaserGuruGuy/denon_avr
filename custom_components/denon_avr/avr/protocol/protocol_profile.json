@@ -68,6 +68,7 @@
       "values": [40, 60, 80, 90, 100, 110, 120, 150, 180, 200, 250]
     },
     "graphic_eq": {
+      "channel_policy": "secondary: per-band graphic EQ values have no telnet or port-1256 command (verified live on the AVR-X3600H)",
       "doc": [
         "Manual graphic equaliser grammar. FIXED protocol constant, like the",
         "crossover grid above: the nine ISO-octave bands (63 Hz..16 kHz) and the",
@@ -104,6 +105,7 @@
       "channels_each": ["Front L", "Front R", "Center", "Surround L", "Surround R", "Surround Back L", "Surround Back R", "Surround Back", "Front Wide L", "Front Wide R", "Front Height L", "Front Height R", "Top Front L", "Top Front R", "Top Middle L", "Top Middle R", "Top Rear L", "Top Rear R", "Surround Height L", "Surround Height R", "Top Surround", "Rear Height L", "Front Dolby L", "Front Dolby R", "Rear Height R", "Surround Dolby L", "Surround Dolby R", "Back Dolby L", "Back Dolby R", "Center Height"]
     },
     "video_web": {
+      "channel_policy": "secondary: these video setup menus have no telnet or port-1256 command (verified live on the AVR-X3600H)",
       "doc": "Video setup menu settings that have NO telnet token, read/written via the setup config API (/ajax/video/{get,set}_config). type=1 is the availability map; each control names its config type and XML tag. On/off wire values are Denon's SETTING_ON=1/SETTING_OFF=2 except OSD Info which uses VIDEO_SETTING On=1/Off=0. Option maps + the pass-through source values are the receiver's own (from the setup UI).",
       "config_section": "video",
       "availability_type": 1,
@@ -128,6 +130,8 @@
       ]
     },
     "speakers_web": {
+      "channel_policy": "secondary: amp assign has no telnet command; port 1256 needs a calibration session that interrupts playback (verified live on the AVR-X3600H)",
+      "availability_type": 1,
       "doc": "Speaker-setup settings with no telnet token, read/written via the /ajax speakers config API. Amp Assign (AssignMode, config type=2) is DEVICE-DRIVEN: the valid modes depend on the receiver's queried AmpType, so the option list is keyed by AmpType in amptype_options (extracted from the setup UI's getAmpAssignList, covering every Denon/Marantz amp type - not X3600H-specific). Read type=2 gives AmpType (selects the list) + AssignMode (current value); set is a field-only /ajax write <AssignMode>N</AssignMode>. Values are numeric AssignMode ids; labels are the receiver's own (e.g. 6='7.1ch + Front B').",
       "config_section": "speakers",
       "wrap_root": true,

@@ -30,6 +30,7 @@ async def async_get_config_entry_diagnostics(
 
     return {
         "available": device.available,
+        "setup_web_interface": device.setup_interface,
         "device": async_redact_data(asdict(discovery.device), TO_REDACT),
         "features": sorted(discovery.features),
         "zones": [asdict(zone) for zone in discovery.zones],
