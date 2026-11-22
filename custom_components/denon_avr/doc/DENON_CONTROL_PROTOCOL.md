@@ -98,7 +98,7 @@ legacy `MSPL2*`/`MSPL2X*`/`MSNEO:6*`/`MSDSD*`/`MSAUDYSSEY DSX`.
 | `PSSTW` / `PSSTH` | Stage width / height (DSX) | `nn` | `[ ]` |
 | `PSDSX` | Audyssey DSX | `OFF`/`ONH`/`ONW`/... | `[ ]` (DSX; not on Atmos-era units) |
 | `PSAUROPR` / `PSAUROST` | Auro-3D preset / strength | `SML/MED/LAR` / `nn` | `[ ]` gate: (Auro-3D models) |
-| `PSSP:` | Effect speaker selection | `FL`,`HF`,... | `[ ]` |
+| `PSSP:` | Effect speaker selection | `FL`,`HF`,... | `[x]` speaker_layout_protocol (read-only sensor) |
 
 ## 6. Audyssey (`PS…`)
 
