@@ -32,7 +32,11 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {
-        "readonly": lambda e: DenonAvrReadonlySensor(coordinator, e.params["control_id"]),
+        "readonly": lambda e: (
+            DenonAvrCodeSensor
+            if coordinator.device.profile.readonly[e.params["control_id"]].get("value_keys")
+            else DenonAvrReadonlySensor
+        )(coordinator, e.params["control_id"]),
         "sound_mode": lambda e: DenonAvrSoundModeSensor(coordinator),
         "volume_db": lambda e: DenonAvrVolumeSensor(coordinator),
         "amp_mode": lambda e: DenonAvrAmpModeSensor(coordinator),
@@ -108,6 +112,36 @@ class _EnumKeySensor(DenonAvrEntity, SensorEntity):
         current = self.native_value
         known = list(dict.fromkeys(self._known))
         return known + [current] if current and current not in known else known
+
+
+class DenonAvrCodeSensor(_EnumKeySensor):
+    """A read only field the receiver reports as a code (e.g. the input signal type).
+
+    Codes of the profile become a translated key; an unlisted code is shown as
+    ``code_<nn>``. The raw code stays available as an attribute.
+    """
+
+    def __init__(self, coordinator: DenonAvrCoordinator, control_id: str) -> None:
+        super().__init__(coordinator, f"sensor_{control_id}")
+        self._control_id = control_id
+        self._attr_translation_key = control_id
+        spec = coordinator.device.profile.readonly[control_id]
+        self._keys: dict[str, str] = spec["value_keys"]
+        self._unknown: str = spec.get("unknown_key", "code")
+        self._known = list(self._keys.values())
+
+    @property
+    def _code(self) -> str | None:
+        return self.coordinator.data.readonly.get(self._control_id)
+
+    @property
+    def native_value(self) -> str | None:
+        code = self._code
+        return self._keys.get(code, f"{self._unknown}_{code}") if code else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        return {"code": self._code}
 
 
 class DenonAvrAmpModeSensor(_EnumKeySensor):

@@ -58,3 +58,13 @@ def test_languages_have_the_same_keys():
     reference = keys(LANGS["en"])
     for lang, data in LANGS.items():
         assert keys(data) == reference, (lang, sorted(keys(data) ^ reference)[:10])
+
+
+@pytest.mark.parametrize("lang", sorted(LANGS))
+def test_readonly_code_keys_are_translated(lang):
+    for control_id, spec in load_profile().readonly.items():
+        keys = set(spec.get("value_keys", {}).values())
+        if keys:
+            states = LANGS[lang]["entity"]["sensor"][control_id]["state"]
+            assert keys == set(states), control_id
+            assert len(keys) == len(spec["value_keys"])          # one key per code

@@ -141,7 +141,8 @@ the sub‑device its setting belongs to.
   **Apply** writes it. Applying also resets other choices on the receiver (surround
   back, height speakers, front A/B); a repair notice then lists what changed and
   **Restore** puts it back as it was.
-- **Sensors** (diagnostic): sample rate, decoder, audio format, input signal,
+- **Sensors** (diagnostic): sample rate, decoder, audio format, input signal (named
+  where the code is known, else `code_<nn>`),
   mode info, sound mode, volume (dB), amplifier mode, effect speakers, and the
   subwoofer directional mode and layout (with two or more subwoofers).
 - **Binary sensor**: telnet connectivity.

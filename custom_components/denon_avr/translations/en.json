@@ -44,7 +44,29 @@
         "name": "Volume"
       },
       "input_signal": {
-        "name": "Input Signal"
+        "name": "Input Signal",
+        "state": {
+          "analog": "Analog",
+          "pcm": "PCM",
+          "dolby_digital": "Dolby Digital",
+          "dolby_truehd_or_dd_plus": "Dolby TrueHD or Dolby Digital Plus",
+          "dolby_truehd_or_atmos": "Dolby TrueHD or Dolby Atmos",
+          "dts": "DTS",
+          "dts_hd_high_resolution": "DTS-HD High Resolution",
+          "dts_hd_master_audio": "DTS-HD Master Audio",
+          "no_signal": "No or unknown signal",
+          "pcm_zero": "PCM Zero",
+          "mp3": "MP3",
+          "aac": "AAC",
+          "flac": "FLAC",
+          "dolby_atmos": "Dolby Atmos",
+          "vorbis": "Vorbis"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
       },
       "sample_rate": {
         "name": "Sample Rate"
