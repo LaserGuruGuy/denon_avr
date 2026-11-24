@@ -57,16 +57,17 @@ towards the receiver (server). To let the two communicate through a router or
 VLAN firewall, allow the Home Assistant host to reach the receiver on these
 ports. Nothing needs to be opened towards the internet.
 
-| Port | Protocol | Purpose | Needed |
-|------|----------|---------|--------|
-| **23/tcp** | Telnet | Primary control channel and real‑time push | **Required** |
+| Port | Protocol | Purpose | Ordinality |
+|------|----------|---------|------------|
+| **23/tcp** | Telnet | Primary control channel and real‑time push: power, volume, mute, source, sound modes, speaker setup and all state updates | **Required** |
 | **8080/tcp** | HTTP (goform) | Discovery (`Deviceinfo.xml`) and the reconciliation poll (`…StatusLite.xml`) | **Required** |
-| **60006/tcp** | HTTP (UPnP/AIOS) | Device description, read once at setup for firmware version and serial number | Optional |
-| **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN | Optional |
-| **1255/tcp** | HEOS CLI | Now playing, album art and transport (play/pause/next) for network sources | Optional |
-| **80/tcp, 443/tcp** | HTTP/HTTPS | Only to find the setup web interface (its redirect is followed, on the same host) | Optional |
-| **10443/tcp** | HTTPS (self‑signed certificate) | Setup web interface, older generation | Optional, one of these two |
-| **11080/tcp** | HTTP | Setup web interface, Web Control generation | Optional, one of these two |
+| **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN (Home Assistant's own SSDP finds Denon and Marantz receivers and offers them; without it, add the receiver by IP address) | Optional (auto‑discovery only) |
+| **60006/tcp** | HTTP (UPnP/AIOS) | Device description read once at setup for firmware version and serial number | Optional (degrades gracefully) |
+| **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources | Optional (degrades gracefully) |
+| **1256/tcp** | Length‑framed JSON | Not currently used (reserved for future use) | Unused |
+| **80/tcp, 443/tcp** | HTTP/HTTPS | Only to find the setup web interface below: the receiver redirects to it, and the redirect is followed on the same host | Optional (10443 and 11080 are tried directly otherwise) |
+| **10443/tcp** | HTTPS (setup config) | Setup web interface of the older generation (seen on the AVR‑X3600H): graphic‑EQ per‑band values, Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) and Amp Assign: settings with no telnet token, read/write (self‑signed certificate) | Optional (graphic EQ, video, speakers) |
+| **11080/tcp** | HTTP (setup config) | The same for the Web Control generation (seen on the AVC‑X3900H), plus per input 4K/8K format and HDCP, speaker layout and the lists of crossover and LFE frequencies | Optional (graphic EQ, video, inputs, speakers) |
 
 Without the setup web interface everything on telnet keeps working; the web based
 entities are unavailable or absent.
@@ -219,7 +220,8 @@ Protocol behavior was verified live against the following.
 
 Other Denon/Marantz HEOS generation receivers should work as the integration
 adapts to whatever the device reports, but only these receivers have been
-exercised end to end.
+exercised end to end. Marantz receivers speak the same protocol and are discovered too, but
+have not been tested on hardware.
 
 ## Credits
 

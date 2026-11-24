@@ -22,7 +22,8 @@ from .services.discovery import DiscoveryService
 from .services.graphic_eq import GraphicEqController
 from .services.runtime import BackgroundTasks, UpdateNotifier
 from .services.sync import StateSync
-from .services.webconfig_doc import StagedChanges, WebConfigSectionController
+from .services.staged import StagedChanges
+from .services.webconfig_doc import WebConfigSectionController
 from .transport import (
     GoformClient,
     HeosClient,
@@ -63,7 +64,7 @@ class DenonAvrDevice:
         self._speaker_layout = StagedChanges(
             self._speaker_config,
             "speaker_layout_assign",
-            lambda control_id: self._state.values.get(control_id),
+            self._read_control,
             self.async_set_control,
         )
 
@@ -257,6 +258,7 @@ class DenonAvrDevice:
     async def async_stop(self) -> None:
         """Stop the transports and cancel any pending notification or task."""
 
+        self._speaker_layout.stop()
         self._notifier.cancel()
         self._tasks.cancel_all()
         await self._telnet.async_stop()
@@ -272,6 +274,16 @@ class DenonAvrDevice:
             # read the same section twice.
             tuple(partial(self._sync.refresh_web, s) for s in ("graphic_eq", "video", "speakers")),
         )
+
+    async def _read_control(self, control_id: str) -> object | None:
+        """A control's value as the receiver answers it NOW; None without an answer."""
+
+        spec = self._profile.controls.get(control_id)
+        if spec is None or not spec.query or not self._telnet.connected:
+            return None
+        if not await self._sync.async_answer(spec.query, spec.prefix):
+            return None
+        return self._state.values.get(control_id)
 
     async def _refresh_section(self, section: WebConfigSectionController) -> None:
         """Re-read a web section; menus that appear become features too.

@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Denon AVR",
-        "description": "Voer het IP-adres van je Denon-receiver in. De naam en mogelijkheden worden automatisch van het apparaat gelezen.",
+        "description": "Voer het IP-adres van je Denon- of Marantz-receiver in. De naam en mogelijkheden worden automatisch van het apparaat gelezen.",
         "data": {
           "host": "IP-adres"
         }
@@ -15,7 +15,7 @@
       },
       "reconfigure": {
         "title": "Denon AVR",
-        "description": "Werk het IP-adres van je Denon-receiver bij.",
+        "description": "Werk het IP-adres van je Denon- of Marantz-receiver bij.",
         "data": {
           "host": "IP-adres"
         }
@@ -471,13 +471,19 @@
       "message": "De receiver staat luidsprekerindeling {option} niet toe."
     },
     "speaker_layout_not_applied": {
-      "message": "De receiver heeft de wijziging van de luidsprekerindeling niet geaccepteerd."
+      "message": "De receiver heeft de indeling niet bevestigd. Is er toch iets gewijzigd, dan zet Luidsprekerindeling herstellen het terug."
     },
     "web_setting_not_applied": {
       "message": "De receiver heeft de instelling niet bevestigd."
     },
     "speaker_layout_not_restored": {
-      "message": "De posities {positions} konden niet worden hersteld; controleer ze op de receiver."
+      "message": "Niet alles kon worden hersteld: {positions}. Controleer dit op de receiver."
+    },
+    "speaker_layout_restore_unavailable": {
+      "message": "De receiver gaf geen antwoord of is bezig; er is niets hersteld."
+    },
+    "speaker_layout_restore_stale": {
+      "message": "De luidsprekerpreset of -indeling is daarna op de receiver gewijzigd; er is niets hersteld."
     }
   },
   "issues": {

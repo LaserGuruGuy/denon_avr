@@ -11,7 +11,7 @@ import logging
 
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er, issue_registry as ir
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from . import catalog
@@ -148,5 +148,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) ->
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
+        ir.async_delete_issue(hass, DOMAIN, f"speaker_layout_changed_{entry.entry_id}")
         await entry.runtime_data.async_shutdown()
     return unloaded

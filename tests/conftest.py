@@ -346,7 +346,10 @@ def fast_refresh(monkeypatch):
         async def sleep(delay, *args):
             await real_sleep(delay / 1000)
 
+    import avr.services.staged as staged
+
     monkeypatch.setattr(webconfig_doc, "asyncio", _FastAsyncio())
+    monkeypatch.setattr(staged, "asyncio", _FastAsyncio())
 
 
 @pytest.fixture

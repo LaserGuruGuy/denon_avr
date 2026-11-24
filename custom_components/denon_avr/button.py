@@ -113,80 +113,91 @@ class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
         await self.coordinator.device.graphic_eq.set_defaults()
 
 
-class DenonAvrSpeakerLayoutApply(DenonAvrEntity, ButtonEntity):
+class _SpeakerLayoutButton(DenonAvrEntity, ButtonEntity):
+    """Base of the speaker layout buttons: not pressable while one of them works."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _web_backed = True
+
+    def __init__(self, coordinator: DenonAvrCoordinator, action: str) -> None:
+        super().__init__(coordinator, f"button_speaker_layout_{action}", sub_device="speakers")
+        self._attr_translation_key = f"speaker_layout_{action}"
+
+    @property
+    def _layout(self):
+        return self.coordinator.device.speaker_layout
+
+    def _ready(self) -> bool:
+        raise NotImplementedError
+
+    @property
+    def available(self) -> bool:
+        return super().available and not self._layout.busy and self._ready()
+
+    async def _run(self, action):
+        """Run one operation; entities and the repair notice follow even on an error."""
+
+        self.coordinator.async_update_listeners()
+        try:
+            return await action
+        finally:
+            _update_layout_issue(self.hass, self.coordinator)
+            self.coordinator.async_update_listeners()
+
+    def _error(self, key: str, **placeholders: str) -> HomeAssistantError:
+        return HomeAssistantError(
+            translation_domain=DOMAIN, translation_key=key, translation_placeholders=placeholders or None
+        )
+
+
+class DenonAvrSpeakerLayoutApply(_SpeakerLayoutButton):
     """Write the staged speaker layout to the receiver (the confirming step).
 
     Changing the speaker layout re-assigns the amplifier channels; after it the
     receiver's room correction (Audyssey / Dirac) may need a new measurement.
     """
 
-    _attr_entity_category = EntityCategory.CONFIG
-    _web_backed = True
-
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
-        super().__init__(coordinator, "button_speaker_layout_apply", sub_device="speakers")
-        self._attr_translation_key = "speaker_layout_apply"
+        super().__init__(coordinator, "apply")
 
-    @property
-    def available(self) -> bool:
-        return super().available and bool(self.coordinator.device.speaker_layout.pending)
+    def _ready(self) -> bool:
+        return bool(self._layout.pending)
 
     async def async_press(self) -> None:
-        try:
-            results = await self.coordinator.device.speaker_layout.async_apply()
-        finally:
-            self.coordinator.async_update_listeners()
-        _update_layout_issue(self.hass, self.coordinator)
-        if not all(results.values()):
-            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="speaker_layout_not_applied")
+        results = await self._run(self._layout.async_apply())
+        if not results or not all(results.values()):
+            raise self._error("speaker_layout_not_applied")
 
 
-class DenonAvrSpeakerLayoutRestore(DenonAvrEntity, ButtonEntity):
-    """Put the speaker setup back as it was before the last applied layout(s):
-    assign mode, positions and front speaker A/B."""
-
-    _attr_entity_category = EntityCategory.CONFIG
-    _web_backed = True
+class DenonAvrSpeakerLayoutRestore(_SpeakerLayoutButton):
+    """Put the speaker setup back as it was before the applied layout(s): assign
+    mode, positions and front speaker A/B; choices made after that are kept."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
-        super().__init__(coordinator, "button_speaker_layout_restore", sub_device="speakers")
-        self._attr_translation_key = "speaker_layout_restore"
+        super().__init__(coordinator, "restore")
 
-    @property
-    def available(self) -> bool:
-        return super().available and self.coordinator.device.speaker_layout.restorable
+    def _ready(self) -> bool:
+        return self._layout.restorable
 
     async def async_press(self) -> None:
-        try:
-            left = await self.coordinator.device.speaker_layout.async_restore()
-        finally:
-            self.coordinator.async_update_listeners()
-        _update_layout_issue(self.hass, self.coordinator)
-        if left:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="speaker_layout_not_restored",
-                translation_placeholders={"positions": ", ".join(left)},
-            )
+        result = await self._run(self._layout.async_restore())
+        if result.refused:
+            raise self._error(f"speaker_layout_restore_{result.refused}")
+        if result.left:
+            raise self._error("speaker_layout_not_restored", positions=", ".join(result.left))
 
 
-class DenonAvrSpeakerLayoutDiscard(DenonAvrEntity, ButtonEntity):
-    """Drop the staged speaker layout change (or dismiss the notice about changed
-    positions); nothing is sent to the receiver."""
-
-    _attr_entity_category = EntityCategory.CONFIG
-    _web_backed = True
+class DenonAvrSpeakerLayoutDiscard(_SpeakerLayoutButton):
+    """Drop the staged change; without one, keep the applied layout as it is (give up
+    the restore point and dismiss the notice). Nothing is sent to the receiver."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
-        super().__init__(coordinator, "button_speaker_layout_discard", sub_device="speakers")
-        self._attr_translation_key = "speaker_layout_discard"
+        super().__init__(coordinator, "discard")
 
-    @property
-    def available(self) -> bool:
-        layout = self.coordinator.device.speaker_layout
-        return super().available and bool(layout.pending or layout.restorable)
+    def _ready(self) -> bool:
+        return bool(self._layout.pending or self._layout.restorable)
 
     async def async_press(self) -> None:
-        self.coordinator.device.speaker_layout.discard()
+        self._layout.discard()
         _update_layout_issue(self.hass, self.coordinator)
         self.coordinator.async_update_listeners()

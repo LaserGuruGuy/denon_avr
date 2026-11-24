@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from typing import Any
 
 from ..models import Availability, CollectionItem
@@ -251,6 +251,23 @@ class WebConfigSectionController:
 
         return dict(self._collections.get(collection_id, {}))
 
+    async def async_read_collections(self, type_id: int) -> bool:
+        """Read the collections of one document now. False when it was not given."""
+
+        root = parse_xml(await self._webconfig.async_get(self._section, type_id))
+        if root is None:
+            return False
+        previous = self._collections
+        read = {
+            spec["id"]: parse_collection(spec, root)
+            for spec in self.collection_specs()
+            if int(spec["type"]) == type_id
+        }
+        self._collections = {**previous, **read}
+        if self._collections != previous:
+            self._on_update()
+        return True
+
     def option_key(self, collection_id: str, option: str) -> str:
         """Stable, translatable key of an option id (``option_<id>`` when unknown)."""
 
@@ -275,8 +292,9 @@ class WebConfigSectionController:
         ok = await self._webconfig.async_set(
             self._section, int(spec["type"]), build_collection_payload(spec, slot, option)
         )
-        if not staged_apply:   # a staged apply waits and verifies itself
-            await self._settle()
+        if staged_apply:
+            return ok   # it waits for, reads and verifies the result itself
+        await self._settle()
         # Re-read so state reflects exactly what the receiver applied.
         await self.refresh()
         return ok
@@ -291,179 +309,3 @@ class WebConfigSectionController:
         (the caller then falls back to the profile's protocol constant)."""
 
         return self._value_lists.get(list_id)
-
-
-class StagedChanges:
-    """Edits to a staged collection (speaker layout), kept locally until applied.
-
-    Nothing reaches the receiver until ``async_apply``; the caller (the UI) asks
-    the user to confirm first. Each staged option is checked against what the
-    receiver allows for that item when it is staged, and again when applied.
-    """
-
-    def __init__(
-        self,
-        section: WebConfigSectionController,
-        collection_id: str,
-        get_control: Callable[[str], Any] = lambda _cid: None,
-        set_control: Callable[[str, Any], Awaitable[None]] | None = None,
-    ) -> None:
-        self._section = section
-        self._collection = collection_id
-        # Telnet controls an apply also resets (profile ``restore_controls``).
-        self._get_control = get_control
-        self._set_control = set_control
-        self._pending: dict[str, str] = {}
-        # Positions that differ from before the first apply: slot -> (before, after).
-        self.side_effects: dict[str, tuple[str | None, str | None]] = {}
-        self._baseline: dict[str, str | None] = {}
-        self._baseline_items: dict[str, str | None] = {}   # the staged items themselves
-        self._baseline_controls: dict[str, Any] = {}
-
-    @property
-    def pending(self) -> dict[str, str]:
-        return dict(self._pending)
-
-    def stage(self, slot: str, option: str) -> bool:
-        item = self._section.collection(self._collection).get(slot)
-        if item is None or not item.availability.settable or option not in item.options:
-            return False
-        if option == item.value:
-            self._pending.pop(slot, None)
-        else:
-            self._pending[slot] = option
-        return True
-
-    def _positions(self, spec: dict[str, Any]) -> dict[str, str | None]:
-        """Value per related position (the choices an assign-mode change resets)."""
-
-        related = spec.get("side_effects_of")
-        return {k: i.value for k, i in self._section.collection(related).items()} if related else {}
-
-    def _shown(self, pending: dict[str, str]) -> bool:
-        items = self._section.collection(self._collection)
-        return all(slot in items and items[slot].value == option for slot, option in pending.items())
-
-    def _track_side_effects(self, spec: dict[str, Any]) -> None:
-        after = self._positions(spec)
-        if not after:
-            return   # the collection could not be read: nothing can be said
-        base = self._baseline
-        self.side_effects = {
-            slot: (base.get(slot), after.get(slot))
-            for slot in sorted(set(base) | set(after), key=lambda x: (len(x), x))
-            if base.get(slot) != after.get(slot)
-        }
-
-    def discard(self) -> None:
-        self._pending.clear()
-        self._forget()
-
-    def _forget(self) -> None:
-        self._baseline = {}
-        self._baseline_items = {}
-        self._baseline_controls = {}
-        self.side_effects = {}
-
-    @property
-    def restorable(self) -> bool:
-        """An apply was done and what the receiver had before it is known."""
-
-        return bool(self._baseline)
-
-    async def async_restore(self) -> list[str]:
-        """Put everything back as it was before the first apply.
-
-        The receiver does not do this itself: going back to an assign mode leaves
-        the other positions on their defaults, and one position can bring others
-        back. So the mode first, then position by position, re-reading after each
-        pass, until nothing differs or nothing changes any more. Only values the
-        receiver currently allows are written. Returns what could not be restored.
-        """
-
-        if not self._baseline:
-            return []
-        spec = self._section.collection_spec(self._collection) or {}
-        self._pending.clear()
-        related = spec.get("side_effects_of")
-        await self._section.refresh()
-        for collection, wanted in ((self._collection, self._baseline_items), (related, self._baseline)):
-            for _ in range(int(spec.get("restore_passes", 3))):
-                todo = self._restore_todo(collection, wanted)
-                if not todo:
-                    break
-                before = self._values(collection)
-                for slot in todo:
-                    if slot not in self._restore_todo(collection, wanted):
-                        continue   # an earlier write in this pass brought it back
-                    await self._section.async_set_item(collection, slot, wanted[slot], staged_apply=True)
-                    await asyncio.sleep(float(spec.get("apply_settle_seconds", 2.0)))
-                    await self._section.refresh()
-                if self._values(collection) == before:
-                    break   # no progress
-        left = [
-            f"{slot}" for slot, value in self._baseline.items() if self._values(related).get(slot) != value
-        ]
-        items = self._values(self._collection)
-        left += [slot for slot, value in self._baseline_items.items() if items.get(slot) != value]
-        if not left and self._set_control is not None:
-            for control_id, value in self._baseline_controls.items():
-                if value is not None and self._get_control(control_id) != value:
-                    await self._set_control(control_id, value)
-        if left:
-            self._track_side_effects(spec)
-        else:
-            self._forget()
-        return left
-
-    def _values(self, collection: str) -> dict[str, str | None]:
-        return {k: i.value for k, i in self._section.collection(collection).items()}
-
-    def _restore_todo(self, collection: str, wanted: dict[str, str | None]) -> list[str]:
-        """Slots that differ and that the receiver lets us set back right now."""
-
-        items = self._section.collection(collection)
-        return [
-            slot
-            for slot in sorted(wanted, key=lambda x: (len(x), x))
-            if slot in items
-            and wanted[slot] is not None
-            and items[slot].value != wanted[slot]
-            and items[slot].availability.settable
-            and wanted[slot] in items[slot].options
-        ]
-
-    async def async_apply(self) -> dict[str, bool]:
-        """Write every staged item, then verify it: the receiver rebuilds the
-        layout after a change (its own UI re-reads after about 2 s), so wait, re-read
-        and count an item as accepted only when the receiver now reports the value.
-        Returns slot -> accepted."""
-
-        pending = dict(self._pending)
-        self._pending.clear()
-        spec = self._section.collection_spec(self._collection) or {}
-        # The baseline of the side effects is what the receiver had before the FIRST
-        # apply; it stays until the positions are back, or ``discard``. Read it now:
-        # the cached poll can be a minute old.
-        if pending and not self._baseline:
-            await self._section.refresh()
-            self._baseline = self._positions(spec)
-            self._baseline_items = {k: v for k, v in self._values(self._collection).items() if k in pending}
-            self._baseline_controls = {c: self._get_control(c) for c in spec.get("restore_controls", ())}
-        sent = {}
-        for slot, option in pending.items():
-            sent[slot] = await self._section.async_set_item(
-                self._collection, slot, option, staged_apply=True
-            )
-        if any(sent.values()):
-            for _ in range(int(spec.get("apply_attempts", 1))):
-                await asyncio.sleep(float(spec.get("apply_settle_seconds", 2.0)))
-                await self._section.refresh()
-                if self._shown(pending):
-                    break
-            self._track_side_effects(spec)
-        items = self._section.collection(self._collection)
-        return {
-            slot: sent[slot] and items.get(slot) is not None and items[slot].value == option
-            for slot, option in pending.items()
-        }

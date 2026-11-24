@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Denon AVR",
-        "description": "Enter the IP address of your Denon receiver. The name and capabilities are read from the device automatically.",
+        "description": "Enter the IP address of your Denon or Marantz receiver. The name and capabilities are read from the device automatically.",
         "data": {
           "host": "IP address"
         }
@@ -15,7 +15,7 @@
       },
       "reconfigure": {
         "title": "Denon AVR",
-        "description": "Update the IP address of your Denon receiver.",
+        "description": "Update the IP address of your Denon or Marantz receiver.",
         "data": {
           "host": "IP address"
         }
@@ -471,13 +471,19 @@
       "message": "The receiver does not allow speaker layout {option}."
     },
     "speaker_layout_not_applied": {
-      "message": "The receiver did not accept the speaker layout change."
+      "message": "The receiver did not confirm the speaker layout change. If it changed anything, Restore speaker layout puts it back."
     },
     "web_setting_not_applied": {
       "message": "The receiver did not confirm the setting."
     },
     "speaker_layout_not_restored": {
-      "message": "Could not restore layout positions {positions}; check them on the receiver."
+      "message": "Not everything could be restored: {positions}. Check it on the receiver."
+    },
+    "speaker_layout_restore_unavailable": {
+      "message": "The receiver did not answer or is busy; nothing was restored."
+    },
+    "speaker_layout_restore_stale": {
+      "message": "The speaker preset or layout was changed on the receiver since; nothing was restored."
     }
   },
   "issues": {

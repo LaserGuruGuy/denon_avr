@@ -59,11 +59,26 @@ class StateSync:
         # unchanged (the periodic signal cluster, list lines before END) does not
         # notify Home Assistant.
         self._fingerprint = self._snapshot()
+        self._expected: list[tuple[str, asyncio.Future]] = []   # awaited answers
         # Diagnostics counters (since start): what the push/refresh machinery did.
         self.stats: dict[str, object] = {
             "lines": 0, "lines_unknown": 0, "notifies": 0, "polls": 0,
             "refresh_groups": {}, "web_refreshes": {},
         }
+
+    async def async_answer(self, query: str, prefix: str, timeout: float = 2.0) -> bool:
+        """Send a query and wait for a line with this prefix; False on silence."""
+
+        entry = (prefix, asyncio.get_running_loop().create_future())
+        self._expected.append(entry)
+        try:
+            await self._sink.async_send(query)
+            await asyncio.wait_for(entry[1], timeout)
+        except (TimeoutError, OSError):
+            return False
+        finally:
+            self._expected.remove(entry)
+        return True
 
     def _notify(self) -> None:
         self.stats["notifies"] += 1
@@ -77,6 +92,9 @@ class StateSync:
     def handle_line(self, line: str) -> None:
         """Feed a received telnet line to the parser and notify on change."""
 
+        for prefix, future in self._expected:
+            if line.startswith(prefix) and not future.done():
+                future.set_result(None)
         changed = False
         understood = self._parser.understands(line)
         self.stats["lines"] += 1
