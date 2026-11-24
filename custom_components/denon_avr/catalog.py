@@ -195,6 +195,16 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
             add(EntityEntry("sensor", "subwoofer_setup", "sensor_subwoofer_mode", "speakers", params={"which": "mode"}))
             add(EntityEntry("sensor", "subwoofer_setup", "sensor_subwoofer_layout", "speakers", params={"which": "layout"}))
 
+    # How each speaker position is connected (Web Control, read only).
+    spec = device.speaker_config.collection_spec("speaker_connection") or {}
+    prefix = "sensor_connection_"
+    slots = set(device.speaker_config.collection("speaker_connection")) | {
+        key[len(prefix):] for key in known_keys if key.startswith(prefix)
+    }
+    for slot in sorted(slots, key=lambda x: (len(x), x)):
+        if slot in spec.get("position_keys", {}):
+            add(EntityEntry("sensor", "speaker_connection", f"{prefix}{slot}", "speakers", params={"slot": slot}))
+
     # switch -------------------------------------------------------------------
     for spec in profile.controls.values():
         if spec.kind == "onoff" and supported(spec):

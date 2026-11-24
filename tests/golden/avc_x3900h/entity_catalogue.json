@@ -1240,6 +1240,34 @@
  },
  {
   "enabled": true,
+  "key": "sensor_connection_2",
+  "kind": "speaker_connection",
+  "platform": "sensor",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "sensor_connection_3",
+  "kind": "speaker_connection",
+  "platform": "sensor",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "sensor_connection_4",
+  "kind": "speaker_connection",
+  "platform": "sensor",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
+  "key": "sensor_connection_5",
+  "kind": "speaker_connection",
+  "platform": "sensor",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
   "key": "switch_main_power",
   "kind": "control",
   "platform": "switch",

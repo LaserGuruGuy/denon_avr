@@ -144,8 +144,11 @@ the sub‑device its setting belongs to.
   **Restore** puts it back as it was.
 - **Sensors** (diagnostic): sample rate, decoder, audio format, input signal (named
   where the code is known, else `code_<nn>`),
-  mode info, sound mode, volume (dB), amplifier mode, effect speakers, and the
-  subwoofer directional mode and layout (with two or more subwoofers).
+  mode info, sound mode, volume (dB), amplifier mode, effect speakers, the
+  subwoofer directional mode and layout (with two or more subwoofers), video and HDR
+  in and out (as the receiver words it; `---` = none; HDR values not tested on
+  hardware), the active input channels and speakers (e.g. 5.1.4), and how each
+  speaker position is connected (Web Control generation).
 - **Binary sensor**: telnet connectivity.
 
 Per channel trims and distances, and per group crossovers and sizes, for

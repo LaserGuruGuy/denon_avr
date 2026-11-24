@@ -589,3 +589,24 @@ async def test_eq_apply_never_writes_unread_bands(make_device, monkeypatch):
     await eq.set_band("Eq1kHz", 3.0)
     count = len(writes)
     assert await eq.apply() is False and len(writes) == count                               # old channel's curve not copied
+
+
+async def test_speaker_connection_shows_the_effective_state(make_device, monkeypatch):
+    """Conn 1 = speaker and pre-out; with the amplifier off every position is 2 (measured)."""
+
+    import re
+
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    conn = dev.speaker_config.collection("speaker_connection")
+    assert {k: conn[k].value for k in ("2", "3", "4", "5")} == {"2": "1", "3": "1", "4": "1", "5": "0"}
+    assert conn["2"].availability.present
+    assert await dev.speaker_config.async_set_item("speaker_connection", "2", "2", staged_apply=True) is False
+    original = type(fx).file
+    doc = re.sub(r"(<Conn display=\")\d(\"><Value>)\d", r"\g<1>2\g<2>2", original(fx, "ajax_speakers_15.xml"))
+    monkeypatch.setattr(type(fx), "file", lambda self, n: doc if n == "ajax_speakers_15.xml" else original(self, n))
+    await dev.speaker_config.refresh()
+    assert dev.speaker_config.collection("speaker_connection")["2"].value == "2"
+    old, *_ = make_device("avr_x3600h")
+    await old.async_discover()
+    assert old.speaker_config.collection("speaker_connection") == {}

@@ -68,3 +68,11 @@ def test_readonly_code_keys_are_translated(lang):
             states = LANGS[lang]["entity"]["sensor"][control_id]["state"]
             assert keys == set(states), control_id
             assert len(keys) == len(spec["value_keys"])          # one key per code
+
+
+@pytest.mark.parametrize("lang", sorted(LANGS))
+def test_speaker_connection_is_translated(lang):
+    spec = next(c for c in SPEAKERS["collections"] if c["id"] == "speaker_connection")
+    sensor = LANGS[lang]["entity"]["sensor"]
+    for name in spec["position_keys"].values():
+        assert set(sensor[f"speaker_connection_{name}"]["state"]) == set(spec["value_keys"].values())

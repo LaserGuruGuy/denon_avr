@@ -86,6 +86,7 @@
    }
   },
   "collections": {
+   "speaker_connection": {},
    "speaker_layout_assign": {},
    "speaker_layout_config": {}
   },

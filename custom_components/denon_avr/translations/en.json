@@ -152,6 +152,78 @@
             "name": "Channels"
           }
         }
+      },
+      "speaker_connection_front": {
+        "name": "Front connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_center": {
+        "name": "Center connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_surround": {
+        "name": "Surround connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_surround_back": {
+        "name": "Surround back connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_front_wide": {
+        "name": "Front wide connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_height_front": {
+        "name": "Height front connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_height_middle": {
+        "name": "Height middle connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_height_rear": {
+        "name": "Height rear connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
+      },
+      "speaker_connection_top_surround": {
+        "name": "Top surround connection",
+        "state": {
+          "none": "None",
+          "speaker_and_preout": "Speaker and pre-out",
+          "preout_only": "Pre-out only"
+        }
       }
     },
     "select": {

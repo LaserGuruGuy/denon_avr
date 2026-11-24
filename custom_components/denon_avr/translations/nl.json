@@ -152,6 +152,78 @@
             "name": "Kanalen"
           }
         }
+      },
+      "speaker_connection_front": {
+        "name": "Verbinding voor",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_center": {
+        "name": "Verbinding center",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_surround": {
+        "name": "Verbinding surround",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_surround_back": {
+        "name": "Verbinding surround achter",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_front_wide": {
+        "name": "Verbinding voor breed",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_height_front": {
+        "name": "Verbinding hoogte voor",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_height_middle": {
+        "name": "Verbinding hoogte midden",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_height_rear": {
+        "name": "Verbinding hoogte achter",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
+      },
+      "speaker_connection_top_surround": {
+        "name": "Verbinding boven",
+        "state": {
+          "none": "Geen",
+          "speaker_and_preout": "Luidspreker en pre-out",
+          "preout_only": "Alleen pre-out"
+        }
       }
     },
     "select": {

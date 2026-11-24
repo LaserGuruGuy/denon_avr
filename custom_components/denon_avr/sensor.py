@@ -32,6 +32,7 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {
+        "speaker_connection": lambda e: DenonAvrSpeakerConnectionSensor(coordinator, e.params["slot"]),
         "readonly": lambda e: _readonly_class(coordinator.device.profile.readonly[e.params["control_id"]])(
             coordinator, e.params["control_id"]
         ),
@@ -211,3 +212,30 @@ class DenonAvrSubwooferSetupSensor(_EnumKeySensor):
     @property
     def native_value(self) -> str | None:
         return subwoofer_setup(self.coordinator.device, self._which)
+
+
+class DenonAvrSpeakerConnectionSensor(_EnumKeySensor):
+    """How a speaker position is connected now: speakers and pre-out, or pre-out only."""
+
+    _web_backed = True   # setup web interface, not telnet
+
+    def __init__(self, coordinator: DenonAvrCoordinator, slot: str) -> None:
+        super().__init__(coordinator, f"sensor_connection_{slot}", sub_device="speakers")
+        self._slot = slot
+        spec = coordinator.device.speaker_config.collection_spec("speaker_connection") or {}
+        self._keys: dict[str, str] = spec.get("value_keys", {})
+        self._known = list(self._keys.values())
+        self._attr_translation_key = f"speaker_connection_{spec['position_keys'][slot]}"
+
+    def _item(self):
+        return self.coordinator.device.speaker_config.collection("speaker_connection").get(self._slot)
+
+    @property
+    def available(self) -> bool:
+        item = self._item()
+        return super().available and item is not None and item.availability.present
+
+    @property
+    def native_value(self) -> str | None:
+        item = self._item()
+        return self._keys.get(item.value, f"option_{item.value}") if item is not None and item.value else None
