@@ -87,8 +87,10 @@
   "title": null
  },
  "readonly": {
+  "active_speakers": "11111100000000000000000000000000",
   "audio_format": "/ /.0",
   "decoder": "Unknown",
+  "input_channels": "11111111111111000000",
   "input_signal": "12",
   "mode_info": "Multi Ch Stereo",
   "sample_rate": null

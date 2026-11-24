@@ -587,6 +587,10 @@ class TelnetParser:
             state.readonly[control_id] = (
                 None if token == self._profile.no_signal_token else token
             )
+        elif kind == "channels":
+            text = remainder.strip()
+            if re.fullmatch(r"[0-9]+", text):
+                state.readonly[control_id] = text
         elif kind == "trimmed":
             state.readonly[control_id] = remainder.rstrip() or None
         else:

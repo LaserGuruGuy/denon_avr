@@ -19,6 +19,7 @@ from .models import (
     ZoneDescriptor,
     ZoneState,
 )
+from .protocol.channel_map import ChannelMap, decode as decode_channels
 from .protocol.eq_doc import band_tag as eq_band_tag
 from .protocol.eq_doc import channel_options as eq_channel_options
 from .protocol.profile import ControlSpec, ProtocolProfile, load_profile
@@ -36,6 +37,8 @@ __all__ = [
     "SourceDescriptor",
     "ZoneDescriptor",
     "ZoneState",
+    "ChannelMap",
+    "decode_channels",
     "eq_band_tag",
     "eq_channel_options",
     "load_profile",

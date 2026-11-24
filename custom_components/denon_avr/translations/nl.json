@@ -124,6 +124,34 @@
       },
       "speaker_layout_protocol": {
         "name": "Effectluidsprekers (hoogte/breed)"
+      },
+      "video_input": {
+        "name": "Video-ingang"
+      },
+      "video_output": {
+        "name": "Video-uitgang"
+      },
+      "hdr_input": {
+        "name": "HDR-ingang"
+      },
+      "hdr_output": {
+        "name": "HDR-uitgang"
+      },
+      "input_channels": {
+        "name": "Ingangskanalen",
+        "state_attributes": {
+          "channels": {
+            "name": "Kanalen"
+          }
+        }
+      },
+      "active_speakers": {
+        "name": "Actieve luidsprekers",
+        "state_attributes": {
+          "channels": {
+            "name": "Kanalen"
+          }
+        }
       }
     },
     "select": {

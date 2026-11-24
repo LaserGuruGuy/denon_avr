@@ -103,8 +103,10 @@
   "title": null
  },
  "readonly": {
+  "active_speakers": "22222200000000000000000000000000",
   "audio_format": "3/2/.1",
   "decoder": "PCM",
+  "input_channels": "22222211111111000000",
   "input_signal": "02",
   "mode_info": "Multi Ch In",
   "sample_rate": "48K"

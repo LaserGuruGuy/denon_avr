@@ -1,0 +1,38 @@
+"""Decode the receiver's channel grids (OPINFINS / OPINFASP): pure text, no I/O.
+
+Each position of the text is a channel: 2 = active, 1 = known but not active, 0 = not
+there. The names per position come from the profile; a position without a name is
+reported by its number, never dropped or guessed.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any
+
+ACTIVE = "2"
+
+
+@dataclass(frozen=True)
+class ChannelMap:
+    """The active channels and their layout, e.g. "5.1" or "7.1.2"."""
+
+    layout: str | None
+    active: tuple[str, ...] = ()
+
+
+def decode(text: str | None, spec: dict[str, Any]) -> ChannelMap:
+    if not text:
+        return ChannelMap(None)
+    names = spec.get("positions", {})
+    lfe = set(spec.get("lfe", ()))
+    height = set(spec.get("height", ()))
+    active = tuple(names.get(str(i), f"ch{i}") for i, c in enumerate(text.strip()) if c == ACTIVE)
+    if not active:
+        return ChannelMap(None)
+    lfe_count = sum(1 for c in active if c in lfe)
+    height_count = sum(1 for c in active if c in height)
+    unnamed = sum(1 for c in active if c.startswith("ch") and c not in names.values())
+    bed = len(active) - lfe_count - height_count - unnamed
+    layout = f"{bed}.{lfe_count}" + (f".{height_count}" if height_count else "")
+    return ChannelMap(layout + (f"+{unnamed}" if unnamed else ""), active)

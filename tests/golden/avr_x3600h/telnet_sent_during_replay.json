@@ -1,8 +1,15 @@
 [
  "OPSML ?",
+ "SSINFAISSIG ?",
+ "SSINFAISFSV ?",
+ "SSINFAISFOR ?",
+ "SYSDA ?",
+ "SYSMI ?",
  "CV?",
  "SSLEV ?",
  "SSSPC ?",
  "SSCFR ?",
- "SSSDE ?"
+ "SSSDE ?",
+ "SYSDV ?",
+ "SSINFSIGHDR ?"
 ]

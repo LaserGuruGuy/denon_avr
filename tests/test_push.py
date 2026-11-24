@@ -26,6 +26,10 @@ async def _started(make_device, fixture="avc_x3900h"):
 
 async def test_repeated_signal_cluster_does_not_notify(make_device):
     dev, _session, telnet, fired = await _started(make_device)
+    for line in SIGNAL_CLUSTER:              # the first grid values are a real change
+        telnet.feed(line)
+    await asyncio.sleep(0.2)
+    fired.clear()
     for _ in range(3):                       # the X3900H pushes this every ~5 s
         for line in SIGNAL_CLUSTER:
             telnet.feed(line)

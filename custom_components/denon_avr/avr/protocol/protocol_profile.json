@@ -322,6 +322,12 @@
       "prefix": "SYSDA ",
       "doc": "Active decoder/audio format, for example 'PCM' (space padded)."
     },
+    "video_input": {"kind": "passthrough", "name": "Video Input", "query": "SYSDV ?", "prefix": "SYSDVIN", "doc": "Video input signal as the receiver words it (1080p60 on one firmware, 1080p:60Hz on another); --- = none through the receiver."},
+    "video_output": {"kind": "passthrough", "name": "Video Output", "query": "SYSDV ?", "prefix": "SYSDVOUT", "doc": "Video output signal, as the receiver words it."},
+    "hdr_input": {"kind": "passthrough", "name": "HDR Input", "query": "SSINFSIGHDR ?", "prefix": "SSINFSIGHDR I", "doc": "HDR of the input signal, as the receiver words it; --- = none. Only --- seen on hardware so far."},
+    "hdr_output": {"kind": "passthrough", "name": "HDR Output", "query": "SSINFSIGHDR ?", "prefix": "SSINFSIGHDR O", "doc": "HDR of the output signal, as the receiver words it."},
+    "input_channels": {"kind": "channels", "name": "Input Channels", "query": "OPINFINS ?", "prefix": "OPINFINS", "positions": {"0": "FL", "1": "FR", "2": "C", "3": "LFE", "4": "SL", "5": "SR", "6": "SBL", "7": "SBR", "8": "SB"}, "lfe": ["LFE"], "height": [], "doc": "Channels of the input signal; pushed. Positions verified against stereo and 5.1 signals; object audio shows its bed (7.1)."},
+    "active_speakers": {"kind": "channels", "name": "Active Speakers", "query": "OPINFASP ?", "prefix": "OPINFASP", "positions": {"0": "FL", "1": "FR", "2": "C", "3": "SW", "4": "SL", "5": "SR", "6": "SBL", "7": "SBR", "8": "SB", "9": "FHL", "10": "FHR", "15": "RHL", "16": "RHR"}, "lfe": ["SW"], "height": ["FHL", "FHR", "RHL", "RHR"], "doc": "Speakers that play now; pushed. Positions 0-8, 9/10 and 15/16 verified against known setups; others are shown by number."},
     "mode_info": {
       "kind": "trimmed",
       "name": "Mode Info",
@@ -338,6 +344,7 @@
         "on": ["SSINFAISSIG", "SSINFAISFSV", "SSINFAISFOR", "SYSDA"],
         "debounce": 1.0
       },
+      "video_info": {"doc": "Video and HDR signal info: re-read on a source or signal change.", "on": ["SI", "SYSDV", "SSINFAISSIG"], "queries": ["SYSDV ?", "SSINFSIGHDR ?"], "debounce": 2.0},
       "audio_info": {
         "queries": ["SSINFAISSIG ?", "SSINFAISFSV ?", "SSINFAISFOR ?", "SYSDA ?", "SYSMI ?"],
         "on": ["MS", "SI"],

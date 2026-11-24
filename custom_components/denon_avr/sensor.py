@@ -17,7 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .avr import AvrState
+from .avr import ChannelMap, decode_channels, AvrState
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import amp_mode, is_preamplifier, subwoofer_setup
@@ -32,17 +32,23 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {
-        "readonly": lambda e: (
-            DenonAvrCodeSensor
-            if coordinator.device.profile.readonly[e.params["control_id"]].get("value_keys")
-            else DenonAvrReadonlySensor
-        )(coordinator, e.params["control_id"]),
+        "readonly": lambda e: _readonly_class(coordinator.device.profile.readonly[e.params["control_id"]])(
+            coordinator, e.params["control_id"]
+        ),
         "sound_mode": lambda e: DenonAvrSoundModeSensor(coordinator),
         "volume_db": lambda e: DenonAvrVolumeSensor(coordinator),
         "amp_mode": lambda e: DenonAvrAmpModeSensor(coordinator),
         "subwoofer_setup": lambda e: DenonAvrSubwooferSetupSensor(coordinator, e.params["which"]),
     }
     setup_catalogue_platform(coordinator, "sensor", factories, async_add_entities)
+
+
+def _readonly_class(spec: dict) -> type:
+    """The sensor class for a read only field, by the kind of value it carries."""
+
+    if spec.get("kind") == "channels":
+        return DenonAvrChannelsSensor
+    return DenonAvrCodeSensor if spec.get("value_keys") else DenonAvrReadonlySensor
 
 
 class DenonAvrReadonlySensor(DenonAvrEntity, SensorEntity):
@@ -142,6 +148,29 @@ class DenonAvrCodeSensor(_EnumKeySensor):
     @property
     def extra_state_attributes(self) -> dict[str, str | None]:
         return {"code": self._code}
+
+
+class DenonAvrChannelsSensor(DenonAvrEntity, SensorEntity):
+    """The active channels of a channel grid as a layout, e.g. 5.1 or 5.1.4."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: DenonAvrCoordinator, control_id: str) -> None:
+        super().__init__(coordinator, f"sensor_{control_id}")
+        self._control_id = control_id
+        self._attr_translation_key = control_id
+        self._spec = coordinator.device.profile.readonly[control_id]
+
+    def _map(self) -> ChannelMap:
+        return decode_channels(self.coordinator.data.readonly.get(self._control_id), self._spec)
+
+    @property
+    def native_value(self) -> str | None:
+        return self._map().layout
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[str]]:
+        return {"channels": list(self._map().active)}
 
 
 class DenonAvrAmpModeSensor(_EnumKeySensor):

@@ -1156,6 +1156,48 @@
  },
  {
   "enabled": true,
+  "key": "sensor_video_input",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_video_output",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_hdr_input",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_hdr_output",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_input_channels",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_active_speakers",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
   "key": "sensor_mode_info",
   "kind": "readonly",
   "platform": "sensor",

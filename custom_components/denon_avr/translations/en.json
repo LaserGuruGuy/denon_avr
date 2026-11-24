@@ -124,6 +124,34 @@
       },
       "speaker_layout_protocol": {
         "name": "Speaker output (height/wide)"
+      },
+      "video_input": {
+        "name": "Video Input"
+      },
+      "video_output": {
+        "name": "Video Output"
+      },
+      "hdr_input": {
+        "name": "HDR Input"
+      },
+      "hdr_output": {
+        "name": "HDR Output"
+      },
+      "input_channels": {
+        "name": "Input Channels",
+        "state_attributes": {
+          "channels": {
+            "name": "Channels"
+          }
+        }
+      },
+      "active_speakers": {
+        "name": "Active Speakers",
+        "state_attributes": {
+          "channels": {
+            "name": "Channels"
+          }
+        }
       }
     },
     "select": {
