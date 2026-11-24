@@ -56,7 +56,16 @@ class DiscoveryService:
         xml_text = await self._fetch_device_info()
         if xml_text is None:
             raise ConnectionError(f"No Deviceinfo response from {self._host}")
-        return parse_device_info(xml_text).device
+        device = parse_device_info(xml_text).device
+        self._require_identity(device)
+        return device
+
+    def _require_identity(self, device: DeviceInfo) -> None:
+        """A document that does not parse, or names neither a model nor a MAC, is not
+        a receiver's Deviceinfo (another host, a truncated answer): not reachable."""
+
+        if device.model_name is None and device.mac_address is None:
+            raise ConnectionError(f"No usable Deviceinfo document from {self._host}")
 
     async def discover(self) -> Discovery:
         """Populate the discovery model; raises ConnectionError when unreachable."""
@@ -75,6 +84,7 @@ class DiscoveryService:
             enum_features,
             receiver_type=self._profile.receiver_type,
         )
+        self._require_identity(discovered.device)
         # Copy into the shared discovery object so the parser and entities keep
         # referencing a single instance.
         target = self._discovery

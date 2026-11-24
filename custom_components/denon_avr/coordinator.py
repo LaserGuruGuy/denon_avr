@@ -60,6 +60,9 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
         """
 
         await self.device.async_discover()
+        if self.config_entry.unique_id and not self.device.discovery.device.mac_address:
+            # Without the MAC every entity would be registered again under another id.
+            raise ConnectionError("Deviceinfo without a MAC address")
         await self.device.async_start()
         # Give the initial resync a moment so per channel entities can be built.
         await self.device.async_await_ready()
