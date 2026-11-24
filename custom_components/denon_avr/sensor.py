@@ -122,11 +122,7 @@ class _EnumKeySensor(DenonAvrEntity, SensorEntity):
 
 
 class DenonAvrCodeSensor(_EnumKeySensor):
-    """A read only field the receiver reports as a code (e.g. the input signal type).
-
-    Codes of the profile become a translated key; an unlisted code is shown as
-    ``code_<nn>``. The raw code stays available as an attribute.
-    """
+    """A read only field the receiver reports as a code."""
 
     def __init__(self, coordinator: DenonAvrCoordinator, control_id: str) -> None:
         super().__init__(coordinator, f"sensor_{control_id}")

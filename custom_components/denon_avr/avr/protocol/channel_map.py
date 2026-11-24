@@ -1,9 +1,4 @@
-"""Decode the receiver's channel grids (OPINFINS / OPINFASP): pure text, no I/O.
-
-Each position of the text is a channel: 2 = active, 1 = known but not active, 0 = not
-there. The names per position come from the profile; a position without a name is
-reported by its number, never dropped or guessed.
-"""
+"""Decode the receiver's channel grids (OPINFINS / OPINFASP)."""
 
 from __future__ import annotations
 
@@ -11,7 +6,6 @@ from dataclasses import dataclass
 from typing import Any
 
 ACTIVE = "2"
-# An explicit "none active" answer, in the receiver's own style; None = no answer.
 NONE = "---"
 
 

@@ -114,15 +114,7 @@ class StateSync:
             remainder = line[len(all_modes) :].strip()
             if remainder.startswith(self._profile.list_terminator):
                 self._tasks.create(self.query_current_sound_modes())
-        # Data driven refresh: any group whose trigger prefix this line matches
-        # gets a coalesced re-query - when the line changed something, or when the
-        # parser does not model it (then a change cannot be ruled out).
-        # A repeated, unchanged, understood push (the periodic signal cluster)
-        # re-queries nothing.
-        # The first line of a trigger after the start is the answer to our own resync
-        # (also when it changed nothing), so it re-queries nothing. Decided once per
-        # line: groups may share a prefix. A line the parser does not model is never
-        # asked for by the resync, so it is not skipped.
+        # The first line after the start answers our own resync.
         hits = {
             group_id: prefix
             for group_id, group in self._refresh_groups.items()
