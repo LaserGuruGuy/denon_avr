@@ -21,6 +21,8 @@ class DeviceInfo:
     # (they describe the streaming module, not the AVR).
     network_module_version: str | None = None
     firmware_revision: str | None = None
+    # As reported: DeviceInfoVers, CommApiVers, Gen, BrandCode, capability_version, moduleType.
+    versions: dict[str, str] = field(default_factory=dict)
     zone_count: int = 1
 
 

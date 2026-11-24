@@ -138,6 +138,14 @@
   "model_name": "AVR-X3600H",
   "network_module_version": "Aios 4.025",
   "serial_number": "BHB30000000000",
+  "versions": {
+   "BrandCode": "0",
+   "CommApiVers": "0301",
+   "DeviceInfoVers": "0001",
+   "Gen": "0002",
+   "capability_version": "4",
+   "moduleType": "Aios 4.025"
+  },
   "zone_count": 2
  },
  "feature_names": {

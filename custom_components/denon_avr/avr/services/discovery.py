@@ -10,7 +10,7 @@ from ..protocol import commands
 from ..protocol.deviceinfo import parse_device_info
 from ..protocol.profile import ProtocolProfile
 from ..protocol.telnet_parser import TelnetParser
-from ..protocol.upnp import parse_upnp_description
+from ..protocol.upnp import parse_upnp_description, parse_upnp_versions
 from .webconfig_doc import WebConfigSectionController
 
 TextFetch = Callable[[], Awaitable[str | None]]
@@ -118,6 +118,7 @@ class DiscoveryService:
         for attr, value in parse_upnp_description(xml_text).items():
             if getattr(device, attr, None) is None:
                 setattr(device, attr, value)
+        device.versions.update(parse_upnp_versions(xml_text))
 
     async def _probe_introspection(self) -> None:
         """Fill the telnet-discovered model over a short-lived connection."""

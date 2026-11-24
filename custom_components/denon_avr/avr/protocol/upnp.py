@@ -13,6 +13,23 @@ _UPNP_TAGS: dict[str, str] = {
     "modelNumber": "network_module_version",
     "firmwareRevision": "firmware_revision",
 }
+_VERSION_TAGS = ("capability_version", "moduleType")
+
+
+def parse_upnp_versions(xml_text: str) -> dict[str, str]:
+    """Extract the reported versions of the network module."""
+
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return {}
+    found: dict[str, str] = {}
+    for element in root.iter():
+        tag = element.tag.rsplit("}", 1)[-1]
+        text = (element.text or "").strip()
+        if tag in _VERSION_TAGS and text:
+            found.setdefault(tag, text)
+    return found
 
 
 def parse_upnp_description(xml_text: str) -> dict[str, str]:

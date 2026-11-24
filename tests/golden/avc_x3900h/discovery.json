@@ -167,6 +167,14 @@
   "model_name": "AVC-X3900H",
   "network_module_version": "Aios 6.5V",
   "serial_number": "DCWJ000000000",
+  "versions": {
+   "BrandCode": "0",
+   "CommApiVers": "0301",
+   "DeviceInfoVers": "0001",
+   "Gen": "0002",
+   "capability_version": "4",
+   "moduleType": "Aios 6.5V"
+  },
   "zone_count": 2
  },
  "feature_names": {

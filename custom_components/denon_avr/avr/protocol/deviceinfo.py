@@ -15,6 +15,8 @@ from ..models import (
 
 _LOGGER = logging.getLogger(__name__)
 
+_VERSION_TAGS = ("DeviceInfoVers", "CommApiVers", "Gen", "BrandCode")
+
 
 def _format_mac(raw: str | None) -> str | None:
     """Format a bare MAC such as '0005CD000001' as '00:05:cd:00:00:01'."""
@@ -47,6 +49,10 @@ def parse_device_info(
     # integration does, so the model reads cleanly.
     device.model_name = (root.findtext("ModelName") or "").strip().replace("*", "") or None
     device.mac_address = _format_mac(root.findtext("MacAddress"))
+    for tag in _VERSION_TAGS:
+        text = (root.findtext(tag) or "").strip()
+        if text:
+            device.versions[tag] = text
     if receiver_type:
         commapi = (root.findtext("CommApiVers") or "").strip()
         model = device.model_name or ""
