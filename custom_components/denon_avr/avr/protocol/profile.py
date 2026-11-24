@@ -174,6 +174,12 @@ class ProtocolProfile:
         return []
 
     @property
+    def poll_queries(self) -> list[str]:
+        """Queries sent with the reconcile poll while the main zone is on."""
+
+        return list(self.refresh.get("poll", {}).get("queries", ()))
+
+    @property
     def refresh_groups(self) -> dict[str, dict[str, Any]]:
         """Coalesced re-query groups keyed by id.
 

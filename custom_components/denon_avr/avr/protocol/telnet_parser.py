@@ -51,6 +51,8 @@ class TelnetParser:
         known = {"PW", "ZM", "MV", "MU", "SI", "MS", "SV", "CV", "Z"}
         known.update(spec.prefix for spec in profile.controls.values() if spec.prefix)
         known.update(spec.get("prefix", "") for spec in profile.readonly.values())
+        for spec in profile.readonly.values():
+            known.update(spec.get("also_understood", ()))
         known.update(spec.get("prefix", "") for spec in profile.introspection.values())
         known.discard("")
         self._known_prefixes = tuple(sorted(known, key=len, reverse=True))

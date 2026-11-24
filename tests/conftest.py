@@ -328,7 +328,10 @@ def fast_refresh(monkeypatch):
     original = profile_module.ProtocolProfile.refresh_groups.fget
 
     def scaled(self):
-        return {k: dict(v, debounce=float(v.get("debounce", 1.0)) / 20) for k, v in original(self).items()}
+        return {
+            k: dict(v, debounce=float(v.get("debounce", 1.0)) / 20, again=float(v.get("again", 0)) / 20)
+            for k, v in original(self).items()
+        }
 
     monkeypatch.setattr(profile_module.ProtocolProfile, "refresh_groups", property(scaled))
 

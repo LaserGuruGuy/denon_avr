@@ -16,7 +16,7 @@ READONLY = load_profile().readonly
         ("input_channels", "22111111111111000000", "2.0", ("FL", "FR")),
         ("input_channels", "22222211111111000000", "5.1", ("FL", "FR", "C", "LFE", "SL", "SR")),
         ("input_channels", "22222222111111000000", "7.1", None),
-        ("input_channels", "11111111111111000000", None, ()),
+        ("input_channels", "11111111111111000000", "---", ()),          # answered: none active
         ("active_speakers", "22222200000000000000000000000000", "5.1", None),
         ("active_speakers", "22202200000000000000000000000000", "5.0", None),      # no subwoofer
         ("active_speakers", "22121100000000000000000000000000", "2.1", ("FL", "FR", "SW")),
@@ -37,7 +37,6 @@ async def test_video_and_hdr_wording(make_device, fixture):
     dev, _session, telnet, _fx = make_device(fixture)
     await dev.async_discover()
     await dev.async_start()
-    client = type(dev._telnet).instances[-1] if hasattr(type(dev._telnet), "instances") else dev._telnet
     for line in (
         "SYSDVIN 1080p:60Hz", "SYSDVOUT 1080p60", "SYSDV END",
         "SSINFSIGHDR I --- ", "SSINFSIGHDR O---",
@@ -52,5 +51,87 @@ async def test_video_and_hdr_wording(make_device, fixture):
     assert r["input_channels"].startswith("222222")
     dev._sync.handle_line("SSINFSIGHDR IHDR10")
     assert dev.state.readonly["hdr_input"] == "HDR10"
-    assert client is not None
+    await dev.async_stop()
+
+
+ANSWERS = {                                                # measured
+    "SYSDV ?": ["SYSDVIN --- ", "SYSDVOUT 1080p60", "SYSDV END"],
+    "SSINFSIGHDR ?": ["SSINFSIGHDR I---", "SSINFSIGHDR O---"],
+    "SSINFAISSIG ?": ["SSINFAISSIG 02"],
+    "SSINFAISFSV ?": ["SSINFAISFSV 48K"],
+    "SSINFAISFOR ?": ["SSINFAISFOR 2/0/.0"],
+    "SYSDA ?": ["SYSDA PCM                  "],
+    "SYSMI ?": ["SYSMI Stereo"],
+    "OPINFINS ?": ["OPINFINS 22111111111111000000"],
+    "OPINFASP ?": ["OPINFASP 22121100000000000000000000000000"],
+    "PSFRONT?": ["PSFRONT SPB"],
+    "SPPR ?": ["SPPR 1"],
+}
+
+
+async def _settle(telnet, rounds=12):
+    """Let a receiver that answers everything settle; return what was still sent at the end."""
+
+    import asyncio
+
+    tail: list[str] = []
+    done = 0
+    for _ in range(rounds):
+        await asyncio.sleep(0.12)                              # > the scaled debounces
+        tail, done = telnet.sent[done:], len(telnet.sent)
+        for query in tail:
+            for line in ANSWERS.get(query, ()):
+                telnet.feed(line)
+    return tail
+
+
+@pytest.mark.parametrize("fixture", ["avc_x3900h", "avr_x3600h"])
+async def test_an_answering_receiver_comes_to_rest(make_device, fixture):
+    """No refresh group may be triggered by the answers to its own queries."""
+
+    dev, _session, telnet, fx = make_device(fixture)
+    await dev.async_discover()
+    await dev.async_start()
+    for rec in fx.telnet_corpus:
+        telnet.feed(rec["line"])
+    for lines in ANSWERS.values():
+        for line in lines:
+            telnet.feed(line)
+    await _settle(telnet)
+    telnet.sent.clear()
+    cluster = ["SSINFAISSIG 02", "OPINFINS 22111111111111000000", "SYSDA PCM", "OPINFASP 22121100000000000000000000000000"]
+    for _ in range(3):
+        for line in cluster:
+            telnet.feed(line)
+    assert await _settle(telnet) == [] and telnet.sent == []
+    await dev.async_stop()
+
+
+async def test_a_signal_change_reads_video_twice_and_stops(make_device):
+    dev, _session, telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    for rec in fx.telnet_corpus:
+        telnet.feed(rec["line"])
+    for lines in ANSWERS.values():
+        for line in lines:
+            telnet.feed(line)
+    await _settle(telnet)
+    telnet.sent.clear()
+    telnet.feed("SSINFAISSIG 25")
+    await _settle(telnet)
+    assert telnet.sent.count("SYSDV ?") == 2                    # after the change, and after the handshake
+    await dev.async_stop()
+
+
+async def test_poll_reads_video_only_while_on(make_device):
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    for line, expected in (("ZMOFF", 0), ("ZMON", 1)):
+        telnet.feed(line)
+        await _settle(telnet)
+        telnet.sent.clear()
+        await dev._sync.async_reconcile(dev._goform.async_get_status, lambda: True, ())
+        assert telnet.sent.count("SYSDV ?") == expected, line
     await dev.async_stop()

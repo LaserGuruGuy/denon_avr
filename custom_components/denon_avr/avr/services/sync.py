@@ -119,16 +119,22 @@ class StateSync:
         # parser does not model it (then a change cannot be ruled out).
         # A repeated, unchanged, understood push (the periodic signal cluster)
         # re-queries nothing.
+        # The first line of a trigger after the start is the answer to our own resync
+        # (also when it changed nothing), so it re-queries nothing. Decided once per
+        # line: groups may share a prefix. A line the parser does not model is never
+        # asked for by the resync, so it is not skipped.
+        hits = {
+            group_id: prefix
+            for group_id, group in self._refresh_groups.items()
+            if (prefix := next((p for p in group.get("on") or () if line.startswith(p)), None)) is not None
+        }
+        fresh = {prefix for prefix in hits.values() if prefix not in self._seen_triggers}
+        self._seen_triggers |= fresh
         if understood and not changed:
             return
-        for group_id, group in self._refresh_groups.items():
-            prefix = next((p for p in group.get("on") or () if line.startswith(p)), None)
-            if prefix is None:
-                continue
-            if prefix not in self._seen_triggers:
-                self._seen_triggers.add(prefix)
-                continue
-            self._schedule_refresh(group_id)
+        for group_id, prefix in hits.items():
+            if prefix not in fresh or not understood:
+                self._schedule_refresh(group_id)
 
     def handle_now_playing(self, snapshot: dict) -> None:
         self._state.now_playing = NowPlaying(**snapshot)
@@ -193,6 +199,7 @@ class StateSync:
         queries = list(group.get("queries", []))
         web_sections = [w for w in group.get("web", []) if w in self._web_refreshers]
         debounce = float(group.get("debounce", 1.0))
+        again = float(group.get("again", 0))
 
         async def _refresh() -> None:
             try:
@@ -201,6 +208,10 @@ class StateSync:
                     await self._sink.async_send(query)
                 for section in web_sections:
                     await self.refresh_web(section)
+                if again:
+                    await asyncio.sleep(again)
+                    for query in queries:
+                        await self._sink.async_send(query)
             except asyncio.CancelledError:
                 pass
             finally:
@@ -265,6 +276,9 @@ class StateSync:
             self._apply_http_status("main", status)
             self._fingerprint = self._snapshot()
             self._notify()
+        if telnet_connected() and self._state.zone("main").power:
+            for query in self._profile.poll_queries:
+                await self._sink.async_send(query)
         for refresh in refreshables:
             await refresh()
 

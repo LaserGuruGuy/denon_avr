@@ -147,7 +147,8 @@ the sub‑device its setting belongs to.
   mode info, sound mode, volume (dB), amplifier mode, effect speakers, the
   subwoofer directional mode and layout (with two or more subwoofers), video and HDR
   in and out (as the receiver words it; `---` = none; HDR values not tested on
-  hardware), the active input channels and speakers (e.g. 5.1.4), and how each
+  hardware), the active input channels and speakers (e.g. 5.1.4; `+n` counts positions without a
+  known name, object audio shows its bed), and how each
   speaker position is connected (Web Control generation).
 - **Binary sensor**: telnet connectivity.
 

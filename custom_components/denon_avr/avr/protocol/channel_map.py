@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from typing import Any
 
 ACTIVE = "2"
+# An explicit "none active" answer, in the receiver's own style; None = no answer.
+NONE = "---"
 
 
 @dataclass(frozen=True)
@@ -27,12 +29,13 @@ def decode(text: str | None, spec: dict[str, Any]) -> ChannelMap:
     names = spec.get("positions", {})
     lfe = set(spec.get("lfe", ()))
     height = set(spec.get("height", ()))
-    active = tuple(names.get(str(i), f"ch{i}") for i, c in enumerate(text.strip()) if c == ACTIVE)
+    positions = [str(i) for i, c in enumerate(text.strip()) if c == ACTIVE]
+    active = tuple(names.get(p, f"ch{p}") for p in positions)
     if not active:
-        return ChannelMap(None)
+        return ChannelMap(NONE)
     lfe_count = sum(1 for c in active if c in lfe)
     height_count = sum(1 for c in active if c in height)
-    unnamed = sum(1 for c in active if c.startswith("ch") and c not in names.values())
+    unnamed = sum(1 for p in positions if p not in names)
     bed = len(active) - lfe_count - height_count - unnamed
     layout = f"{bed}.{lfe_count}" + (f".{height_count}" if height_count else "")
     return ChannelMap(layout + (f"+{unnamed}" if unnamed else ""), active)
