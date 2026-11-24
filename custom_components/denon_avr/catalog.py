@@ -161,6 +161,8 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
     for control_id in profile.readonly:
         add(EntityEntry("sensor", "readonly", f"sensor_{control_id}", params={"control_id": control_id}))
     add(EntityEntry("sensor", "sound_mode", "sensor_sound_mode"))
+    if discovery.device.versions.get("moduleType") or "sensor_network_module" in known_keys:
+        add(EntityEntry("sensor", "network_module", "sensor_network_module"))
     add(EntityEntry("sensor", "volume_db", "sensor_volume_db"))
     if device.speaker_config.supported:
         # Amplifier assign mode incl. "pre-amplifier only" (read-only, diagnostic).

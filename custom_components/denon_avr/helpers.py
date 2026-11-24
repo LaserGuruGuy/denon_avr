@@ -145,7 +145,7 @@ def subwoofer_count_options(device) -> dict[str, str]:
 
 
 def is_size_token(device, token: str | None) -> bool:
-    """True when the receiver reports a speaker SIZE (older firmware."""
+    """True when the receiver reports a speaker size rather than presence."""
 
     return token in device.profile.speakers.get("tokens", {}).get("size", [])
 

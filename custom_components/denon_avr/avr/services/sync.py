@@ -46,6 +46,8 @@ class StateSync:
         self._web_running: set[str] = set()
         self._web_dirty: set[str] = set()
         self._seen_triggers: set[str] = set()
+        self._unmodelled: dict[tuple[str, str], str] = {}
+        self._again: dict[str, asyncio.TimerHandle] = {}
         # Fingerprint of what entities can see; a pushed line that leaves it unchanged (the
         # periodic signal cluster, list lines before END) does not notify Home Assistant.
         self._fingerprint = self._snapshot()
@@ -103,7 +105,7 @@ class StateSync:
             remainder = line[len(all_modes) :].strip()
             if remainder.startswith(self._profile.list_terminator):
                 self._tasks.create(self.query_current_sound_modes())
-        # The first line after the start answers our own resync.
+        # The first modelled line of a prefix answers our own resync.
         hits = {
             group_id: prefix
             for group_id, group in self._refresh_groups.items()
@@ -114,7 +116,13 @@ class StateSync:
         if understood and not changed:
             return
         for group_id, prefix in hits.items():
-            if prefix not in fresh or not understood:
+            if understood:
+                due = prefix not in fresh
+            else:
+                # Repeated text is no news: it may answer the group's own query.
+                due = self._unmodelled.get((group_id, prefix)) != line
+                self._unmodelled[(group_id, prefix)] = line
+            if due:
                 self._schedule_refresh(group_id)
 
     def handle_now_playing(self, snapshot: dict) -> None:
@@ -180,20 +188,41 @@ class StateSync:
         async def _refresh() -> None:
             try:
                 await asyncio.sleep(debounce)
+                self._refresh_scheduled.discard(group_id)
                 for query in queries:
                     await self._sink.async_send(query)
                 for section in web_sections:
                     await self.refresh_web(section)
                 if again:
-                    await asyncio.sleep(again)
-                    for query in queries:
-                        await self._sink.async_send(query)
+                    self._schedule_again(group_id, queries, again)
             except asyncio.CancelledError:
                 pass
-            finally:
                 self._refresh_scheduled.discard(group_id)
 
         self._tasks.create(_refresh())
+
+    def _schedule_again(self, group_id: str, queries: list[str], delay: float) -> None:
+        """One more read after a handshake; a newer trigger restarts the wait."""
+
+        if (timer := self._again.pop(group_id, None)) is not None:
+            timer.cancel()
+
+        async def _send() -> None:
+            for query in queries:
+                await self._sink.async_send(query)
+
+        def _fire() -> None:
+            self._again.pop(group_id, None)
+            self._tasks.create(_send())
+
+        self._again[group_id] = asyncio.get_running_loop().call_later(delay, _fire)
+
+    def cancel(self) -> None:
+        """Drop the pending second reads (unload)."""
+
+        for timer in self._again.values():
+            timer.cancel()
+        self._again.clear()
 
     async def refresh_web(self, section: str) -> None:
         """Re-read one web section now; coalesces triggers that arrive meanwhile."""
@@ -224,12 +253,15 @@ class StateSync:
         telnet_connected: Callable[[], bool],
         refreshables: Iterable[Callable[[], Awaitable[None]]],
     ) -> None:
-        """HTTP safety-net poll."""
+        """Reconcile over HTTP; also asks what telnet does not push."""
 
         self.stats["polls"] += 1
         main_path = self._profile.zones.get(
             "status_lite_main", "/goform/formMainZone_MainZoneXmlStatusLite.xml"
         )
+        if telnet_connected() and self._state.zone("main").power:
+            for query in self._profile.poll_queries:
+                await self._sink.async_send(query)
         status = await fetch_status(main_path)
         if status is None:
             for refresh in refreshables:
@@ -244,9 +276,6 @@ class StateSync:
             self._apply_http_status("main", status)
             self._fingerprint = self._snapshot()
             self._notify()
-        if telnet_connected() and self._state.zone("main").power:
-            for query in self._profile.poll_queries:
-                await self._sink.async_send(query)
         for refresh in refreshables:
             await refresh()
 

@@ -157,3 +157,49 @@ async def test_poll_reads_video_only_while_on(make_device):
         await dev._sync.async_reconcile(dev._goform.async_get_status, lambda: True, ())
         assert telnet.sent.count("SYSDV ?") == expected, line
     await dev.async_stop()
+
+
+async def test_an_unmodelled_answer_cannot_loop(make_device):
+    """A firmware that answers PSFRONT? with the trigger line itself still comes to rest."""
+
+    dev, _session, telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    answers = _recorded(fx)
+    answers["PSFRONT?"] = ["SSPAAMOD FRB", "PSFRONT SPB"]
+    for lines in answers.values():
+        for line in lines:
+            telnet.feed(line)
+    await _settle(telnet, answers=answers)
+    telnet.sent.clear()
+    telnet.feed("SSPAAMOD PRE")
+    assert await _settle(telnet, answers=answers) == []
+    assert 0 < telnet.sent.count("PSFRONT?") <= 2
+    await dev.async_stop()
+
+
+async def test_a_trigger_during_the_second_read_is_not_lost(make_device):
+    import asyncio
+
+    dev, _session, telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    for lines in _recorded(fx).values():
+        for line in lines:
+            telnet.feed(line)
+    await _settle(telnet)
+    telnet.sent.clear()
+    telnet.feed("SSINFAISSIG 25")
+    await asyncio.sleep(0.2)                         # first read done, waiting for the second
+    telnet.feed("SSINFAISSIG 02")
+    await _settle(telnet)
+    assert telnet.sent.count("SYSDV ?") == 3         # two triggers and one read after the last one
+    await dev.async_stop()
+
+
+async def test_hardware_type_does_not_depend_on_the_model_name():
+    from avr.protocol.deviceinfo import parse_device_info
+
+    for model in ("AVC-X3900H", "SR5015", "Something new"):
+        xml = f"<Device_Info><CommApiVers>0400</CommApiVers><ModelName>{model}</ModelName></Device_Info>"
+        assert parse_device_info(xml, interface_type="avr-x-2016").device.hardware_type == "avr-x-2016"

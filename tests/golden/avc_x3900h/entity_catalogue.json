@@ -1212,6 +1212,13 @@
  },
  {
   "enabled": true,
+  "key": "sensor_network_module",
+  "kind": "network_module",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
   "key": "sensor_volume_db",
   "kind": "volume_db",
   "platform": "sensor",

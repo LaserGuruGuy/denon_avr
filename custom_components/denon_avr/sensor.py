@@ -27,6 +27,7 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {
+        "network_module": lambda e: DenonAvrNetworkModuleSensor(coordinator),
         "speaker_connection": lambda e: DenonAvrSpeakerConnectionSensor(coordinator, e.params["slot"]),
         "readonly": lambda e: _readonly_class(coordinator.device.profile.readonly[e.params["control_id"]])(
             coordinator, e.params["control_id"]
@@ -137,6 +138,20 @@ class DenonAvrCodeSensor(_EnumKeySensor):
         return {"code": self._code}
 
 
+class DenonAvrNetworkModuleSensor(DenonAvrEntity, SensorEntity):
+    """The network (HEOS) module type the receiver reports."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "network_module"
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "sensor_network_module")
+
+    @property
+    def native_value(self) -> str | None:
+        return self.coordinator.device.discovery.device.versions.get("moduleType")
+
+
 class DenonAvrChannelsSensor(DenonAvrEntity, SensorEntity):
     """The active channels of a channel grid as a layout, e.g. 5.1 or 5.1.4."""
 
@@ -161,7 +176,7 @@ class DenonAvrChannelsSensor(DenonAvrEntity, SensorEntity):
 
 
 class DenonAvrAmpModeSensor(_EnumKeySensor):
-    """The amplifier assign mode, incl."""
+    """The amplifier assign mode."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "sensor_amp_mode", sub_device="speakers")

@@ -25,6 +25,15 @@ class DeviceInfo:
     versions: dict[str, str] = field(default_factory=dict)
     zone_count: int = 1
 
+    @property
+    def hardware_label(self) -> str | None:
+        """The interface type with the reported protocol version."""
+
+        api = self.versions.get("CommApiVers")
+        if self.hardware_type and api:
+            return f"{self.hardware_type} (CommApi {api})"
+        return self.hardware_type or api
+
 
 @dataclass
 class SourceDescriptor:
@@ -158,7 +167,7 @@ class NowPlaying:
 
 @dataclass
 class GraphicEqState:
-    """Manual graphic-EQ state read from the setup config API (port 10443)."""
+    """Manual graphic-EQ state read from the setup config API."""
 
     speaker_selection: str | None = None
     channel_index: int | None = None

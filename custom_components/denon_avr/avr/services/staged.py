@@ -25,7 +25,7 @@ class _Snapshot:
 
 @dataclass(frozen=True)
 class RestoreResult:
-    """Outcome."""
+    """Outcome: what is left, what was kept as newer, why it was refused."""
 
     left: tuple[str, ...] = ()
     newer: tuple[str, ...] = ()

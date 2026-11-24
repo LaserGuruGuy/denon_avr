@@ -75,7 +75,7 @@ class DiscoveryService:
             xml_text,
             feature_names,
             enum_features,
-            receiver_type=self._profile.receiver_type,
+            interface_type=self._profile.interface_type,
         )
         self._require_identity(discovered.device)
         # Copy into the shared discovery object so the parser and entities keep referencing a

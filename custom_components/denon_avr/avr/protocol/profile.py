@@ -93,9 +93,8 @@ class ProtocolProfile:
         self.introspection: dict[str, dict[str, Any]] = raw.get("introspection", {})
         self.readonly: dict[str, dict[str, Any]] = raw.get("readonly", {})
         self.refresh: dict[str, Any] = raw.get("refresh", {})
-        # Receiver-type classification (device hw_version), by CommApiVers / ModelName patterns,
-        # matching the official denonavr library.
-        self.receiver_type: dict[str, str] = raw.get("receiver_type", {})
+        # Named after the interface in use: Deviceinfo on port 8080.
+        self.interface_type: str | None = raw.get("receiver_type")
         self.controls: dict[str, ControlSpec] = {
             control_id: ControlSpec(control_id, data)
             for control_id, data in raw.get("controls", {}).items()

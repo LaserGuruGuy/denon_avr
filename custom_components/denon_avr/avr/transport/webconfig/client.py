@@ -36,7 +36,7 @@ class WebConfigClient:
         # discovery never holds up requests on an already known endpoint.
         self._request_lock = asyncio.Lock()
         self._discovery_lock = asyncio.Lock()
-        # Outcome of the last request at the transport level
+        # None until the first request.
         self._reachable: bool | None = None
         # Last outcome per document path (diagnostics): HTTP status or "error".
         self.last_status: dict[str, object] = {}

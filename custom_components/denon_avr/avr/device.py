@@ -249,6 +249,7 @@ class DenonAvrDevice:
 
         self._speaker_layout.stop()
         self._notifier.cancel()
+        self._sync.cancel()
         self._tasks.cancel_all()
         await self._telnet.async_stop()
         await self._heos.async_stop()

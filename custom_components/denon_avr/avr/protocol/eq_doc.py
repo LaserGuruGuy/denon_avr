@@ -33,7 +33,6 @@ def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
     if selection:
         state.speaker_selection = selection
 
-    # The enable flags live under a mode-specific sub-element
     flags = root.findtext("SelectableSpeaker/Each") or root.findtext(
         "SelectableSpeaker/LR"
     )

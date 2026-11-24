@@ -33,7 +33,7 @@ def parse_device_info(
     xml_text: str,
     feature_names: set[str] | None = None,
     enum_features: set[str] | None = None,
-    receiver_type: dict[str, str] | None = None,
+    interface_type: str | None = None,
 ) -> Discovery:
     """Parse the Deviceinfo XML into a Discovery object."""
 
@@ -53,16 +53,7 @@ def parse_device_info(
         text = (root.findtext(tag) or "").strip()
         if text:
             device.versions[tag] = text
-    if receiver_type:
-        commapi = (root.findtext("CommApiVers") or "").strip()
-        model = device.model_name or ""
-        is_avr_x = bool(
-            (commapi and re.search(receiver_type.get("commapi_pattern", ""), commapi))
-            or (model and re.search(receiver_type.get("avr_x_pattern", ""), model))
-        )
-        device.hardware_type = receiver_type.get(
-            "avr_x_type" if is_avr_x else "default_type"
-        )
+    device.hardware_type = interface_type
     zones_text = root.findtext("DeviceZones")
     if zones_text and zones_text.strip().isdigit():
         device.zone_count = max(1, int(zones_text.strip()))

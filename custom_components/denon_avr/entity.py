@@ -78,7 +78,7 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
             model=device_info.model_name,
             name=device_info.model_name or "Denon AVR",
             sw_version=device_info.firmware_version,
-            hw_version=device_info.hardware_type,
+            hw_version=device_info.hardware_label,
             serial_number=device_info.serial_number,
             # The receiver's own web control page, useful as a device link.
             configuration_url=self._device.configuration_url or f"http://{self._device.host}/",

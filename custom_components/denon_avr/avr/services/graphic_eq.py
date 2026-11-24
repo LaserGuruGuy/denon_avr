@@ -39,7 +39,6 @@ class GraphicEqController:
         self._channel = 0
         # The channel the bands in ``state`` were read for; None = not read (yet).
         self._read_channel: int | None = None
-        # grayed while a room correction is active.
         self.availability: Availability | None = None
 
     @property

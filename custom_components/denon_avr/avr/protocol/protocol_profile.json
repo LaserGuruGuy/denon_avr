@@ -284,13 +284,7 @@
       "doc": "OPSML lists the modes actually selectable in the CURRENT context/group, terminated by 'OPSML END'. Context aware: includes modes OPSMLALL omits (such as Auto) and marks the selected mode. Drives the sound mode select for the active group."
     }
   },
-  "receiver_type": {
-    "doc": "How the hardware/receiver type (device hw_version) is classified, matching the official denonavr library: it is the receiver TYPE (avr / avr-x / avr-x-2016), NOT the Deviceinfo Gen code. The library picks it by which port serves Deviceinfo.xml (80 -> avr-x, 8080 -> avr-x-2016) gated by an 'is AVR-X' test; this integration only uses the 8080 interface, so an AVR-X device is 'avr_x_type' and anything else is 'default_type'. A device is AVR-X when its CommApiVers matches commapi_pattern OR its ModelName matches avr_x_pattern (both regexes verbatim from the library). Read from the equipment, works for any model, no Gen map.",
-    "commapi_pattern": "(0210|0220|0250|0300|0301)",
-    "avr_x_pattern": "(.*AV([CR])-([XSA]).*|.*SR500[6-9]|.*SR60(07|08|09|10|11|12|13)|.*SR70(07|08|09|10|11|12|13)|.*SR501[3-4]|.*NR1604|.*NR1710)",
-    "avr_x_type": "avr-x-2016",
-    "default_type": "avr"
-  },
+  "receiver_type": "avr-x-2016",
   "readonly": {
     "speaker_layout_protocol": {"kind": "passthrough", "name": "Speaker output (height/wide)", "query": "PSSP: ?", "prefix": "PSSP:", "doc": "Effect speaker selection of the control protocol (PSSP:, e.g. HF = height front, FW = front wide); answers on both receivers. Read-only until its tokens are mapped and verified live."},
     "input_signal": {
