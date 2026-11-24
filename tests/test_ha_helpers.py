@@ -74,6 +74,16 @@ async def test_subwoofer_setup_follows_the_subwoofer_count(make_device):
     assert helpers.subwoofer_setup(new, "layout") is None         # not Directional
     telnet.feed("SSSPCSWM DIR")
     assert helpers.subwoofer_setup(new, "mode") == "option_DIR"   # unknown token shown, not dropped
+    # Measured on the AVC-X3900H (2026-11-24): DRC = Directional, 2FR = Front/Rear.
+    telnet.feed("SSSPCSWM DRC")
+    assert helpers.subwoofer_setup(new, "mode") == "directional"
+    assert helpers.subwoofer_setup(new, "layout") == "left_right"
+    telnet.feed("SSSPCSWL 2FR")
+    assert helpers.subwoofer_setup(new, "layout") == "front_rear"
+    # With 4 subwoofers SSSPCSWL keeps a 2-subwoofer value: not used, the setup
+    # document decides (it does not show the layout in this recording).
+    telnet.feed("SSSPCSWF 4SP")
+    assert helpers.subwoofer_setup(new, "layout") is None
     old, _ = await _device(make_device, "avr_x3600h")
     assert not helpers.has_subwoofer_setup(old)
     await new.async_stop()

@@ -243,7 +243,9 @@ def subwoofer_setup(device, which: str) -> str | None:
     if which == "layout" and subwoofer_setup(device, "mode") != "directional":
         return None
     token = device.state.speaker_sizes.get(telnet.get(f"{which}_group", ""))
-    if token:
+    # The telnet layout token is only meaningful for some counts (profile).
+    counts = telnet.get(f"{which}_counts")
+    if token and (counts is None or _subwoofer_count(device) in counts):
         return telnet.get(f"{which}_tokens", {}).get(token, f"option_{token}")
     item = device.speaker_config.collection("speaker_layout_config").get(spec.get(f"{which}_item", ""))
     if item is None or not item.availability.present or not item.value:

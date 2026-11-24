@@ -415,17 +415,17 @@
   "OPSML ?",
   "OPSML ?"
  ],
- "source:main=VIS": [
-  "SIBD"
- ],
  "source:main=TV Audio": [
   "SITV"
  ],
- "source:zone2=VIS": [
-  "Z2BD"
+ "source:main=VIS": [
+  "SIBD"
  ],
  "source:zone2=TV Audio": [
   "Z2TV"
+ ],
+ "source:zone2=VIS": [
+  "Z2BD"
  ],
  "speaker_size:CEN=SMA": [
   "SSSPCCEN SMA"

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -538,7 +538,8 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         for wire, label in self._ctrl.options(self._id).items():
             if label == option:
-                await self._ctrl.async_set(self._id, wire)
+                if not await self._ctrl.async_set(self._id, wire):
+                    raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_not_applied")
                 return
 
 
@@ -656,6 +657,7 @@ class DenonAvrSpeakerLayoutAssign(DenonAvrEntity, SelectEntity):
     """
 
     _attr_entity_category = EntityCategory.CONFIG
+    _unrecorded_attributes = frozenset({"changed_positions"})
     _web_backed = True
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
@@ -704,6 +706,12 @@ class DenonAvrSpeakerLayoutAssign(DenonAvrEntity, SelectEntity):
             # After a layout change the room correction (Audyssey / Dirac) must be
             # measured again (owner's manual).
             "remeasure_room_correction": True,
+            # Layout positions that differ from before the first apply ("item <n>" of the
+            # receiver's layout); going back to a mode does not restore them.
+            "changed_positions": {
+                f"item {slot}": {"before": b, "after": a}
+                for slot, (b, a) in self.coordinator.device.speaker_layout.side_effects.items()
+            },
         }
 
     async def async_select_option(self, option: str) -> None:

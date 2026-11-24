@@ -469,6 +469,15 @@
     },
     "speaker_layout_not_applied": {
       "message": "The receiver did not accept the speaker layout change."
+    },
+    "web_setting_not_applied": {
+      "message": "The receiver did not confirm the setting."
+    }
+  },
+  "issues": {
+    "speaker_layout_changed": {
+      "title": "Speaker layout changed other choices",
+      "description": "Applying the speaker layout also changed layout positions {positions}. The receiver does not restore these, nor the front speaker A/B choice, when you go back. Check them on the receiver and press Discard speaker layout change to dismiss this notice."
     }
   }
 }

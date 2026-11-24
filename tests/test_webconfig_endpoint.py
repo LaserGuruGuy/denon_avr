@@ -160,7 +160,7 @@ async def test_client_reprobes_after_failure_but_rate_limited(monkeypatch):
     del routes["http://h:11080/ajax/video/get_config"]
     assert await web.async_get("video", 1) is None and web.endpoint is None
     # ... and re-located on the next request once the interval has passed
-    clock[0] += client_module.REPROBE_INTERVAL + 1
+    clock[0] += client_module.REPROBE_DELAYS[0] + 1
     routes["http://h:11080/ajax/video/get_config"] = (200, {}, "<y/>")
     assert await web.async_get("video", 1) == "<y/>"
     # with no interface at all, discovery runs at most once per interval
@@ -203,3 +203,36 @@ async def test_offline_receiver_makes_web_unreachable(make_device, monkeypatch):
     monkeypatch.setattr(type(fx), "http", lambda self, url: None)                # everything refuses
     await dev.async_poll()
     assert dev.web_reachable is False
+
+
+async def test_reprobe_backs_off_and_resets(monkeypatch):
+    """A missed discovery is retried after 50, 110, then 300 s; a 60 s poll so sees it
+    at its next runs. Setup (well under 50 s) never discovers twice."""
+
+    clock = [1000.0]
+    real = asyncio.get_running_loop()
+
+    class _Loop:
+        def time(self):
+            return clock[0]
+
+        def __getattr__(self, name):
+            return getattr(real, name)
+
+    monkeypatch.setattr(client_module.asyncio, "get_running_loop", lambda: _Loop())
+    calls, found = [], [None]
+
+    async def discover(_session, _host):
+        calls.append(clock[0])
+        return found[0]
+
+    monkeypatch.setattr(client_module, "async_discover_endpoint", discover)
+    web = WebConfigClient(_Session({}), "h")
+    for _ in range(500):
+        await web.async_get("video", 1)
+        clock[0] += 1
+    assert [round(c - 1000) for c in calls] == [0, 50, 160, 460]
+    found[0] = endpoint_module.WebEndpoint("http", "h", 11080, "redirect")
+    clock[0] += 400
+    await web.async_get("video", 1)            # found, but /ajax itself does not answer
+    assert web._misses == 5                      # a found endpoint alone does not reset the count

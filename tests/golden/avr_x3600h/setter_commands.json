@@ -415,17 +415,17 @@
   "OPSML ?",
   "OPSML ?"
  ],
- "source:main=NOOT": [
-  "SIDVD"
- ],
  "source:main=AAP": [
   "SIBD"
  ],
- "source:zone2=NOOT": [
-  "Z2DVD"
+ "source:main=NOOT": [
+  "SIDVD"
  ],
  "source:zone2=AAP": [
   "Z2BD"
+ ],
+ "source:zone2=NOOT": [
+  "Z2DVD"
  ],
  "speaker_size:BKD=SMA": [
   "SSSPCBKD SMA"

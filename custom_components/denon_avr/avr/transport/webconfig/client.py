@@ -10,7 +10,7 @@ primary, documented control interface; this one only supplements it.
 The endpoint differs per interface generation and is located by
 :func:`.endpoint.async_discover_endpoint` on first use. Requests are serialised
 (one at a time towards the receiver). When the receiver stops answering at the
-transport level, the endpoint is re-located, at most once per ``REPROBE_INTERVAL``,
+transport level, the endpoint is re-located, rate-limited by ``REPROBE_DELAYS``,
 because a firmware update can move the interface. This client does not know the
 meaning of any section, config id or XML tag. An HTTPS endpoint uses a self-signed
 certificate, so verification is disabled. Every failure is swallowed and surfaced
@@ -30,8 +30,12 @@ from .endpoint import WebEndpoint, async_discover_endpoint
 
 _LOGGER = logging.getLogger(__name__)
 
-# Minimum time between two endpoint discoveries (seconds).
-REPROBE_INTERVAL = 300.0
+# Minimum time between two endpoint discoveries (seconds), by consecutive failures
+# (a missed discovery or a transport failure): soon again after the first, since a
+# busy receiver can miss one, then less often.
+# The first delay exceeds a slow setup, so setup never runs discovery twice; the
+# poll (every 60 s) is what retries, hence just under its multiples.
+REPROBE_DELAYS = (50.0, 110.0, 300.0)
 
 
 class WebConfigClient:
@@ -49,6 +53,7 @@ class WebConfigClient:
         self._fixed = endpoint is not None
         self._endpoint = endpoint
         self._probed_at: float | None = None
+        self._misses = 0          # consecutive failures (nothing found / transport error)
         # One request at a time towards the receiver; discovery has its own lock so
         # a slow discovery never holds up requests on an already known endpoint.
         self._request_lock = asyncio.Lock()
@@ -119,6 +124,7 @@ class WebConfigClient:
                     url, ssl=False, timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
                 ) as response:
                     self._reachable = True
+                    self._misses = 0
                     self.last_status[f"{path}?type={params.get('type')}"] = response.status
                     if response.status != 200:
                         _LOGGER.debug("%s returned HTTP %s", path, response.status)
@@ -128,6 +134,7 @@ class WebConfigClient:
                 _LOGGER.debug("GET %s failed: %s", path, err)
                 self._reachable = False
                 self.last_status[f"{path}?type={params.get('type')}"] = "error"
+                self._misses += 1
                 self._invalidate(endpoint)
                 return None
 
@@ -140,11 +147,14 @@ class WebConfigClient:
             if self._endpoint is not None:      # located while we waited
                 return self._endpoint
             now = asyncio.get_running_loop().time()
-            if self._probed_at is not None and now - self._probed_at < REPROBE_INTERVAL:
+            delay = REPROBE_DELAYS[min(max(self._misses, 1), len(REPROBE_DELAYS)) - 1]
+            if self._probed_at is not None and now - self._probed_at < delay:
                 return None
-            self._probed_at = now
+            self._probed_at = now   # also when the discovery is cancelled
             self._endpoint = await async_discover_endpoint(self._session, self._host)
+            self._probed_at = asyncio.get_running_loop().time()
             if self._endpoint is None:
+                self._misses += 1
                 _LOGGER.debug("No setup web interface found on %s", self._host)
             else:
                 _LOGGER.debug("Setup web interface of %s: %s (%s)", self._host, self._endpoint.base_url, self._endpoint.source)

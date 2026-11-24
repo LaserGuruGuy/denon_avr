@@ -81,8 +81,8 @@ class DenonAvrDevice:
             notify,
             # Web sections a telnet event may trigger a re-read of (profile 'refresh').
             {
-                "video": self._video_config.refresh,
-                "speakers": self._speaker_config.refresh,
+                "video": partial(self._refresh_section, self._video_config),
+                "speakers": partial(self._refresh_section, self._speaker_config),
                 "graphic_eq": self._graphic_eq.refresh,
             },
         )
@@ -267,6 +267,26 @@ class DenonAvrDevice:
             # read the same section twice.
             tuple(partial(self._sync.refresh_web, s) for s in ("graphic_eq", "video", "speakers")),
         )
+
+    async def _refresh_section(self, section: WebConfigSectionController) -> None:
+        """Re-read a web section; menus that appear become features too.
+
+        The web interface may be found only after setup, and menus follow the
+        user's setup. Features are only ever added (silence is not absence); the
+        telnet controls of a new one are queried, so their entities get a value.
+        """
+
+        await section.refresh()
+        new = section.feature_flags() - self._discovery.features
+        if not new:
+            return
+        self._discovery.features |= new
+        for spec in self._profile.feature_controls():
+            if spec.feature in new:
+                for query in (spec.query, spec.get("list_query"), spec.get("read_query")):
+                    if query:
+                        await self._telnet.async_send(query)
+        self._notifier.schedule()
 
     def _handle_availability(self, available: bool) -> None:
         self._available = available

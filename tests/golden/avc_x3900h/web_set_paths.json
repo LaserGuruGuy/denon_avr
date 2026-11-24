@@ -74,7 +74,7 @@
   "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:osd_info=1": [
-  "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3CInfo%3E1%3C%2FInfo%3E",
+  "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3COnScreenDisplay%3E%3CInfo%3E1%3C%2FInfo%3E%3C%2FOnScreenDisplay%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
   "http://192.0.2.10:11080/ajax/video/get_config?type=7",
@@ -82,7 +82,7 @@
   "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:osd_now_playing=2": [
-  "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3CNowPlaying%3E2%3C%2FNowPlaying%3E",
+  "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3COnScreenDisplay%3E%3CNowPlaying%3E2%3C%2FNowPlaying%3E%3C%2FOnScreenDisplay%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
   "http://192.0.2.10:11080/ajax/video/get_config?type=7",
@@ -90,7 +90,7 @@
   "http://192.0.2.10:11080/ajax/video/get_config?type=11"
  ],
  "video_config:osd_volume=3": [
-  "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3CVolume%3E3%3C%2FVolume%3E",
+  "http://192.0.2.10:11080/ajax/video/set_config?type=7&data=%3COnScreenDisplay%3E%3CVolume%3E3%3C%2FVolume%3E%3C%2FOnScreenDisplay%3E",
   "http://192.0.2.10:11080/ajax/video/get_config?type=1",
   "http://192.0.2.10:11080/ajax/video/get_config?type=3",
   "http://192.0.2.10:11080/ajax/video/get_config?type=7",

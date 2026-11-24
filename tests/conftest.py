@@ -332,6 +332,22 @@ def fast_refresh(monkeypatch):
 
     monkeypatch.setattr(profile_module.ProtocolProfile, "refresh_groups", property(scaled))
 
+    import avr.services.webconfig_doc as webconfig_doc
+
+    real_sleep = asyncio.sleep
+
+    class _FastAsyncio:
+        """webconfig_doc's asyncio with waits scaled down (the order is kept)."""
+
+        def __getattr__(self, name):
+            return getattr(asyncio, name)
+
+        @staticmethod
+        async def sleep(delay, *args):
+            await real_sleep(delay / 1000)
+
+    monkeypatch.setattr(webconfig_doc, "asyncio", _FastAsyncio())
+
 
 @pytest.fixture
 def make_device(monkeypatch):

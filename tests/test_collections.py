@@ -135,3 +135,148 @@ async def test_speaker_layout_apply_confirmed_when_the_receiver_shows_it(make_de
     monkeypatch.setattr(type(fx), "file", lambda self, n: changed if n == "ajax_speakers_15.xml" else original(self, n))
     assert await dev.speaker_layout.async_apply() == {"1": True}
     assert dev.speaker_config.collection("speaker_layout_assign")["1"].value == "17"
+
+
+async def test_osd_write_is_wrapped_and_reports_refusal(make_device, monkeypatch):
+    """On Screen Display (menu 7) answers 501 unless the field is wrapped in its root
+    (verified live on both receivers, 2026-11-24); a refused write is reported."""
+
+    for fixture in ("avc_x3900h", "avr_x3600h"):
+        dev, session, _telnet, _fx = make_device(fixture)
+        await dev.async_discover()
+        before = len(session.requests)
+        assert await dev.video_config.async_set("osd_volume", "2") is True
+        writes = [r["url"] for r in session.requests[before:] if "set_config" in r["url"]]
+        assert len(writes) == 1
+        assert writes[0].endswith("type=7&data=%3COnScreenDisplay%3E%3CVolume%3E2%3C%2FVolume%3E%3C%2FOnScreenDisplay%3E")
+
+        async def refuse(*_a):
+            return False
+
+        monkeypatch.setattr(dev.video_config._webconfig, "async_set", refuse)
+        assert await dev.video_config.async_set("osd_volume", "2") is False
+        # An answer that got lost while the value was applied counts as applied.
+        assert await dev.video_config.async_set("osd_volume", dev.video_config.value("osd_volume")) is True
+
+
+async def test_write_settles_before_the_read_back(make_device, monkeypatch):
+    """Write, wait (the receiver shows a value ~0.3 s later), then read back."""
+
+    import avr.services.webconfig_doc as wd
+
+    waits = []
+    real = wd.asyncio.sleep
+
+    class _Asyncio:
+        def __getattr__(self, name):
+            return getattr(asyncio_module, name)
+
+        @staticmethod
+        async def sleep(delay, *args):
+            waits.append((delay, len(session.requests)))
+            await real(0)
+
+    import asyncio as asyncio_module
+
+    monkeypatch.setattr(wd, "asyncio", _Asyncio())
+    dev, session, _telnet, _fx = make_device("avr_x3600h")
+    await dev.async_discover()
+    before = len(session.requests)
+    await dev.video_config.async_set("osd_volume", "2")
+    assert waits == [(0.8, before + 1)] and len(session.requests) > before + 1
+    waits.clear()
+    await dev.speaker_config.async_set("amp_assign", dev.speaker_config.value("amp_assign"))
+    assert [w[0] for w in waits] == [2.0]                      # amplifier changes take longer
+
+
+async def test_features_follow_a_late_web_interface(make_device, monkeypatch):
+    """The web interface missed at start: its menu features (and the telnet controls
+    gated on them) appear once it is found; features are never removed."""
+
+    dev, session, telnet, _fx = make_device("avr_x3600h")
+    real = dev._webconfig.async_get
+
+    async def nothing(*_a, **_k):
+        return None
+
+    monkeypatch.setattr(dev._webconfig, "async_get", nothing)
+    await dev.async_discover()
+    await dev.async_start()
+    before = set(dev.discovery.features)
+    monkeypatch.setattr(dev._webconfig, "async_get", real)
+    await dev._sync.refresh_web("video")
+    await dev._sync.refresh_web("speakers")
+    assert before <= dev.discovery.features
+    expected = dev.video_config.feature_flags() | dev.speaker_config.feature_flags()
+    assert expected and expected <= dev.discovery.features
+    sent = getattr(telnet(), "sent", None) if callable(telnet) else getattr(telnet, "sent", None)
+    if sent is not None and "PictureAdjust" in expected - before:
+        assert any(q.startswith("PV") for q in sent)
+    features = set(dev.discovery.features)
+    monkeypatch.setattr(dev._webconfig, "async_get", nothing)
+    await dev._sync.refresh_web("video")
+    assert features <= dev.discovery.features
+    await dev.async_stop()
+
+
+async def test_layout_baseline_survives_consecutive_applies(make_device, monkeypatch):
+    """6 -> 17 -> 6: the first 'before' values stay until they are back or dismissed."""
+
+    import re
+
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    original = type(fx).file
+    doc = original(fx, "ajax_speakers_15.xml")
+    now = {"doc": doc}
+    monkeypatch.setattr(type(fx), "file", lambda self, n: now["doc"] if n == "ajax_speakers_15.xml" else original(self, n))
+    pos5 = '<Item index="5" display="3"><Config display="3"><Value>'
+    dev.speaker_layout.stage("1", "17")
+    now_17 = re.sub(r'(<Item index="1" display="3"><Value>)6', r"\g<1>17", doc, count=1).replace(pos5 + "5", pos5 + "7", 1)
+
+    async def applied(*_a):
+        now["doc"] = now_17
+        return True
+
+    monkeypatch.setattr(dev._webconfig, "async_set", applied)
+    assert await dev.speaker_layout.async_apply() == {"1": True}
+    assert dev.speaker_layout.side_effects == {"5": ("5", "7")}
+
+    async def back(*_a):
+        now["doc"] = doc.replace(pos5 + "5", pos5 + "7", 1)
+        return True
+
+    monkeypatch.setattr(dev._webconfig, "async_set", back)
+    dev.speaker_layout.stage("1", "6")
+    assert await dev.speaker_layout.async_apply() == {"1": True}
+    assert dev.speaker_layout.side_effects == {"5": ("5", "7")}   # still the original 'before'
+    dev.speaker_layout.discard()
+    assert dev.speaker_layout.side_effects == {}
+
+
+async def test_layout_apply_reports_other_positions(make_device, monkeypatch):
+    """Applying a layout mode resets other positions (verified live): reported."""
+
+    import avr.services.webconfig_doc as wd
+
+    async def no_wait(_s):
+        return None
+
+    monkeypatch.setattr(wd.asyncio, "sleep", no_wait)
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    positions = dev.speaker_config.collection("speaker_layout_config")
+    assert positions["5"].value == "5"
+    dev.speaker_layout.stage("1", "17")
+    original = type(fx).file
+    changed = original(fx, "ajax_speakers_15.xml").replace(
+        '<Item index="1" display="3"><Value>6</Value>', '<Item index="1" display="3"><Value>17</Value>', 1
+    ).replace('<Item index="5" display="3"><Config display="3"><Value>5</Value>', '<Item index="5" display="3"><Config display="3"><Value>7</Value>', 1)
+
+    async def applied(*_a):
+        monkeypatch.setattr(type(fx), "file", lambda self, n: changed if n == "ajax_speakers_15.xml" else original(self, n))
+        return True
+
+    monkeypatch.setattr(dev._webconfig, "async_set", applied)
+    assert await dev.speaker_layout.async_apply() == {"1": True}
+    assert dev.speaker_layout.side_effects == {"5": ("5", "7")}

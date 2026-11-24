@@ -11,6 +11,7 @@ from __future__ import annotations
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -35,6 +36,25 @@ async def async_setup_entry(
         "speaker_layout_discard": lambda e: DenonAvrSpeakerLayoutDiscard(coordinator),
     }
     setup_catalogue_platform(coordinator, "button", factories, async_add_entities)
+
+
+def _update_layout_issue(hass: HomeAssistant, coordinator: DenonAvrCoordinator) -> None:
+    """A repair notice while an applied layout changed other choices as well."""
+
+    issue_id = f"speaker_layout_changed_{coordinator.config_entry.entry_id}"
+    changes = coordinator.device.speaker_layout.side_effects
+    if not changes:
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+        return
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="speaker_layout_changed",
+        translation_placeholders={"positions": ", ".join(changes)},
+    )
 
 
 class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
@@ -115,12 +135,14 @@ class DenonAvrSpeakerLayoutApply(DenonAvrEntity, ButtonEntity):
             results = await self.coordinator.device.speaker_layout.async_apply()
         finally:
             self.coordinator.async_update_listeners()
+        _update_layout_issue(self.hass, self.coordinator)
         if not all(results.values()):
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="speaker_layout_not_applied")
 
 
 class DenonAvrSpeakerLayoutDiscard(DenonAvrEntity, ButtonEntity):
-    """Drop the staged speaker layout change; nothing is sent to the receiver."""
+    """Drop the staged speaker layout change (or dismiss the notice about changed
+    positions); nothing is sent to the receiver."""
 
     _attr_entity_category = EntityCategory.CONFIG
     _web_backed = True
@@ -131,8 +153,10 @@ class DenonAvrSpeakerLayoutDiscard(DenonAvrEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        return super().available and bool(self.coordinator.device.speaker_layout.pending)
+        layout = self.coordinator.device.speaker_layout
+        return super().available and bool(layout.pending or layout.side_effects)
 
     async def async_press(self) -> None:
         self.coordinator.device.speaker_layout.discard()
+        _update_layout_issue(self.hass, self.coordinator)
         self.coordinator.async_update_listeners()

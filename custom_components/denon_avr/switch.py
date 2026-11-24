@@ -10,10 +10,12 @@ from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec
+from .const import DOMAIN
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import control_sub_device
@@ -100,7 +102,11 @@ class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
         return self._video.value(self._id) == self._on
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        await self._video.async_set(self._id, self._on)
+        await self._set(self._on)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        await self._video.async_set(self._id, self._off)
+        await self._set(self._off)
+
+    async def _set(self, wire: str) -> None:
+        if not await self._video.async_set(self._id, wire):
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_not_applied")

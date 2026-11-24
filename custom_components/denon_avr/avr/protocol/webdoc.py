@@ -162,11 +162,12 @@ def resolve_options(control: dict[str, Any], field: dict[str, Any] | None) -> di
 def build_set_payload(grammar: dict[str, Any], control: dict[str, Any], wire: str) -> str:
     """The XML payload that writes ``wire`` into one control's field."""
 
-    # Most sections send ONLY the field element (the ``type`` selects the
-    # menu); wrapping in the menu root then makes the receiver reject the
-    # write (HTTP 501). The speakers amp-assign menu is the exception - it
-    # requires the field wrapped in its root tag (grammar ``wrap_root``);
-    # sending it bare returns HTTP 500. Verified live per section.
+    # Most menus take ONLY the field element (the ``type`` selects the menu):
+    # HDMI setup 3, 4K format 8, TV format 9 and the per-input 11/14 are sent bare
+    # by the vendor's own web code (both generations), and wrapping makes the
+    # receiver reject them. Exceptions, wrapped in the root tag: the speakers
+    # amp-assign menu (``wrap_root``; bare = HTTP 500) and the menus in
+    # ``wrap_menus`` (On Screen Display; bare = HTTP 501, verified live).
     tag = control["tag"]
     if control.get("dynamic"):
         field = control.get("field", "Source")
@@ -174,7 +175,8 @@ def build_set_payload(grammar: dict[str, Any], control: dict[str, Any], wire: st
     else:
         payload = f"<{tag}>{wire}</{tag}>"
     root = grammar.get("menus", {}).get(str(control["type"]))
-    if grammar.get("wrap_root") and root:
+    wrap = grammar.get("wrap_root") or str(control["type"]) in grammar.get("wrap_menus", ())
+    if wrap and root:
         payload = f"<{root}>{payload}</{root}>"
     return payload
 

@@ -215,21 +215,35 @@ class WebConfigSectionController:
 
     # Write --------------------------------------------------------------
 
-    async def async_set(self, control_id: str, wire: str) -> None:
+    async def async_set(self, control_id: str, wire: str) -> bool:
+        """Write one setting. False when it is unknown, or not accepted and the
+        receiver does not show it afterwards either (an answer can get lost while
+        the write was applied)."""
+
         control = self._control(control_id)
         if not self.supported or control is None:
-            return
+            return False
         payload = build_set_payload(self._grammar, control, wire)
-        await self._webconfig.async_set(self._section, int(control["type"]), payload)
+        ok = await self._webconfig.async_set(self._section, int(control["type"]), payload)
+        await self._settle()
         # Re-read so state reflects exactly what the receiver applied.
         await self.refresh()
+        return ok or self.value(control_id) == wire
+
+    async def _settle(self) -> None:
+        """The receiver shows a written value only a moment after it accepted the
+        write (0.3 s measured), so wait before reading it back."""
+
+        delay = float(self._grammar.get("write_settle_seconds", 0))
+        if delay:
+            await asyncio.sleep(delay)
 
     # Per-input collections -----------------------------------------------
 
     def collection_specs(self) -> list[dict[str, Any]]:
         return self._grammar.get("collections", [])
 
-    def _collection_spec(self, collection_id: str) -> dict[str, Any] | None:
+    def collection_spec(self, collection_id: str) -> dict[str, Any] | None:
         return next((c for c in self.collection_specs() if c["id"] == collection_id), None)
 
     def collection(self, collection_id: str) -> dict[str, CollectionItem]:
@@ -240,7 +254,7 @@ class WebConfigSectionController:
     def option_key(self, collection_id: str, option: str) -> str:
         """Stable, translatable key of an option id (``option_<id>`` when unknown)."""
 
-        spec = self._collection_spec(collection_id) or {}
+        spec = self.collection_spec(collection_id) or {}
         return spec.get("option_keys", {}).get(option, f"option_{option}")
 
     async def async_set_item(
@@ -251,7 +265,7 @@ class WebConfigSectionController:
         declared ``writable: "staged"`` (speaker layout) are only written by an
         explicit, confirmed apply (``staged_apply=True``)."""
 
-        spec = self._collection_spec(collection_id)
+        spec = self.collection_spec(collection_id)
         item = self._collections.get(collection_id, {}).get(slot)
         writable = spec.get("writable", True) if spec is not None else False
         if spec is None or writable is False or (writable == "staged" and not staged_apply):
@@ -261,6 +275,8 @@ class WebConfigSectionController:
         ok = await self._webconfig.async_set(
             self._section, int(spec["type"]), build_collection_payload(spec, slot, option)
         )
+        if not staged_apply:   # a staged apply waits and verifies itself
+            await self._settle()
         # Re-read so state reflects exactly what the receiver applied.
         await self.refresh()
         return ok
@@ -289,6 +305,9 @@ class StagedChanges:
         self._section = section
         self._collection = collection_id
         self._pending: dict[str, str] = {}
+        # Positions that differ from before the first apply: slot -> (before, after).
+        self.side_effects: dict[str, tuple[str | None, str | None]] = {}
+        self._baseline: dict[str, str | None] = {}
 
     @property
     def pending(self) -> dict[str, str]:
@@ -304,8 +323,33 @@ class StagedChanges:
             self._pending[slot] = option
         return True
 
+    def _positions(self, spec: dict[str, Any]) -> dict[str, str | None]:
+        """Value per related position (the choices an assign-mode change resets)."""
+
+        related = spec.get("side_effects_of")
+        return {k: i.value for k, i in self._section.collection(related).items()} if related else {}
+
+    def _shown(self, pending: dict[str, str]) -> bool:
+        items = self._section.collection(self._collection)
+        return all(slot in items and items[slot].value == option for slot, option in pending.items())
+
+    def _track_side_effects(self, spec: dict[str, Any]) -> None:
+        after = self._positions(spec)
+        if not after:
+            return   # the collection could not be read: nothing can be said
+        base = self._baseline
+        self.side_effects = {
+            slot: (base.get(slot), after.get(slot))
+            for slot in sorted(set(base) | set(after), key=lambda x: (len(x), x))
+            if base.get(slot) != after.get(slot)
+        }
+        if not self.side_effects:
+            self._baseline = {}
+
     def discard(self) -> None:
         self._pending.clear()
+        self._baseline = {}
+        self.side_effects = {}
 
     async def async_apply(self) -> dict[str, bool]:
         """Write every staged item, then verify it: the receiver rebuilds the
@@ -315,15 +359,25 @@ class StagedChanges:
 
         pending = dict(self._pending)
         self._pending.clear()
+        spec = self._section.collection_spec(self._collection) or {}
+        # The baseline of the side effects is what the receiver had before the FIRST
+        # apply; it stays until the positions are back, or ``discard``. Read it now:
+        # the cached poll can be a minute old.
+        if pending and not self._baseline:
+            await self._section.refresh()
+            self._baseline = self._positions(spec)
         sent = {}
         for slot, option in pending.items():
             sent[slot] = await self._section.async_set_item(
                 self._collection, slot, option, staged_apply=True
             )
         if any(sent.values()):
-            spec = self._section._collection_spec(self._collection) or {}
-            await asyncio.sleep(float(spec.get("apply_settle_seconds", 2.0)))
-            await self._section.refresh()
+            for _ in range(int(spec.get("apply_attempts", 1))):
+                await asyncio.sleep(float(spec.get("apply_settle_seconds", 2.0)))
+                await self._section.refresh()
+                if self._shown(pending):
+                    break
+            self._track_side_effects(spec)
         items = self._section.collection(self._collection)
         return {
             slot: sent[slot] and items.get(slot) is not None and items[slot].value == option

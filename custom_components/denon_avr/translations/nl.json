@@ -469,6 +469,15 @@
     },
     "speaker_layout_not_applied": {
       "message": "De receiver heeft de wijziging van de luidsprekerindeling niet geaccepteerd."
+    },
+    "web_setting_not_applied": {
+      "message": "De receiver heeft de instelling niet bevestigd."
+    }
+  },
+  "issues": {
+    "speaker_layout_changed": {
+      "title": "Luidsprekerindeling wijzigde ook andere keuzes",
+      "description": "Het toepassen van de luidsprekerindeling wijzigde ook de posities {positions}. De receiver herstelt die niet als je teruggaat, en ook de keuze voor front A/B niet. Controleer ze op de receiver en druk op Luidsprekerwijziging verwerpen om deze melding te sluiten."
     }
   }
 }

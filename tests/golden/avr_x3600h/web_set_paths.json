@@ -97,7 +97,7 @@
   "https://192.0.2.10:10443/ajax/video/get_config?type=9"
  ],
  "video_config:osd_info=1": [
-  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3CInfo%3E1%3C%2FInfo%3E",
+  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3COnScreenDisplay%3E%3CInfo%3E1%3C%2FInfo%3E%3C%2FOnScreenDisplay%3E",
   "https://192.0.2.10:10443/ajax/video/get_config?type=1",
   "https://192.0.2.10:10443/ajax/video/get_config?type=3",
   "https://192.0.2.10:10443/ajax/video/get_config?type=7",
@@ -105,7 +105,7 @@
   "https://192.0.2.10:10443/ajax/video/get_config?type=9"
  ],
  "video_config:osd_now_playing=2": [
-  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3CNowPlaying%3E2%3C%2FNowPlaying%3E",
+  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3COnScreenDisplay%3E%3CNowPlaying%3E2%3C%2FNowPlaying%3E%3C%2FOnScreenDisplay%3E",
   "https://192.0.2.10:10443/ajax/video/get_config?type=1",
   "https://192.0.2.10:10443/ajax/video/get_config?type=3",
   "https://192.0.2.10:10443/ajax/video/get_config?type=7",
@@ -113,7 +113,7 @@
   "https://192.0.2.10:10443/ajax/video/get_config?type=9"
  ],
  "video_config:osd_volume=3": [
-  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3CVolume%3E3%3C%2FVolume%3E",
+  "https://192.0.2.10:10443/ajax/video/set_config?type=7&data=%3COnScreenDisplay%3E%3CVolume%3E3%3C%2FVolume%3E%3C%2FOnScreenDisplay%3E",
   "https://192.0.2.10:10443/ajax/video/get_config?type=1",
   "https://192.0.2.10:10443/ajax/video/get_config?type=3",
   "https://192.0.2.10:10443/ajax/video/get_config?type=7",
