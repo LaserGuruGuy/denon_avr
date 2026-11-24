@@ -69,7 +69,18 @@ ANSWERS = {                                                # measured
 }
 
 
-async def _settle(telnet, rounds=12):
+def _recorded(fx):
+    """What the receiver answered to each query in the recording, plus the measured ones."""
+
+    answers = {}
+    for rec in fx.telnet_corpus:
+        answers.setdefault(rec["after"], []).append(rec["line"])
+    for query, lines in ANSWERS.items():
+        answers.setdefault(query, list(lines))
+    return answers
+
+
+async def _settle(telnet, rounds=12, answers=ANSWERS):
     """Let a receiver that answers everything settle; return what was still sent at the end."""
 
     import asyncio
@@ -80,7 +91,7 @@ async def _settle(telnet, rounds=12):
         await asyncio.sleep(0.12)                              # > the scaled debounces
         tail, done = telnet.sent[done:], len(telnet.sent)
         for query in tail:
-            for line in ANSWERS.get(query, ()):
+            for line in answers.get(query, ()):
                 telnet.feed(line)
     return tail
 
@@ -94,16 +105,27 @@ async def test_an_answering_receiver_comes_to_rest(make_device, fixture):
     await dev.async_start()
     for rec in fx.telnet_corpus:
         telnet.feed(rec["line"])
-    for lines in ANSWERS.values():
+    answers = _recorded(fx)
+    for lines in answers.values():
         for line in lines:
             telnet.feed(line)
-    await _settle(telnet)
+    await _settle(telnet, answers=answers)
+    telnet.sent.clear()
+    for line in ("SSFRSDST SPB", "PSFRONT SPB", "SSPAAMOD FRB"):          # pushed by the receiver itself
+        telnet.feed(line)
+    await _settle(telnet, answers=answers)
     telnet.sent.clear()
     cluster = ["SSINFAISSIG 02", "OPINFINS 22111111111111000000", "SYSDA PCM", "OPINFASP 22121100000000000000000000000000"]
+    answers["SSINFAISSIG ?"], answers["SYSDA ?"] = ["SSINFAISSIG 02"], ["SYSDA PCM"]
+    answers["SYSMI ?"] = ["SYSMI Stereo"]
+    for line in cluster:
+        telnet.feed(line)                 # a real change may cost one round of questions
+    await _settle(telnet, answers=answers)
+    telnet.sent.clear()
     for _ in range(3):
         for line in cluster:
             telnet.feed(line)
-    assert await _settle(telnet) == [] and telnet.sent == []
+    assert await _settle(telnet, answers=answers) == [] and telnet.sent == []
     await dev.async_stop()
 
 
