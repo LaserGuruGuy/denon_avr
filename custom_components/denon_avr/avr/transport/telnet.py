@@ -120,8 +120,10 @@ class TelnetClient:
         self._queue: asyncio.Queue[str] = asyncio.Queue()
         self._manager_task: asyncio.Task | None = None
         self._connected = False
+        self._available = False
         self._stopped = False
         self._last_received = 0.0
+        self._probe_queued = False               # our own probe is in the queue
         self._probe_sent: float | None = None    # when the open probe went out
         self._probes_missed = 0
         self._received = False                   # anything since this connect
@@ -164,6 +166,7 @@ class TelnetClient:
 
         backoff = RECONNECT_BACKOFF_MIN
         while not self._stopped:
+            self._received = False
             try:
                 await self._connect()
                 await self._run_session()
@@ -191,13 +194,15 @@ class TelnetClient:
             asyncio.open_connection(self._host, self._port), timeout=CONNECT_TIMEOUT
         )
         self._last_received = asyncio.get_running_loop().time()
+        self._probe_queued = False
         self._probe_sent = None
         self._probes_missed = 0
-        self._received = False
         # Commands left from a broken session are not replayed minutes later.
         while not self._queue.empty():
             self._queue.get_nowait()
-        await self._set_connected(True)
+        # "Connected" is the socket; entities become available with the first line,
+        # so a peer that accepts but stays silent does not make them flap.
+        self._connected = True
         _LOGGER.debug("Telnet connected to %s:%s", self._host, self._port)
         # Let the owner resynchronise the full state on (re)connect.
         if self._on_connected is not None:
@@ -235,9 +240,10 @@ class TelnetClient:
     async def _set_connected(self, connected: bool) -> None:
         """Update and broadcast the connection state."""
 
-        if connected == self._connected:
-            return
         self._connected = connected
+        if connected == self._available:
+            return
+        self._available = connected
         if self._on_availability is not None:
             self._on_availability(connected)
 
@@ -261,7 +267,9 @@ class TelnetClient:
             self._last_received = asyncio.get_running_loop().time()
             self._probe_sent = None
             self._probes_missed = 0
-            self._received = True
+            if not self._received:
+                self._received = True
+                await self._set_connected(True)
             self._deliver(raw)
 
     def _deliver(self, raw: bytes) -> None:
@@ -280,7 +288,8 @@ class TelnetClient:
             data = command.encode("utf-8") + _TERMINATOR
             self._writer.write(data)
             await self._writer.drain()
-            if command == _KEEPALIVE_COMMAND and self._probe_sent is None:
+            if command == _KEEPALIVE_COMMAND and self._probe_queued:
+                self._probe_queued = False
                 self._probe_sent = asyncio.get_running_loop().time()
             await asyncio.sleep(COMMAND_SPACING)
 
@@ -293,23 +302,17 @@ class TelnetClient:
         """
 
         loop = asyncio.get_running_loop()
-        queued = False
         while True:
             await asyncio.sleep(min(KEEPALIVE_INTERVAL, KEEPALIVE_TIMEOUT) / 2)
             now = loop.time()
-            if now - self._last_received >= KEEPALIVE_INTERVAL + (KEEPALIVE_MISSES + 2) * KEEPALIVE_TIMEOUT:
+            idle = now - self._last_received
+            if idle >= KEEPALIVE_INTERVAL + (KEEPALIVE_MISSES + 2) * KEEPALIVE_TIMEOUT:
                 raise ConnectionError("Telnet link is stuck")   # not even the probe got out
-            if self._probe_sent is not None:
-                queued = False
-                if now - self._probe_sent >= KEEPALIVE_TIMEOUT:
-                    self._probe_sent = None
-                    self._probes_missed += 1
-                    if self._probes_missed >= KEEPALIVE_MISSES:
-                        raise ConnectionError("Telnet peer does not answer")
-                    await self._queue.put(_KEEPALIVE_COMMAND)
-                    queued = True
-            elif not queued and now - self._last_received >= KEEPALIVE_INTERVAL:
+            if self._probe_sent is not None and now - self._probe_sent >= KEEPALIVE_TIMEOUT:
+                self._probe_sent = None
+                self._probes_missed += 1
+                if self._probes_missed >= KEEPALIVE_MISSES:
+                    raise ConnectionError("Telnet peer does not answer")
+            if self._probe_sent is None and not self._probe_queued and idle >= KEEPALIVE_INTERVAL:
+                self._probe_queued = True
                 await self._queue.put(_KEEPALIVE_COMMAND)
-                queued = True
-            elif queued and now - self._last_received < KEEPALIVE_INTERVAL:
-                queued = False

@@ -62,7 +62,7 @@ class GoformClient:
                 if response.status != 200:
                     _LOGGER.debug("GET %s returned HTTP %s", url, response.status)
                     return None
-                return await response.text()
+                return await response.text(errors="replace")
         except (aiohttp.ClientError, TimeoutError) as err:
             _LOGGER.debug("GET %s failed: %s", url, err)
             return None

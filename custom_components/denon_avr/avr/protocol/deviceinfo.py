@@ -27,9 +27,9 @@ def _format_mac(raw: str | None) -> str | None:
 
     if not raw:
         return None
-    raw = raw.strip()
-    if len(raw) != 12:
-        return raw
+    raw = re.sub(r"[:\-.\s]", "", raw)
+    if not re.fullmatch(r"[0-9A-Fa-f]{12}", raw) or int(raw, 16) == 0:
+        return None
     return ":".join(raw[i : i + 2] for i in range(0, 12, 2)).lower()
 
 

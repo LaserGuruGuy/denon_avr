@@ -157,7 +157,7 @@ class _FakeResponse:
         self._body = body
         self.headers = headers or {}
 
-    async def text(self) -> str:
+    async def text(self, *_args, **_kwargs) -> str:
         return self._body
 
     async def __aenter__(self):

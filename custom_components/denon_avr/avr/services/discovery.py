@@ -64,7 +64,7 @@ class DiscoveryService:
         """A document that does not parse, or names neither a model nor a MAC, is not
         a receiver's Deviceinfo (another host, a truncated answer): not reachable."""
 
-        if device.model_name is None and device.mac_address is None:
+        if not device.model_name and not device.mac_address:
             raise ConnectionError(f"No usable Deviceinfo document from {self._host}")
 
     async def discover(self) -> Discovery:

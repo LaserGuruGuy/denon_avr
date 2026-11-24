@@ -7,7 +7,7 @@ import asyncio
 import pytest
 
 import avr.transport.telnet as telnet_module
-from avr.protocol.deviceinfo import parse_device_info
+from avr.protocol.deviceinfo import _format_mac, parse_device_info
 from avr.services.discovery import DiscoveryService
 from avr.transport.telnet import TelnetClient
 
@@ -55,12 +55,10 @@ def _client(monkeypatch, answer):
 async def test_dead_peer_is_noticed(fast, monkeypatch):
     client, _peers, states = _client(monkeypatch, answer=False)
     await client.async_start()
-    for _ in range(100):
-        await asyncio.sleep(0.01)
-        if False in states:
-            break
+    await asyncio.sleep(1.6)           # longer than the first backoff
+    assert len(_peers) > 1          # the dead link was given up and tried again
     await client.async_stop()
-    assert states[:2] == [True, False]
+    assert states == [], "a peer that never spoke was never available, so nothing flaps"
 
 
 async def test_answering_peer_stays_connected(fast, monkeypatch):
@@ -117,3 +115,65 @@ async def test_a_foreign_or_broken_deviceinfo_is_not_a_receiver(xml, monkeypatch
     with pytest.raises(ConnectionError):
         await service.fetch_identity()
     assert parse_device_info(xml).device.mac_address is None
+
+
+async def test_established_link_is_given_up_and_reconnected(fast, monkeypatch):
+    client, peers, states = _client(monkeypatch, answer=True)
+    await client.async_start()
+    while not client.connected or not states:
+        await client.async_send("MV?")
+        await asyncio.sleep(0.01)
+    peers[0].answer = False                               # the plug is pulled
+    for _ in range(200):
+        await asyncio.sleep(0.01)
+        if False in states:
+            break
+    await client.async_stop()
+    assert states[:2] == [True, False]
+
+
+async def test_backoff_grows_after_a_session_that_answered(monkeypatch):
+    delays, rounds = [], []
+    real = asyncio.sleep
+    monkeypatch.setattr(telnet_module, "KEEPALIVE_TIMEOUT", 0.04)
+
+    async def open_connection(_host, _port):
+        rounds.append(1)
+        if len(rounds) > 1:
+            raise OSError("refused")
+        reader = asyncio.StreamReader()
+        reader.feed_data(b"PWON\r")
+        reader.feed_eof()
+        return reader, _Writer(reader, False)
+
+    async def sleep(delay, *_a):
+        if delay >= telnet_module.RECONNECT_BACKOFF_MIN:
+            delays.append(delay)
+        await real(0)
+
+    monkeypatch.setattr(telnet_module.asyncio, "open_connection", open_connection)
+    monkeypatch.setattr(telnet_module.asyncio, "sleep", sleep)
+    client = TelnetClient("h", on_line=lambda _l: None)
+    await client.async_start()
+    while len(delays) < 5:
+        await real(0)
+    await client.async_stop()
+    assert delays[:5] == [1.0, 2.0, 4.0, 8.0, 16.0]
+
+
+async def test_the_resync_question_is_not_a_probe(fast, monkeypatch):
+    monkeypatch.setattr(telnet_module, "KEEPALIVE_INTERVAL", 5.0)
+    client, _peers, _states = _client(monkeypatch, answer=False)
+    await client.async_start()
+    await asyncio.sleep(0)
+    await client.async_send("PW?")
+    await asyncio.sleep(0.2)
+    assert client.connected                               # silence of one question is no miss
+    await client.async_stop()
+
+
+def test_mac_is_canonical_or_none():
+    assert _format_mac("0005CD000001") == "00:05:cd:00:00:01"
+    assert _format_mac(" 00:05:CD:00:00:01 ") == "00:05:cd:00:00:01"
+    for bad in (None, "", " ", "0", "000000000000", "no-mac"):
+        assert _format_mac(bad) is None

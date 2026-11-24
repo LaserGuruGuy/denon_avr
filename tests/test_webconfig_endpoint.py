@@ -18,7 +18,7 @@ class _Resp:
     def __init__(self, status, headers=None, body="", delay=0.0, gauge=None):
         self.status, self.headers, self._body, self._delay, self._gauge = status, headers or {}, body, delay, gauge
 
-    async def text(self):
+    async def text(self, *_args, **_kwargs):
         return self._body
 
     async def __aenter__(self):
