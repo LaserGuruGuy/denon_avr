@@ -8,6 +8,13 @@
  },
  {
   "enabled": true,
+  "key": "button_speaker_layout_restore",
+  "kind": "speaker_layout_restore",
+  "platform": "button",
+  "sub_device": "speakers"
+ },
+ {
+  "enabled": true,
   "key": "button_speaker_layout_discard",
   "kind": "speaker_layout_discard",
   "platform": "button",

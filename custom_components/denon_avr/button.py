@@ -33,6 +33,7 @@ async def async_setup_entry(
         "eq_curve_copy": lambda e: DenonAvrEqCurveCopy(coordinator),
         "eq_set_defaults": lambda e: DenonAvrEqSetDefaults(coordinator),
         "speaker_layout_apply": lambda e: DenonAvrSpeakerLayoutApply(coordinator),
+        "speaker_layout_restore": lambda e: DenonAvrSpeakerLayoutRestore(coordinator),
         "speaker_layout_discard": lambda e: DenonAvrSpeakerLayoutDiscard(coordinator),
     }
     setup_catalogue_platform(coordinator, "button", factories, async_add_entities)
@@ -140,6 +141,35 @@ class DenonAvrSpeakerLayoutApply(DenonAvrEntity, ButtonEntity):
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="speaker_layout_not_applied")
 
 
+class DenonAvrSpeakerLayoutRestore(DenonAvrEntity, ButtonEntity):
+    """Put the speaker setup back as it was before the last applied layout(s):
+    assign mode, positions and front speaker A/B."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _web_backed = True
+
+    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
+        super().__init__(coordinator, "button_speaker_layout_restore", sub_device="speakers")
+        self._attr_translation_key = "speaker_layout_restore"
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.device.speaker_layout.restorable
+
+    async def async_press(self) -> None:
+        try:
+            left = await self.coordinator.device.speaker_layout.async_restore()
+        finally:
+            self.coordinator.async_update_listeners()
+        _update_layout_issue(self.hass, self.coordinator)
+        if left:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="speaker_layout_not_restored",
+                translation_placeholders={"positions": ", ".join(left)},
+            )
+
+
 class DenonAvrSpeakerLayoutDiscard(DenonAvrEntity, ButtonEntity):
     """Drop the staged speaker layout change (or dismiss the notice about changed
     positions); nothing is sent to the receiver."""
@@ -154,7 +184,7 @@ class DenonAvrSpeakerLayoutDiscard(DenonAvrEntity, ButtonEntity):
     @property
     def available(self) -> bool:
         layout = self.coordinator.device.speaker_layout
-        return super().available and bool(layout.pending or layout.side_effects)
+        return super().available and bool(layout.pending or layout.restorable)
 
     async def async_press(self) -> None:
         self.coordinator.device.speaker_layout.discard()

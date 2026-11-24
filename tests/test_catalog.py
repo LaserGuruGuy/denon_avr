@@ -138,7 +138,7 @@ async def test_upgrade_of_the_live_x3900h_registry(make_device):
 async def test_staged_speaker_layout_entities(make_device):
     _catalog, _dev, entries = await _catalogue(make_device, "avc_x3900h")
     keys = {e.key for e in entries}
-    assert {"select_speaker_layout_assign", "button_speaker_layout_apply", "button_speaker_layout_discard"} <= keys
+    assert {"select_speaker_layout_assign", "button_speaker_layout_apply", "button_speaker_layout_restore", "button_speaker_layout_discard"} <= keys
     _c, _d, legacy = await _catalogue(make_device, "avr_x3600h")
     assert not {e.key for e in legacy} & {"select_speaker_layout_assign", "button_speaker_layout_apply"}
 

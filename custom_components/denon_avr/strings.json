@@ -437,6 +437,9 @@
       },
       "speaker_layout_discard": {
         "name": "Discard speaker layout change"
+      },
+      "speaker_layout_restore": {
+        "name": "Restore speaker layout"
       }
     }
   },
@@ -472,12 +475,15 @@
     },
     "web_setting_not_applied": {
       "message": "The receiver did not confirm the setting."
+    },
+    "speaker_layout_not_restored": {
+      "message": "Could not restore layout positions {positions}; check them on the receiver."
     }
   },
   "issues": {
     "speaker_layout_changed": {
       "title": "Speaker layout changed other choices",
-      "description": "Applying the speaker layout also changed layout positions {positions}. The receiver does not restore these, nor the front speaker A/B choice, when you go back. Check them on the receiver and press Discard speaker layout change to dismiss this notice."
+      "description": "Applying the speaker layout also changed layout positions {positions}. The receiver does not put these back when you go back. Press Restore speaker layout to put everything back (also front A/B), or Discard speaker layout change to keep it and dismiss this notice."
     }
   }
 }

@@ -280,3 +280,77 @@ async def test_layout_apply_reports_other_positions(make_device, monkeypatch):
     monkeypatch.setattr(dev._webconfig, "async_set", applied)
     assert await dev.speaker_layout.async_apply() == {"1": True}
     assert dev.speaker_layout.side_effects == {"5": ("5", "7")}
+
+
+async def test_layout_restore_puts_everything_back(make_device, monkeypatch):
+    """Like the receiver (measured): back to mode 6 leaves position 5 and 8 on their
+    defaults; writing 5 and then 8 restores the rest; front A/B goes over telnet."""
+
+    import re
+
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    original = type(fx).file
+    doc = original(fx, "ajax_speakers_15.xml")
+    state = {"doc": doc}
+    monkeypatch.setattr(type(fx), "file", lambda self, n: state["doc"] if n == "ajax_speakers_15.xml" else original(self, n))
+    p5 = '<Item index="5" display="3"><Config display="3"><Value>'
+    p8 = '<Item index="8" display="3"><Config display="3"><Value>'
+    defaults = doc.replace(p5 + "5", p5 + "7", 1).replace(p8 + "0", p8 + "1", 1)
+    assert defaults != doc
+    writes = []
+
+    async def receiver(_section, _type, xml):
+        index, value = re.match(r'<Config index="(\d+)">(\d+)</Config>', xml).groups()
+        writes.append((index, value))
+        if index == "1":
+            state["doc"] = re.sub(r'(<Item index="1" display="3"><Value>)\d+', r"\g<1>" + value, defaults, count=1)
+        elif index == "5":
+            state["doc"] = state["doc"].replace(p5 + "7", p5 + value, 1)
+        elif index == "8":
+            state["doc"] = state["doc"].replace(p8 + "1", p8 + value, 1)
+        return True
+
+    monkeypatch.setattr(dev._webconfig, "async_set", receiver)
+    sent = []
+
+    async def set_control(control_id, value):
+        sent.append((control_id, value))
+
+    layout = dev.speaker_layout
+    layout._set_control = set_control
+    front = {"front_speaker": "SPB"}
+    layout._get_control = front.get
+    assert layout.restorable is False and await layout.async_restore() == []
+    layout.stage("1", "17")
+    assert await layout.async_apply() == {"1": True}
+    front["front_speaker"] = "SPA"                       # the receiver reset it
+    assert layout.restorable is True
+    assert await layout.async_restore() == []
+    assert writes == [("1", "17"), ("1", "6"), ("5", "5"), ("8", "0")]
+    assert sent == [("front_speaker", "SPB")]
+    assert layout.restorable is False and layout.side_effects == {}
+
+
+async def test_layout_restore_reports_what_stays_different(make_device, monkeypatch):
+    import re
+
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    original = type(fx).file
+    doc = original(fx, "ajax_speakers_15.xml")
+    state = {"doc": doc}
+    monkeypatch.setattr(type(fx), "file", lambda self, n: state["doc"] if n == "ajax_speakers_15.xml" else original(self, n))
+    p5 = '<Item index="5" display="3"><Config display="3"><Value>'
+
+    async def receiver(_section, _type, xml):
+        if 'index="1"' in xml:
+            value = re.search(r">(\d+)<", xml)[1]
+            state["doc"] = re.sub(r'(<Item index="1" display="3"><Value>)\d+', r"\g<1>" + value, doc.replace(p5 + "5", p5 + "7", 1), count=1)
+        return True                                       # position 5 refuses silently
+
+    monkeypatch.setattr(dev._webconfig, "async_set", receiver)
+    dev.speaker_layout.stage("1", "17")
+    await dev.speaker_layout.async_apply()
+    assert await dev.speaker_layout.async_restore() == ["5"]
+    assert dev.speaker_layout.restorable is True          # can be tried again

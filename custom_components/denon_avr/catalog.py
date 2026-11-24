@@ -89,6 +89,7 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
     # button (staged speaker layout) ---------------------------------------------
     if has_speaker_layout(device) and device.speaker_config.collection("speaker_layout_assign"):
         add(EntityEntry("button", "speaker_layout_apply", "button_speaker_layout_apply", "speakers"))
+        add(EntityEntry("button", "speaker_layout_restore", "button_speaker_layout_restore", "speakers"))
         add(EntityEntry("button", "speaker_layout_discard", "button_speaker_layout_discard", "speakers"))
 
     # binary_sensor ------------------------------------------------------------

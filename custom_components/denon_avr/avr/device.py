@@ -60,7 +60,12 @@ class DenonAvrDevice:
         )
         self._video_config = WebConfigSectionController(self._webconfig, grammar.get("video_web", {}), notify)
         self._speaker_config = WebConfigSectionController(self._webconfig, grammar.get("speakers_web", {}), notify)
-        self._speaker_layout = StagedChanges(self._speaker_config, "speaker_layout_assign")
+        self._speaker_layout = StagedChanges(
+            self._speaker_config,
+            "speaker_layout_assign",
+            lambda control_id: self._state.values.get(control_id),
+            self.async_set_control,
+        )
 
         # The persistent telnet connection is the CommandSink. Its callbacks are
         # bound late because the services that handle them need the sink first.
