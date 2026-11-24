@@ -215,8 +215,8 @@ Protocol behavior was verified live against the following.
 | Receiver                     | Denon AVR-X3600H, AVC-X3900H |
 | Receiver hardware generation | `avr-x-2016` |
 | Receiver firmware            | AVR-X3600H 3.139.173, AVC-X3900H 3.139.175 |
-| Home Assistant Core          | 2026.7.0 |
-| Python                       | 3.13 |
+| Home Assistant Core          | 2026.11.3 |
+| Python                       | 3.14.10 |
 
 Other Denon/Marantz HEOS generation receivers should work as the integration
 adapts to whatever the device reports, but only these receivers have been
