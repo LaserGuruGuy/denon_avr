@@ -5,7 +5,7 @@
 [![HACS Custom][hacs-shield]][hacs-url]
 
 This is a HACS custom integration for Denon (HEOS generation) AV receivers such
-as the AVR-X3600H.
+as the AVR-X3600H and AVC-X3900H.
 
 
 ## Features
@@ -20,7 +20,8 @@ as the AVR-X3600H.
   the bulk of control; HTTP (port 8080) provides discovery and a periodic
   reconciliation poll. A few settings that have no telnet command (graphic‑EQ
   bands, HDMI/OSD/format setup, amp assign) are read and written over the setup
-  config API (HTTPS 10443); everything else is telnet.
+  config API (HTTPS 10443 or, on the newer Web Control, HTTP 11080; located
+  automatically); everything else is telnet.
 - **Stability** Auto reconnect with backoff, keepalive probe, command queue
   with inter command spacing, teardown on unload.
 
@@ -58,14 +59,14 @@ ports. Nothing needs to be opened towards the internet.
 | **1900/udp** | SSDP (multicast) | Automatic discovery of the receiver on the LAN                                                                                                                                        | Optional (auto‑discovery only) |
 | **1256/tcp** | Length‑framed JSON | Not currently used (reserved for future use)                                                                                                                                          | Unused |
 | **1255/tcp** | HEOS CLI | Now‑playing media, album art and transport (play/pause/next) for network sources                                                                                                      | Optional (degrades gracefully) |
-| **10443/tcp** | HTTPS (setup config) | Graphic‑EQ per‑band values, the Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) and Amp Assign — settings with no telnet token, read/write (non‑disruptive; self‑signed cert) | Optional (graphic EQ + video + amp assign) |
+| **10443/tcp** or **11080/tcp** | HTTPS or HTTP (setup config) | Graphic‑EQ per‑band values, the Video setup menu (HDMI setup/CEC, ARC, OSD, TV/4K format) and Amp Assign — settings with no telnet token, read/write (non‑disruptive; self‑signed cert) | Optional (graphic EQ + video + amp assign) |
 
 Notes:
 
 - The receiver accepts **multiple concurrent telnet (23) connections** and
   broadcasts events to all of them, so this integration coexists with the Denon
   app and other controllers.
-- The HEOS (1255) and setup‑config (10443) channels are only opened when the
+- The HEOS (1255) and setup‑config (10443/11080) channels are only opened when the
   receiver advertises the matching capability; both are non‑disruptive.
 
 ## What you get
@@ -179,8 +180,8 @@ to match yours.
   context; this is expected Denon behavior, not an integration bug.
 - Speaker distances and crossovers are supported over telnet (read/write). Other
   advanced one time setup settings that the receiver exposes only through its web
-  UI's configuration API (full speaker layout, HDMI Control/CEC, per input
-  assignment, some zone defaults) are not implemented.
+  UI's configuration API (custom speaker layouts, per input assignment, some zone
+  defaults) are not implemented.
 - Room correction calibration remains a job for the receiver's own setup tooling.
 
 ## Testing
@@ -189,7 +190,7 @@ Protocol behavior was verified live against the following.
 
 | Component                    | Version |
 |------------------------------|---------|
-| Receiver                     | Denon AVR-X3600H |
+| Receiver                     | Denon AVR-X3600H, AVC-X3900H |
 | Receiver hardware generation | `avr-x-2016` |
 | Receiver firmware            | 3.88.614 |
 | Home Assistant Core          | 2026.7.0 |
