@@ -444,7 +444,8 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         code = self._by_label.get(option)
         if code:
-            await self.coordinator.device.graphic_eq.set_speaker_selection(code)
+            if not await self.coordinator.device.graphic_eq.set_speaker_selection(code):
+                raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_not_applied")
 
 
 class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
@@ -490,7 +491,8 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         for index, label in self._options():
             if label == option:
-                await self.coordinator.device.graphic_eq.set_channel(index)
+                if not await self.coordinator.device.graphic_eq.set_channel(index):
+                    raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_not_applied")
                 return
 
 

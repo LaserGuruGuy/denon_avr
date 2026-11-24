@@ -43,8 +43,9 @@ def _update_layout_issue(hass: HomeAssistant, coordinator: DenonAvrCoordinator) 
     """A repair notice while an applied layout changed other choices as well."""
 
     issue_id = f"speaker_layout_changed_{coordinator.config_entry.entry_id}"
-    changes = coordinator.device.speaker_layout.side_effects
-    if not changes:
+    layout = coordinator.device.speaker_layout
+    changes = layout.side_effects
+    if not changes or layout.stopped:
         ir.async_delete_issue(hass, DOMAIN, issue_id)
         return
     ir.async_create_issue(
@@ -56,6 +57,26 @@ def _update_layout_issue(hass: HomeAssistant, coordinator: DenonAvrCoordinator) 
         translation_key="speaker_layout_changed",
         translation_placeholders={"positions": ", ".join(changes)},
     )
+
+
+def _update_kept_issue(hass: HomeAssistant, coordinator: DenonAvrCoordinator, kept: tuple[str, ...]) -> None:
+    """A notice about choices a restore left as the user changed them."""
+
+    issue_id = f"speaker_layout_kept_{coordinator.config_entry.entry_id}"
+    if not kept:
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+        return
+    ir.async_create_issue(
+        hass, DOMAIN, issue_id, is_fixable=False, severity=ir.IssueSeverity.WARNING,
+        translation_key="speaker_layout_kept", translation_placeholders={"positions": ", ".join(kept)},
+    )
+
+
+async def _checked(action) -> None:
+    """Run a web write; a refused one is an error the user sees."""
+
+    if not await action:
+        raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_not_applied")
 
 
 class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
@@ -76,7 +97,7 @@ class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
         self._attr_translation_key = "eq_apply"
 
     async def async_press(self) -> None:
-        await self.coordinator.device.graphic_eq.apply()
+        await _checked(self.coordinator.device.graphic_eq.apply())
 
 
 class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):
@@ -93,7 +114,7 @@ class DenonAvrEqCurveCopy(DenonAvrEntity, ButtonEntity):
         self._attr_translation_key = "eq_copy_curve"
 
     async def async_press(self) -> None:
-        await self.coordinator.device.graphic_eq.curve_copy()
+        await _checked(self.coordinator.device.graphic_eq.curve_copy())
 
 
 class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
@@ -110,7 +131,7 @@ class DenonAvrEqSetDefaults(DenonAvrEntity, ButtonEntity):
         self._attr_translation_key = "eq_default"
 
     async def async_press(self) -> None:
-        await self.coordinator.device.graphic_eq.set_defaults()
+        await _checked(self.coordinator.device.graphic_eq.set_defaults())
 
 
 class _SpeakerLayoutButton(DenonAvrEntity, ButtonEntity):
@@ -181,6 +202,7 @@ class DenonAvrSpeakerLayoutRestore(_SpeakerLayoutButton):
 
     async def async_press(self) -> None:
         result = await self._run(self._layout.async_restore())
+        _update_kept_issue(self.hass, self.coordinator, result.newer)
         if result.refused:
             raise self._error(f"speaker_layout_restore_{result.refused}")
         if result.left:

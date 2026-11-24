@@ -54,15 +54,20 @@ class StagedChanges:
         collection_id: str,
         read_control: Callable[[str], Awaitable[Any]] = _no_control,
         set_control: Callable[[str, Any], Awaitable[None]] | None = None,
+        cached_control: Callable[[str], Any] = lambda _control_id: None,
     ) -> None:
         self._section = section
         self._collection = collection_id
         # A fresh value from the receiver (telnet), None when it does not answer.
         self._read_control = read_control
         self._set_control = set_control
+        # The last known value, used for the "before" state when it does not answer now.
+        self._cached_control = cached_control
         self._pending: dict[str, str] = {}
         self._before: _Snapshot | None = None     # before the first apply
-        self._after: _Snapshot | None = None      # after the last apply
+        self._after: _Snapshot | None = None      # after the last apply, when it was seen
+        self._newer: set[str] = set()             # chosen by the user since the first apply
+        self._newer_controls: set[str] = set()
         self._lock = asyncio.Lock()
         self._stopped = False
         # Positions that differ from before the first apply: slot -> (before, after).
@@ -87,6 +92,10 @@ class StagedChanges:
         """What the receiver had before an apply is known and differs (as far as seen)."""
 
         return self._before is not None
+
+    @property
+    def stopped(self) -> bool:
+        return self._stopped
 
     def stop(self) -> None:
         """Write nothing any more (the integration is being unloaded)."""
@@ -117,6 +126,8 @@ class StagedChanges:
     def _forget(self) -> None:
         self._before = None
         self._after = None
+        self._newer = set()
+        self._newer_controls = set()
         self.side_effects = {}
 
     # Reading ---------------------------------------------------------------
@@ -144,6 +155,38 @@ class StagedChanges:
             await self._controls("restore_controls"), await self._controls("restore_guards"),
         )
 
+    async def _guard(self) -> str | None:
+        """Why the restore point may not be used now: None = same preset, "stale" =
+        another one, "unavailable" = the receiver does not say (asked twice)."""
+
+        known = {
+            k: self._before.guards.get(k) if self._before.guards.get(k) is not None
+            else (self._after.guards.get(k) if self._after else None)
+            for k in self._spec.get("restore_guards", ())
+        }
+        for control_id, value in known.items():
+            if value is None:
+                continue            # it never answered: this receiver has no such control
+            now = await self._read_control(control_id)
+            if now is None:
+                now = await self._read_control(control_id)
+            if now is None:
+                return "unavailable"
+            if now != value:
+                return "stale"
+        return None
+
+    def _note_newer(self, now: _Snapshot) -> None:
+        """Remember what the user changed since our last apply: it is never overwritten."""
+
+        if self._before is None or self._after is None:
+            return
+        self._newer |= {s for s in self._before.positions if now.positions.get(s) != self._after.positions.get(s)}
+        self._newer_controls |= {
+            c for c, v in self._after.controls.items()
+            if v is not None and now.controls.get(c) is not None and now.controls[c] != v
+        }
+
     async def _wait(self, shown: Callable[[], bool]) -> bool:
         """Until the receiver shows it: it rebuilds the layout after a change (2 s)."""
 
@@ -153,6 +196,20 @@ class StagedChanges:
                 return False
             if await self._read() and shown():
                 return True
+        return False
+
+    async def _stable(self) -> bool:
+        """Read until two reads in a row agree: a layout change is applied in steps."""
+
+        last: tuple | None = None
+        for _ in range(int(self._spec.get("apply_attempts", 1)) + 2):
+            if self._stopped or not await self._read():
+                return False
+            now = (self._items(), self._positions())
+            if now == last:
+                return True
+            last = now
+            await asyncio.sleep(float(self._spec.get("apply_settle_seconds", 2.0)) / 2)
         return False
 
     # Apply -----------------------------------------------------------------
@@ -169,21 +226,34 @@ class StagedChanges:
                 return {}
             if not await self._read():
                 return {slot: False for slot in pending}
-            fresh = self._before is None
             before = await self._snapshot()
+            if self._before is not None:
+                guard = await self._guard()
+                if guard == "unavailable":
+                    return {slot: False for slot in pending}
+                if guard == "stale":
+                    self._forget()      # another preset: this apply gets its own restore point
+                else:
+                    self._note_newer(before)
+            fresh = self._before is None
             if fresh:
+                for control_id, value in before.controls.items():
+                    if value is None:
+                        before.controls[control_id] = self._cached_control(control_id)
                 self._before = before
+            self._after = None          # until it is seen; also when this is cancelled
             self._pending.clear()
             for slot, option in pending.items():
                 if self._stopped:
                     break
                 await self._section.async_set_item(self._collection, slot, option, staged_apply=True)
             await self._wait(lambda: all(self._items().get(s) == o for s, o in pending.items()))
+            seen = await self._stable()
             items = self._items()
-            result = {slot: items.get(slot) == option for slot, option in pending.items()}
-            if fresh and items == before.items and self._positions() == before.positions and not any(result.values()):
-                self._forget()          # nothing happened: nothing to restore
-            else:
+            result = {slot: seen and items.get(slot) == option for slot, option in pending.items()}
+            if seen and fresh and (items, self._positions()) == (before.items, before.positions):
+                self._forget()          # seen: nothing happened, nothing to restore
+            elif seen:
                 self._after = await self._snapshot()
                 self._track()
             return result
@@ -204,39 +274,40 @@ class StagedChanges:
     async def async_restore(self) -> RestoreResult:
         """Put back what the receiver had before the first apply."""
 
-        if self.busy or self._before is None or self._after is None:
+        if self.busy or self._before is None:
             return RestoreResult(refused="unavailable")
         async with self._lock:
-            before, after = self._before, self._after
             try:
                 async with asyncio.timeout(float(self._spec.get("restore_timeout", 60))):
-                    result = await self._restore(before, after)
+                    result = await self._restore(self._before)
             except TimeoutError:
                 result = RestoreResult(left=("timeout",))
-            if result.refused == "stale":
-                self._forget()          # another preset or mode since: not ours to undo
-            elif result.refused is None and not result.left:
+            # A refusal keeps the restore point: the preset may be switched back, the
+            # receiver may answer again. Discard gives it up.
+            if result.refused is None and not result.left:
                 self._forget()
-            elif result.refused is None:
+            elif result.refused is None and await self._read():
+                self._after = await self._snapshot()
                 self._track()
-                self._after = _Snapshot(self._items(), self._positions(), after.controls, after.guards)
             return result
 
-    async def _restore(self, before: _Snapshot, after: _Snapshot) -> RestoreResult:
+    async def _restore(self, before: _Snapshot) -> RestoreResult:
         if not await self._read():
             return RestoreResult(refused="unavailable")
-        guards = await self._controls("restore_guards")
-        if any(v is not None and guards.get(k) is not None and guards[k] != v for k, v in after.guards.items()):
-            return RestoreResult(refused="stale")
+        if (guard := await self._guard()) is not None:
+            return RestoreResult(refused=guard)
+        if self._after is None:
+            # The apply was interrupted or its result not seen: what is there now is it.
+            if not await self._stable():
+                return RestoreResult(refused="unavailable")
+            self._after = await self._snapshot()
+        after = self._after
         if any(self._items().get(slot) != value for slot, value in after.items.items()):
             return RestoreResult(refused="stale")
         # Choices made after the apply are left alone (judged before anything is written).
-        now = self._positions()
-        newer = {slot for slot in before.positions if now.get(slot) != after.positions.get(slot)}
-        fresh = await self._controls("restore_controls")
-        newer_controls = {
-            c for c, v in after.controls.items() if v is not None and fresh.get(c) is not None and fresh[c] != v
-        }
+        self._note_newer(_Snapshot(self._items(), self._positions(), await self._controls("restore_controls")))
+        newer, newer_controls = set(self._newer), set(self._newer_controls)
+        kept = tuple(sorted(newer, key=_order)) + tuple(sorted(newer_controls))
         # 1. the mode, confirmed; no position is written into another layout.
         for slot, value in before.items.items():
             if value is None or self._items().get(slot) == value:
@@ -245,7 +316,9 @@ class StagedChanges:
                 return RestoreResult(left=(MODE,))
             await self._section.async_set_item(self._collection, slot, value, staged_apply=True)
             if not await self._wait(lambda s=slot, v=value: self._items().get(s) == v):
-                return RestoreResult(left=(MODE,), newer=tuple(sorted(newer, key=_order)))
+                return RestoreResult(left=(MODE,), newer=kept)
+            if not await self._stable():
+                return RestoreResult(left=("unreachable",), newer=kept)
         # 2. the positions; one can bring another back, so look again every time.
         tried: set[str] = set()
         while not self._stopped:
@@ -257,11 +330,14 @@ class StagedChanges:
             await self._section.async_set_item(self._spec["side_effects_of"], slot, wanted, staged_apply=True)
             if not await self._wait(lambda s=slot, v=wanted: self._positions().get(s, (None,))[0] == v):
                 if not await self._read():
-                    return RestoreResult(left=("unreachable",), newer=tuple(sorted(newer, key=_order)))
+                    return RestoreResult(left=("unreachable",), newer=kept)
         # 3. the telnet controls, written even when the cache looks right, then read.
         left = list(self._remaining(before, newer))
         for control_id, value in before.controls.items():
-            if value is None or control_id in newer_controls or self._set_control is None or self._stopped:
+            if control_id in newer_controls or self._set_control is None or self._stopped:
+                continue
+            if value is None:
+                left.append(control_id)          # unknown before: cannot be put back
                 continue
             if await self._read_control(control_id) is None:
                 left.append(control_id)          # telnet does not answer: do not queue it
@@ -269,7 +345,7 @@ class StagedChanges:
             await self._set_control(control_id, value)
             if await self._read_control(control_id) != value:
                 left.append(control_id)
-        return RestoreResult(tuple(left), tuple(sorted(newer, key=_order)) + tuple(sorted(newer_controls)))
+        return RestoreResult(tuple(left), kept)
 
     def _todo(self, before: _Snapshot, newer: set[str]) -> list[str]:
         items = self._section.collection(self._spec["side_effects_of"]) if self._spec.get("side_effects_of") else {}

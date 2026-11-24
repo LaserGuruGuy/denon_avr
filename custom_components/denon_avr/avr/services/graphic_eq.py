@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any
 
 from ..models import Availability, GraphicEqState
@@ -10,6 +12,7 @@ from ..protocol.webdoc import parse_availability, parse_xml
 from .ports import ConfigDocumentPort
 from ..protocol.eq_doc import (
     adjust_payload,
+    band_tag,
     curve_copy_payload,
     parse,
     set_defaults_payload,
@@ -41,6 +44,8 @@ class GraphicEqController:
         self.state = GraphicEqState()
         self._pending: dict[str, float] = {}
         self._channel = 0
+        # The channel the bands in ``state`` were read for; None = not read (yet).
+        self._read_channel: int | None = None
         # The receiver's own availability of the graphic EQ menu (audio
         # listSetupMenu), e.g. grayed while a room correction is active.
         self.availability: Availability | None = None
@@ -93,18 +98,20 @@ class GraphicEqController:
             self.availability = availability
             self._on_update()
 
-    async def refresh(self) -> None:
-        """Read the selected channel's curve into state (non-disruptive)."""
+    async def refresh(self) -> bool:
+        """Read the selected channel's curve into state (non-disruptive). False when
+        the receiver did not give it."""
 
         if not self.supported:
-            return
+            return False
+        channel = self._channel
         await self._read_availability()
         param = self._grammar.get("channel_read_param", "opt1")
         xml = await self._webconfig.async_get(
-            self._section(), self._type(), {param: str(self._channel), "opt2": "0"}
+            self._section(), self._type(), {param: str(channel), "opt2": "0"}
         )
         if xml is None:
-            return
+            return False
         new_state = parse(xml, self._grammar)
         # Only notify on an actual change: this runs on every reconcile poll, so
         # an unconditional callback would write HA state every interval for no
@@ -112,43 +119,65 @@ class GraphicEqController:
         if new_state != self.state:
             self.state = new_state
             self._on_update()
+        self._read_channel = channel if new_state.bands else None
+        return True
 
-    async def _apply_payload(self, payload: str) -> None:
+    async def _apply_payload(self, payload: str) -> bool:
         if not self.supported:
-            return
-        await self._webconfig.async_set(self._section(), self._type(), payload)
+            return False
+        ok = await self._webconfig.async_set(self._section(), self._type(), payload)
+        # The receiver shows a written value only a moment later.
+        await asyncio.sleep(float(self._grammar.get("write_settle_seconds", 0)))
         # Re-read so state reflects exactly what the receiver applied.
         await self.refresh()
+        return ok
 
     async def set_band(self, tag: str, db: float) -> None:
         # Stage the edit; apply() writes the whole block for the channel.
         self._pending[tag] = db
         self._on_update()
 
-    async def apply(self) -> None:
-        # Never write a full block from nothing: without a prior read every band
-        # would default to 0 and silently flatten the curve.
-        if not self.state.bands and not self._pending:
-            return
-        bands = dict(self.state.bands)
-        bands.update(self._pending)
-        await self._apply_payload(adjust_payload(self._grammar, self._channel, bands))
-        self._pending.clear()
+    async def apply(self) -> bool:
+        """Write the whole block. Refused (False, edits kept) unless every band of THIS
+        channel was read: a missing band would be written as 0 dB, flattening the
+        curve, and another channel's curve would be copied onto this one."""
 
-    async def set_channel(self, index: int) -> None:
-        # A different channel has its own curve; drop staged edits and reload.
+        if not self._pending:
+            return True
+        tags = {band_tag(self._grammar, label) for label in self._grammar.get("bands", [])}
+        if self._read_channel != self._channel or not tags <= set(self.state.bands):
+            await self.refresh()
+            if self._read_channel != self._channel or not tags <= set(self.state.bands):
+                return False
+        pending = dict(self._pending)
+        bands = {**self.state.bands, **pending}
+        ok = await self._apply_payload(adjust_payload(self._grammar, self._channel, bands))
+        if ok:
+            # An edit made meanwhile stays staged.
+            self._pending = {t: v for t, v in self._pending.items() if pending.get(t) != v}
+            self._on_update()
+        return ok
+
+    def _select(self, index: int) -> None:
+        # A different channel has its own curve; drop staged edits and the old curve.
         self._channel = index
         self._pending.clear()
-        await self.refresh()
+        self._read_channel = None
+        if self.state.bands:
+            self.state = replace(self.state, bands={})
+            self._on_update()
 
-    async def set_speaker_selection(self, code: str) -> None:
+    async def set_channel(self, index: int) -> bool:
+        self._select(index)
+        return await self.refresh()
+
+    async def set_speaker_selection(self, code: str) -> bool:
         # A new mode re-scopes the channel list; start from the first channel.
-        self._channel = 0
-        self._pending.clear()
-        await self._apply_payload(speaker_selection_payload(self._grammar, code))
+        self._select(0)
+        return await self._apply_payload(speaker_selection_payload(self._grammar, code))
 
-    async def curve_copy(self) -> None:
-        await self._apply_payload(curve_copy_payload(self._grammar))
+    async def curve_copy(self) -> bool:
+        return await self._apply_payload(curve_copy_payload(self._grammar))
 
-    async def set_defaults(self) -> None:
-        await self._apply_payload(set_defaults_payload(self._grammar))
+    async def set_defaults(self) -> bool:
+        return await self._apply_payload(set_defaults_payload(self._grammar))

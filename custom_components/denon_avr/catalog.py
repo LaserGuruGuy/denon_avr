@@ -87,7 +87,8 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
         return (not configured) or any(c in configured for c in profile.group_channels(group))
 
     # button (staged speaker layout) ---------------------------------------------
-    if has_speaker_layout(device) and device.speaker_config.collection("speaker_layout_assign"):
+    layout = has_speaker_layout(device) and bool(device.speaker_config.collection("speaker_layout_assign"))
+    if layout or "button_speaker_layout_apply" in known_keys:
         add(EntityEntry("button", "speaker_layout_apply", "button_speaker_layout_apply", "speakers"))
         add(EntityEntry("button", "speaker_layout_restore", "button_speaker_layout_restore", "speakers"))
         add(EntityEntry("button", "speaker_layout_discard", "button_speaker_layout_discard", "speakers"))
@@ -134,7 +135,7 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
     for group in sorted(crossover_groups):
         add(EntityEntry("select", "crossover", f"select_crossover_{group}", "speakers", group_enabled(group),
                         {"group": group, "channels": profile.group_channels(group)}))
-    if state.crossovers:
+    if state.crossovers or "select_crossover_all" in known_keys:
         add(EntityEntry("select", "crossover_speaker_selection", "select_crossover_speaker_selection", "speakers"))
         add(EntityEntry("select", "crossover_all", "select_crossover_all", "speakers"))
     size_groups = profile.speakers.get("groups", {})
@@ -168,7 +169,7 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
             add(EntityEntry("select", "current_input_setting", f"select_current_{cid}", "video",
                             params={"collection": cid}))
     # Speaker layout assign mode (Web Control): staged select + Apply / Discard.
-    if has_speaker_layout(device) and device.speaker_config.collection("speaker_layout_assign"):
+    if layout or "select_speaker_layout_assign" in known_keys:
         add(EntityEntry("select", "speaker_layout_assign", "select_speaker_layout_assign", "speakers"))
     for attr, sub in (("video_config", "video"), ("speaker_config", "speakers")):
         section = getattr(device, attr)

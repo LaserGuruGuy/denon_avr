@@ -66,6 +66,7 @@ class DenonAvrDevice:
             "speaker_layout_assign",
             self._read_control,
             self.async_set_control,
+            lambda control_id: self._state.values.get(control_id),
         )
 
         # The persistent telnet connection is the CommandSink. Its callbacks are

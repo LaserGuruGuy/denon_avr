@@ -72,7 +72,7 @@ plain HTTP 11080 on "Web Control"). Both put an nginx front on port 80/443 that 
 another receiver service (telnet, HEOS, JSON, goform, UPnP), and it verifies that the target answers.
 Otherwise it falls back to the known endpoints. The probes run concurrently with a 2 s timeout within
 a 6 s budget. `WebConfigClient` locates the interface on first use,
-serialises the requests, and after a transport failure locates it again, at most once per 5 minutes.
+serialises the requests, and after a transport failure locates it again, again after 50, 110 and then every 300 s.
 Which settings exist is then decided by the receiver's own availability documents, never by the model.
 The device link in HA (`configuration_url`) is the located interface.
 
@@ -151,3 +151,10 @@ refactor must keep every golden byte-identical.
 
 Known defects are pinned as `test_known_*`, so that fixing one is a deliberate change. See
 `tests/README.md`.
+
+## Staged speaker layout (avr/services/staged.py)
+Prepare, apply, restore. Applying resets other choices on the receiver, which going back
+does not restore, so the state before the first apply is kept in memory as a restore point.
+Rules: one operation at a time; the preset must be the same (an unanswered question refuses);
+no position is written before the mode is confirmed; choices made after the apply are kept;
+front A/B is read fresh over telnet and verified; nothing is written after unload.

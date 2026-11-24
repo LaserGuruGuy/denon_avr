@@ -350,6 +350,9 @@ def fast_refresh(monkeypatch):
 
     monkeypatch.setattr(webconfig_doc, "asyncio", _FastAsyncio())
     monkeypatch.setattr(staged, "asyncio", _FastAsyncio())
+    import avr.services.graphic_eq as graphic_eq_module
+
+    monkeypatch.setattr(graphic_eq_module, "asyncio", _FastAsyncio())
 
 
 @pytest.fixture

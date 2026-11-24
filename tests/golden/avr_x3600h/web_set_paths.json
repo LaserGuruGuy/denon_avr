@@ -1,6 +1,5 @@
 {
  "geq:apply": [
-  "https://192.0.2.10:10443/ajax/audio/set_config?type=10&data=%3CGraphicEQ%3E%3CAdjustEQ%3E%3CChannel%3E1%3C%2FChannel%3E%3CEq63Hz%3E0%3C%2FEq63Hz%3E%3CEq125Hz%3E0%3C%2FEq125Hz%3E%3CEq250Hz%3E0%3C%2FEq250Hz%3E%3CEq500Hz%3E0%3C%2FEq500Hz%3E%3CEq1kHz%3E-15%3C%2FEq1kHz%3E%3CEq2kHz%3E0%3C%2FEq2kHz%3E%3CEq4kHz%3E0%3C%2FEq4kHz%3E%3CEq8kHz%3E0%3C%2FEq8kHz%3E%3CEq16kHz%3E0%3C%2FEq16kHz%3E%3C%2FAdjustEQ%3E%3C%2FGraphicEQ%3E",
   "https://192.0.2.10:10443/ajax/audio/get_config?type=1",
   "https://192.0.2.10:10443/ajax/audio/get_config?type=10&opt1=1&opt2=0"
  ],

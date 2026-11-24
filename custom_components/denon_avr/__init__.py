@@ -25,6 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> bool:
     """Set up Denon AVR from a config entry."""
 
+    _clear_layout_issues(hass, entry)
+
     host = entry.data[CONF_HOST]
     # Warm the protocol profile cache off the event loop so constructing the
     # device (which reads the bundled profile) does no blocking I/O in the loop.
@@ -139,15 +141,24 @@ def _enable_used_entities(hass: HomeAssistant, entry: DenonAvrConfigEntry, coord
         registry.async_update_entity(disabled[key], disabled_by=None)
 
 
+def _clear_layout_issues(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> None:
+    """The restore point lives in memory: without it these notices mean nothing."""
+
+    for issue in ("speaker_layout_changed", "speaker_layout_kept"):
+        ir.async_delete_issue(hass, DOMAIN, f"{issue}_{entry.entry_id}")
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> bool:
     """Unload a config entry and stop the telnet transport."""
 
     # First stop adding entities: a push during the platform unload must not
     # add to a platform that is being torn down.
     entry.runtime_data.platforms.clear()
+    # Then no further layout writes: a running apply or restore stops by itself.
+    entry.runtime_data.device.speaker_layout.stop()
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
-        ir.async_delete_issue(hass, DOMAIN, f"speaker_layout_changed_{entry.entry_id}")
+        _clear_layout_issues(hass, entry)
         await entry.runtime_data.async_shutdown()
     return unloaded

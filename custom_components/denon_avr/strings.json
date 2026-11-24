@@ -54,7 +54,7 @@
           "dts": "DTS",
           "dts_hd_high_resolution": "DTS-HD High Resolution",
           "dts_hd_master_audio": "DTS-HD Master Audio",
-          "no_signal": "No or unknown signal",
+          "no_or_unknown_signal": "No or unknown signal",
           "pcm_zero": "PCM Zero",
           "mp3": "MP3",
           "aac": "AAC",
@@ -511,7 +511,11 @@
   "issues": {
     "speaker_layout_changed": {
       "title": "Speaker layout changed other choices",
-      "description": "Applying the speaker layout also changed layout positions {positions}. The receiver does not put these back when you go back. Press Restore speaker layout to put everything back (also front A/B), or Discard speaker layout change to keep it and dismiss this notice."
+      "description": "Applying the speaker layout also changed layout positions {positions}. The receiver does not put these back when you go back. Press Restore speaker layout to put everything back (also front A/B), or Discard speaker layout change to keep it and dismiss this notice. The restore point is lost when Home Assistant restarts or the integration reloads."
+    },
+    "speaker_layout_kept": {
+      "title": "Some choices were left as you changed them",
+      "description": "Restoring the speaker layout left {positions} alone, because they were changed after the layout was applied. Check them on the receiver."
     }
   }
 }

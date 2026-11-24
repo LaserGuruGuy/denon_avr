@@ -91,6 +91,7 @@
         "channel. Editing requires MultEQ off and the graphic EQ enabled."
       ],
       "config_section": "audio",
+      "write_settle_seconds": 0.8,
       "config_type": 10,
       "root_tag": "GraphicEQ",
       "band_tag_prefix": "Eq",
@@ -297,7 +298,7 @@
       "query": "SSINFAISSIG ?",
       "prefix": "SSINFAISSIG",
       "unknown_key": "code",
-      "value_keys": {"01": "analog", "02": "pcm", "03": "dolby_digital", "04": "dolby_truehd_or_dd_plus", "05": "dolby_truehd_or_atmos", "06": "dts", "08": "dts_hd_high_resolution", "09": "dts_hd_master_audio", "12": "no_signal", "13": "pcm_zero", "15": "mp3", "17": "aac", "18": "flac", "25": "dolby_atmos", "40": "vorbis"},
+      "value_keys": {"01": "analog", "02": "pcm", "03": "dolby_digital", "04": "dolby_truehd_or_dd_plus", "05": "dolby_truehd_or_atmos", "06": "dts", "08": "dts_hd_high_resolution", "09": "dts_hd_master_audio", "12": "no_or_unknown_signal", "13": "pcm_zero", "15": "mp3", "17": "aac", "18": "flac", "25": "dolby_atmos", "40": "vorbis"},
       "doc": "Input signal type code. 04 and 05 are used for more than one format, hence the double names. Codes may differ per model; the decoder sensor is the receiver's own text. An unlisted code shows as code_<nn>."
     },
     "sample_rate": {

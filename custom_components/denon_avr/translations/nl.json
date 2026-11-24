@@ -54,7 +54,7 @@
           "dts": "DTS",
           "dts_hd_high_resolution": "DTS-HD High Resolution",
           "dts_hd_master_audio": "DTS-HD Master Audio",
-          "no_signal": "Geen of onbekend signaal",
+          "no_or_unknown_signal": "Geen of onbekend signaal",
           "pcm_zero": "PCM Zero",
           "mp3": "MP3",
           "aac": "AAC",
@@ -511,7 +511,11 @@
   "issues": {
     "speaker_layout_changed": {
       "title": "Luidsprekerindeling wijzigde ook andere keuzes",
-      "description": "Het toepassen van de luidsprekerindeling wijzigde ook de posities {positions}. De receiver herstelt die niet als je teruggaat. Druk op Luidsprekerindeling herstellen om alles terug te zetten (ook front A/B), of op Luidsprekerwijziging verwerpen om het zo te laten en deze melding te sluiten."
+      "description": "Het toepassen van de luidsprekerindeling wijzigde ook de posities {positions}. De receiver herstelt die niet als je teruggaat. Druk op Luidsprekerindeling herstellen om alles terug te zetten (ook front A/B), of op Luidsprekerwijziging verwerpen om het zo te laten en deze melding te sluiten. Het herstelpunt vervalt als Home Assistant herstart of de integratie herlaadt."
+    },
+    "speaker_layout_kept": {
+      "title": "Sommige keuzes zijn gelaten zoals jij ze wijzigde",
+      "description": "Het herstellen van de luidsprekerindeling liet {positions} ongemoeid, omdat die na het toepassen zijn gewijzigd. Controleer ze op de receiver."
     }
   }
 }

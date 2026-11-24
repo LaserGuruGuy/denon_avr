@@ -396,7 +396,9 @@ async def test_layout_restore_refuses_another_preset_or_mode(make_device, monkey
     _dev, layout, rx = await _applied(make_device, monkeypatch)
     rx.preset = "2"
     assert (await layout.async_restore()).refused == "stale"
-    assert rx.writes == [("1", "17")] and layout.restorable is False
+    assert rx.writes == [("1", "17")] and layout.restorable is True    # the preset may come back
+    rx.preset = "1"
+    assert (await layout.async_restore()).left == ()
 
 
 async def test_layout_restore_without_web_or_telnet(make_device, monkeypatch):
@@ -406,8 +408,10 @@ async def test_layout_restore_without_web_or_telnet(make_device, monkeypatch):
     assert layout.restorable is True    # can be tried again
     rx.down = False
 
+    real = layout._read_control
+
     async def silent(control_id):
-        return None
+        return None if control_id == "front_speaker" else await real(control_id)
 
     layout._read_control = silent
     assert (await layout.async_restore()).left == ("front_speaker",)
@@ -455,3 +459,133 @@ async def test_layout_unload_stops_writing(make_device, monkeypatch):
     layout.stop()
     await layout.async_restore()
     assert rx.writes == [("1", "17")] and rx.sent == []
+
+
+async def test_layout_second_apply_in_another_preset_gets_its_own_restore_point(make_device, monkeypatch):
+    _dev, layout, rx = await _applied(make_device, monkeypatch)
+    rx.preset = "2"
+    layout.stage("1", "7")
+    assert await layout.async_apply() == {"1": True}
+    writes = len(rx.writes)
+    assert (await layout.async_restore()).left == ()
+    assert rx.writes[writes:][0] == ("1", "17")        # preset 2 had 17, not preset 1's 6
+    assert ("1", "6") not in rx.writes
+
+
+async def test_layout_unknown_preset_refuses_and_keeps_the_restore_point(make_device, monkeypatch):
+    _dev, layout, rx = await _applied(make_device, monkeypatch)
+    rx.preset = None
+    assert (await layout.async_restore()).refused == "unavailable"
+    layout.stage("1", "7")
+    assert await layout.async_apply() == {"1": False}
+    assert rx.writes == [("1", "17")] and layout.restorable is True and layout.pending == {"1": "7"}
+
+
+async def test_layout_lost_read_back_keeps_the_restore_point(make_device, monkeypatch):
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    rx = _LayoutReceiver(fx, monkeypatch, dev)
+    real = rx._set
+
+    async def set_then_down(*args):
+        await real(*args)
+        rx.down = True
+        return False
+
+    monkeypatch.setattr(dev._webconfig, "async_set", set_then_down)
+    layout = dev.speaker_layout
+    layout.stage("1", "17")
+    assert await layout.async_apply() == {"1": False}
+    assert layout.restorable is True
+    rx.down = False
+    monkeypatch.setattr(dev._webconfig, "async_set", real)
+    result = await layout.async_restore()
+    assert result.refused is None and result.left == ()
+    assert ("1", "6") in rx.writes and rx.sent == [("front_speaker", "SPB")]
+
+
+async def test_layout_cancelled_apply_can_be_restored(make_device, monkeypatch):
+    import asyncio
+
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    rx = _LayoutReceiver(fx, monkeypatch, dev)
+    layout = dev.speaker_layout
+    layout.stage("1", "17")
+    task = asyncio.ensure_future(layout.async_apply())
+    while not rx.writes:
+        await asyncio.sleep(0)
+    task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
+    assert layout.busy is False and layout.restorable is True
+    assert (await layout.async_restore()).left == ()
+    assert rx.writes[-3:] == [("1", "6"), ("5", "5"), ("8", "0")]
+
+
+async def test_layout_choice_between_two_applies_is_kept(make_device, monkeypatch):
+    _dev, layout, rx = await _applied(make_device, monkeypatch)
+    rx.set_position("5", "6")
+    layout.stage("1", "7")
+    assert await layout.async_apply() == {"1": True}
+    result = await layout.async_restore()
+    assert "5" in result.newer and ("5", "5") not in rx.writes
+
+
+async def test_layout_front_speaker_silent_at_apply_uses_the_known_value(make_device, monkeypatch):
+    dev, _session, _telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    rx = _LayoutReceiver(fx, monkeypatch, dev)
+    layout = dev.speaker_layout
+    real = layout._read_control
+
+    async def silent(control_id):
+        return None if control_id == "front_speaker" else await real(control_id)
+
+    layout._read_control = silent
+    layout._cached_control = {"front_speaker": "SPB"}.get
+    layout.stage("1", "17")
+    await layout.async_apply()
+    layout._read_control = real
+    assert (await layout.async_restore()).left == ()
+    assert rx.sent == [("front_speaker", "SPB")]
+
+
+EQ_DOC = (
+    "<GraphicEQ><Enable>1</Enable><SpeakerSelection>2</SpeakerSelection><AdjustEQ>"
+    + "".join(f"<{t}>{v}</{t}>" for t, v in (
+        ("Eq63Hz", "10"), ("Eq125Hz", "20"), ("Eq250Hz", "-5"), ("Eq500Hz", "0"), ("Eq1kHz", "5"),
+        ("Eq2kHz", "0"), ("Eq4kHz", "15"), ("Eq8kHz", "0"), ("Eq16kHz", "-10")))
+    + "</AdjustEQ></GraphicEQ>"
+)
+
+
+async def test_eq_apply_never_writes_unread_bands(make_device, monkeypatch):
+    dev, _session, _telnet, _fx = make_device("avr_x3600h")
+    await dev.async_discover()
+    eq = dev.graphic_eq
+    writes, doc, accept = [], {"xml": None}, {"ok": True}
+
+    async def get(section, type_id, extra=None):
+        return doc["xml"] if type_id == 10 else None
+
+    async def put(_section, _type, xml):
+        writes.append(xml)
+        return accept["ok"]
+
+    monkeypatch.setattr(eq._webconfig, "async_get", get)
+    monkeypatch.setattr(eq._webconfig, "async_set", put)
+    eq.state = type(eq.state)()
+    eq._read_channel = None
+    await eq.set_band("Eq1kHz", 2.0)
+    assert await eq.apply() is False and writes == [] and eq.band_value("Eq1kHz") == 2.0   # nothing read
+    doc["xml"] = EQ_DOC
+    accept["ok"] = False
+    assert await eq.apply() is False and eq.band_value("Eq1kHz") == 2.0                     # refused: kept
+    accept["ok"] = True
+    assert await eq.apply() is True and not eq.has_pending
+    assert "<Eq63Hz>10</Eq63Hz>" in writes[-1].replace(" ", "")                             # other bands kept
+    doc["xml"] = None
+    assert await eq.set_channel(1) is False
+    await eq.set_band("Eq1kHz", 3.0)
+    count = len(writes)
+    assert await eq.apply() is False and len(writes) == count                               # old channel's curve not copied

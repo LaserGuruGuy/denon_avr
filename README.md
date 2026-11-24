@@ -27,7 +27,8 @@ as the AVR-X3600H and AVC-X3900H.
   from it; nothing is tied to a model name.
 - **Follows your setup live.** Speakers, subwoofers, presets and inputs belong to
   your own setup. Entities appear or become unavailable with it, and changes made
-  on the receiver show up right away.
+  on the receiver show up right away (settings that only exist in the setup web
+  interface: within a minute).
 - **Stability** Auto reconnect with backoff, keepalive probe, command queue
   with inter command spacing, teardown on unload.
 
@@ -196,6 +197,11 @@ from an English AVR‑X3600H, so replace them with your own.
 
 ## Notes and limitations
 
+- **Breaking change in 1.2.2:** the state of the input signal sensor is now a name
+  (`pcm`, `dolby_digital`, ...) instead of the raw code (`02`, `03`, ...). Automations
+  can use the attribute `code`, which keeps the raw code.
+- The speaker layout restore point is kept in memory: a restart of Home Assistant or a
+  reload of the integration drops it.
 - Some parameters only apply to certain signals or sound modes (for example
   Dynamic Compression needs a Dolby/DTS bitstream, Video Mode needs an active
   video signal, Equalizer settings can not be altered when MultEQ is not Off).
