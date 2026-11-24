@@ -1,16 +1,4 @@
-"""Pure grammar for the setup web interface documents (``/ajax/<section>/{get,set}_config``).
-
-Translates the XML documents into control fields and back into write payloads.
-No I/O and no state: the orchestration (which documents to read, when, and the
-write-then-reread) lives in services.webconfig_doc. Every id, type, tag and option
-map comes from the profile's grammar section (video_web, speakers_web).
-
-Availability semantics live in ONE place, :class:`~..models.Availability`, as the
-receiver's own UI reads them: ``display`` 2/3/4 shown, 3/4 active, 2 disabled;
-``gray`` is only the reason text code of a disabled item. Per-input collections (one element
-per input slot, keyed by the receiver's own index) are described generically by
-the profile's ``collections`` entries.
-"""
+"""Pure grammar for the setup web interface documents (``/ajax/<section>/{get,set}_config``)."""
 
 from __future__ import annotations
 
@@ -69,8 +57,8 @@ def parse_control(
     """Parse one profile control from its menu document into ``fields`` (pure)."""
     tag = control["tag"]
     if tag == root.tag:
-        # Single-value menu (e.g. TVFormat): the value is the root's text and
-        # the menu-level availability is its only gate, so treat as settable.
+        # Single-value menu (e.g. TVFormat): the value is the root's text and the menu-level
+        # availability is its only gate, so treat as settable.
         fields[control["id"]] = {
             "value": (root.text or "").strip(),
             "display": to_int(root.get("display"), SELECTABLE),
@@ -84,9 +72,6 @@ def parse_control(
     display = to_int(element.get("display"), SELECTABLE)
     gray = element.get("gray", "0")
     if control.get("dynamic"):
-        # A device-supplied source list (Pass Through Source): the selected
-        # value is in <field>, the offered items are the <list> children keyed
-        # by a source tag whose wire value comes from the profile map.
         value = (element.findtext(control.get("field", "Source")) or "").strip()
         options: dict[str, str] = {}
         wire_map = grammar.get("pass_through_values", {})
@@ -103,9 +88,6 @@ def parse_control(
             "options": options,
         }
     elif control.get("value_list"):
-        # A nested field with the current <Value> plus a device <List> of the
-        # allowed <Value> ids (amp-assign Floor Layout / Height); labels for
-        # those ids come from the control's static options map.
         value = (element.findtext("Value") or "").strip()
         container = element.find("List")
         allowed = (
@@ -127,9 +109,8 @@ def parse_control(
             "gray": gray,
             "options": None,
         }
-        # Amp assign: the valid option list depends on the receiver's amp
-        # hardware, so capture the sibling AmpType value; options() keys the
-        # per-AmpType table on it.
+        # Amp assign: the valid option list depends on the receiver's amp hardware, so capture the
+        # sibling AmpType value; options() keys the per-AmpType table on it.
         amptype_tag = control.get("amptype_tag")
         if amptype_tag:
             field["amptype"] = (root.findtext(amptype_tag) or "").strip()
@@ -147,8 +128,8 @@ def resolve_options(control: dict[str, Any], field: dict[str, Any] | None) -> di
         return {v: label_map.get(v, v) for v in field["value_list"]}
     amptype_options = control.get("amptype_options")
     if amptype_options is not None and field is not None:
-        # Device-driven: pick the mode list for the receiver's queried
-        # AmpType, deduping labels (a few amp types map two ids to one label).
+        # Device-driven: pick the mode list for the receiver's queried AmpType, deduping labels (a
+        # few amp types map two ids to one label).
         result: dict[str, str] = {}
         seen: set[str] = set()
         for value, label in amptype_options.get(field.get("amptype", ""), []):
@@ -162,12 +143,7 @@ def resolve_options(control: dict[str, Any], field: dict[str, Any] | None) -> di
 def build_set_payload(grammar: dict[str, Any], control: dict[str, Any], wire: str) -> str:
     """The XML payload that writes ``wire`` into one control's field."""
 
-    # Most menus take ONLY the field element (the ``type`` selects the menu):
-    # HDMI setup 3, 4K format 8, TV format 9 and the per-input 11/14 are sent bare
-    # by the vendor's own web code (both generations), and wrapping makes the
-    # receiver reject them. Exceptions, wrapped in the root tag: the speakers
-    # amp-assign menu (``wrap_root``; bare = HTTP 500) and the menus in
-    # ``wrap_menus`` (On Screen Display; bare = HTTP 501, verified live).
+    # Most menus take ONLY the field element (the ``type`` selects the menu)
     tag = control["tag"]
     if control.get("dynamic"):
         field = control.get("field", "Source")
@@ -185,12 +161,7 @@ def build_set_payload(grammar: dict[str, Any], control: dict[str, Any], wire: st
 
 
 def _allowed_options(spec: dict[str, Any], item: ET.Element) -> tuple[str, ...]:
-    """The option ids this item allows.
-
-    ``options_from``: the item's own device-supplied list (e.g. ``List/Value``).
-    Otherwise the profile's base list, plus conditional ones whose condition (a
-    sibling field equal to a value) the receiver reports for this item.
-    """
+    """The option ids this item allows."""
 
     if "options_from" in spec:
         return tuple(
@@ -218,8 +189,8 @@ def parse_collection(spec: dict[str, Any], root: ET.Element) -> dict[str, Collec
         value = element.find(spec["value_field"])
         if not slot or value is None:
             continue     # items without this field belong to another collection / are absent
-        # Availability: the item's own flags, or those of a sub-element that carries
-        # the setting (``availability_from``); the stricter of the two applies.
+        # Availability: the item's own flags, or those of a sub-element that carries the setting
+        # (``availability_from``); the stricter of the two applies.
         own = Availability(to_int(element.get("display"), SELECTABLE), element.get("gray", "0"))
         sub = element.find(spec["availability_from"]) if "availability_from" in spec else None
         if sub is not None:
@@ -237,11 +208,7 @@ def parse_collection(spec: dict[str, Any], root: ET.Element) -> dict[str, Collec
 
 
 def build_collection_payload(spec: dict[str, Any], slot: str, wire: str) -> str:
-    """Write payload for one item: ``<ValueField index="slot">wire</ValueField>``.
-
-    The shape the receiver's own setup UI sends (no root element; the config
-    ``type`` selects the document). Values and the key are XML-escaped.
-    """
+    """Write payload for one item."""
 
     tag = spec.get("write_field", spec["value_field"])
     key_attr = spec.get("key_attr", "index")
@@ -253,8 +220,7 @@ def build_collection_payload(spec: dict[str, Any], slot: str, wire: str) -> str:
 
 
 def parse_value_list(spec: dict[str, Any], root: ET.Element) -> tuple[str, ...] | None:
-    """The values the receiver offers for a setting (e.g. its crossover grid), in its
-    order; None when the document does not carry the list."""
+    """The values the receiver offers for a setting (e.g. its crossover grid), in its order."""
 
     if root.tag != spec["root"]:
         return None

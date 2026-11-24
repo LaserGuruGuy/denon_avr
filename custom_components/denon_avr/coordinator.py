@@ -1,11 +1,4 @@
-"""Data update coordinator for the Denon AVR integration.
-
-The receiver pushes state changes over telnet, so this coordinator is push
-driven: the device calls back whenever anything changes and the coordinator
-forwards the new state to the entities. The periodic update is only a light HTTP
-reconciliation poll that confirms the receiver is reachable and recovers state
-if the telnet link is temporarily down.
-"""
+"""Data update coordinator for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -42,29 +35,22 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
         session = async_get_clientsession(hass)
         self.device = DenonAvrDevice(session, host)
         self.device.register_update_callback(self._handle_device_update)
-        # Registry id of the main receiver device, set once at setup so the
-        # sub-devices can link to it via `via_device_id` (HA 2026.8+).
+        # Registry id of the main receiver device, set once at setup so the sub-devices can link
+        # to it via `via_device_id` (HA 2026.8+).
         self.main_device_id: str | None = None
-        # Entity catalogue bookkeeping (see entity.setup_catalogue_platform):
-        # keys Home Assistant already had for this receiver, keys created in this
-        # run, and per platform the factories + add callback for later additions.
         self.known_keys: set[str] = set()
         self.created_keys: set[str] = set()
         self.platforms: dict[str, tuple[dict, object]] = {}
 
     async def async_setup(self) -> None:
-        """Discover the receiver and start the telnet transport.
-
-        Raises ConnectionError when the receiver cannot be reached so the config
-        entry setup is retried by Home Assistant.
-        """
+        """Discover the receiver and start the telnet transport."""
 
         await self.device.async_discover()
         expected = self.config_entry.unique_id
         mac = self.device.discovery.device.mac_address
         if expected and mac != expected:
-            # Every entity would be registered again under another id (no MAC), or
-            # under the wrong receiver (swapped addresses).
+            # Every entity would be registered again under another id (no MAC), or under the wrong
+            # receiver (swapped addresses).
             raise ConnectionError(
                 "the address belongs to another receiver; use Reconfigure to set the right address"
                 if mac
@@ -91,19 +77,11 @@ class DenonAvrCoordinator(DataUpdateCoordinator[AvrState]):
 
     @callback
     def _handle_device_update(self) -> None:
-        """Forward a pushed state change to the entities immediately.
-
-        Not ``async_set_updated_data``: that also restarts the reconcile
-        interval, and a receiver that pushes every few seconds (the AVC-X3900H
-        sends its signal cluster about every 5 s) would then never get its
-        reconcile poll - the web documents and the HTTP fallback would starve.
-        The state object is shared and updated in place, so notifying the
-        listeners is enough; the poll keeps its own fixed cadence.
-        """
+        """Forward a pushed state change to the entities immediately."""
 
         self.data = self.device.state
-        # A push proves the receiver is reachable: do not leave the entities
-        # unavailable until the next poll because one poll failed.
+        # A push proves the receiver is reachable: do not leave the entities unavailable until the
+        # next poll because one poll failed.
         if self.device.available:
             self.last_update_success = True
         self.async_update_listeners()

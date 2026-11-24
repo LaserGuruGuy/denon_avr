@@ -1,10 +1,4 @@
-"""Button platform for the Denon AVR integration.
-
-Momentary actions that do not map to a stateful entity. Currently the manual
-graphic-EQ helper on the EQ sub-device: copy the reference (Audyssey / flat)
-curve into the manual equaliser as a starting point. Only created when the
-receiver advertises a graphic EQ this profile can drive.
-"""
+"""Button platform for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -80,11 +74,7 @@ async def _checked(action) -> None:
 
 
 class DenonAvrEqApply(DenonAvrEntity, ButtonEntity):
-    """Write the edited band curve to the receiver.
-
-    The band sliders stage their values locally (the receiver accepts only a
-    full band block, not a single band); pressing this applies the whole curve.
-    """
+    """Write the edited band curve to the receiver."""
 
     _web_backed = True   # setup web interface, not telnet
     _eq_gated = True
@@ -172,11 +162,7 @@ class _SpeakerLayoutButton(DenonAvrEntity, ButtonEntity):
 
 
 class DenonAvrSpeakerLayoutApply(_SpeakerLayoutButton):
-    """Write the staged speaker layout to the receiver (the confirming step).
-
-    Changing the speaker layout re-assigns the amplifier channels; after it the
-    receiver's room correction (Audyssey / Dirac) may need a new measurement.
-    """
+    """Write the staged speaker layout to the receiver (the confirming step)."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "apply")
@@ -191,8 +177,8 @@ class DenonAvrSpeakerLayoutApply(_SpeakerLayoutButton):
 
 
 class DenonAvrSpeakerLayoutRestore(_SpeakerLayoutButton):
-    """Put the speaker setup back as it was before the applied layout(s): assign
-    mode, positions and front speaker A/B; choices made after that are kept."""
+    """Put the speaker setup back as it was before the applied layout(s): assign mode, positions
+    and front speaker A/B; choices made after that are kept."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "restore")
@@ -210,8 +196,8 @@ class DenonAvrSpeakerLayoutRestore(_SpeakerLayoutButton):
 
 
 class DenonAvrSpeakerLayoutDiscard(_SpeakerLayoutButton):
-    """Drop the staged change; without one, keep the applied layout as it is (give up
-    the restore point and dismiss the notice). Nothing is sent to the receiver."""
+    """Drop the staged change; without one, keep the applied layout as it is (give up the restore
+    point and dismiss the notice)."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "discard")

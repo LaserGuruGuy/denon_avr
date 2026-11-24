@@ -1,12 +1,4 @@
-"""Manual graphic-EQ encoding for the setup config API (see transport.webconfig).
-
-The per-band values are read and written as small XML documents through the
-setup interface config endpoint. This module is the pure translation between
-those XML documents and the typed :class:`GraphicEqState`; it holds no protocol
-constants of its own - the band tags, dB divisor and root tag all come from the
-profile's ``grammar.graphic_eq`` section. It has no Home Assistant or transport
-dependency, so it is unit-testable in isolation.
-"""
+"""Manual graphic-EQ encoding for the setup config API (see transport.webconfig)."""
 
 from __future__ import annotations
 
@@ -29,12 +21,7 @@ def band_tags(grammar: dict[str, Any]) -> list[str]:
 
 
 def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
-    """Parse a get_config graphic-EQ document into a GraphicEqState.
-
-    Only the currently-selected channel's bands are present in the document, so
-    the returned state carries that channel index and its per-band gains (dB).
-    Malformed input yields an empty state rather than raising.
-    """
+    """Parse a get_config graphic-EQ document into a GraphicEqState."""
 
     state = GraphicEqState()
     try:
@@ -46,8 +33,7 @@ def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
     if selection:
         state.speaker_selection = selection
 
-    # The enable flags live under a mode-specific sub-element: Each (individual)
-    # or LR (pairs); All mode has none (a single grayed curve).
+    # The enable flags live under a mode-specific sub-element
     flags = root.findtext("SelectableSpeaker/Each") or root.findtext(
         "SelectableSpeaker/LR"
     )
@@ -72,13 +58,7 @@ def parse(xml_text: str, grammar: dict[str, Any]) -> GraphicEqState:
 def channel_options(
     grammar: dict[str, Any], speaker_selection: str | None, selectable: str
 ) -> list[tuple[int, str]]:
-    """Return the adjustable channels as (index, label) for the current mode.
-
-    In "All" mode there is a single curve. In "Left / Right" and "Each" modes the
-    index is the ``opt1`` value used to read/write that channel; the label comes
-    from the matching fixed map, and only channels flagged enabled in the
-    ``selectable`` string are offered.
-    """
+    """Return the adjustable channels as (index, label) for the current mode."""
 
     # Mode values (from the setup UI): 1 = All, 2 = Each, 3 = Left/Right.
     if speaker_selection == "1":  # All - one shared curve, no channel pick
@@ -104,12 +84,7 @@ def _wrap(root_tag: str, inner: str) -> str:
 def adjust_payload(
     grammar: dict[str, Any], channel_index: int, bands_db: dict[str, float]
 ) -> str:
-    """Build the set_config XML to write a full band block for one channel.
-
-    The receiver rejects a partial AdjustEQ, so every band is sent; ``bands_db``
-    maps each band tag to its gain in dB. Bands missing from the map default to
-    0 dB so the document is always complete.
-    """
+    """Build the set_config XML to write a full band block for one channel."""
 
     divisor = float(grammar.get("db_divisor", 10)) or 1.0
     parts = [f"<Channel>{channel_index}</Channel>"]

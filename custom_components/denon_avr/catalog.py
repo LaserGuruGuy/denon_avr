@@ -1,18 +1,4 @@
-"""Entity catalogue: which entities this receiver gets, as plain data (no Home Assistant).
-
-One pure function maps what the library discovered (capabilities, user setup,
-setup web documents) to a list of :class:`EntityEntry`. The platforms only turn
-entries into entity objects. Keeping the decision here, free of Home Assistant,
-makes it testable against the recorded registries (tests/golden/ha_registry) and
-keeps every unique_id stable: an entry's ``key`` IS the entity's unique_id
-suffix, and :func:`unique_id` is the one place that builds the full id.
-
-Rules (see doc/ARCHITECTURE.md):
-* capability decides whether an entity exists, user setup decides whether it is
-  enabled by default / available; nothing is created from model names;
-* silence is not absence: data the receiver did not mention never removes an entry
-  that the capability implies.
-"""
+"""Entity catalogue: which entities this receiver gets, as plain data (no Home Assistant)."""
 
 from __future__ import annotations
 
@@ -49,10 +35,10 @@ def unique_id(identifier: str, key: str) -> str:
 
 
 def channel_codes(device) -> list[str]:
-    """Channels to create per-channel entities for, from capabilities only (never
-    from the timing of telnet answers): the Deviceinfo channel list, plus the
-    subwoofers the receiver supports (Deviceinfo SubwooferNum), which some
-    firmware leaves out of its channel list (e.g. SW2 on the AVR-X3600H)."""
+    """Channels to create per-channel entities for, from capabilities only (never from the timing
+    of telnet answers): the Deviceinfo channel list, plus the subwoofers the receiver supports
+    (Deviceinfo SubwooferNum), which some firmware leaves out of its channel list (e.g. SW2 on
+    the AVR-X3600H)."""
 
     codes = [c.code for c in device.discovery.channels]
     by_count = device.profile.speakers.get("count_groups", {}).get("SWF", {}).get("by_count", {})
@@ -64,14 +50,7 @@ def channel_codes(device) -> list[str]:
 
 
 def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[EntityEntry]:
-    """Every entity for this receiver, in a stable order (platform by platform).
-
-    ``known_keys`` are the keys Home Assistant already has for this receiver
-    (its entity registry). An entity the receiver does not mention right now
-    (silence is not absence, e.g. a web menu hidden in the current setup) but that
-    exists in the registry is still created, so it stays (unavailable) instead of
-    disappearing after a restart.
-    """
+    """Every entity for this receiver, in a stable order (platform by platform)."""
 
     profile = device.profile
     discovery = device.discovery
@@ -148,9 +127,6 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
     if device.graphic_eq.supported:
         add(EntityEntry("select", "eq_speaker_selection", "select_eq_speaker_selection", "eq"))
         add(EntityEntry("select", "eq_channel", "select_eq_channel", "eq"))
-    # Per-input settings (setup web collections, e.g. 4K/8K format, HDCP) on the
-    # "inputs" sub-device, keyed by the receiver's own input slot (stable across
-    # renames), plus one contextual select for the current input on Video.
     video = device.video_config
     for spec in video.collection_specs():
         if not spec.get("writable", True):
@@ -235,13 +211,8 @@ def _known_groups(known_keys, prefix: str, profile) -> set[str]:
 def keys_to_enable(
     entries: list[EntityEntry], disabled_by_integration: set[str], configured_channels
 ) -> set[str]:
-    """Keys the integration itself disabled earlier that the receiver's current
-    speaker setup now uses (e.g. a second subwoofer was switched on).
-
-    Only speaker-channel entities (entries with ``channels``) are considered: their
-    default follows the user's speaker setup. Nothing is decided while the speaker
-    setup is unknown (silence is not absence). Entities the USER disabled are
-    never in ``disabled_by_integration`` and so are never touched."""
+    """Keys the integration itself disabled earlier that the receiver's current speaker setup now
+    uses (e.g. a second subwoofer was switched on)."""
 
     if not configured_channels:
         return set()

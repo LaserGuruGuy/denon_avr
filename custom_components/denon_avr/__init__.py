@@ -1,9 +1,4 @@
-"""The Denon AVR integration.
-
-Sets up a single receiver from a config entry: it discovers the device over
-HTTP, starts the telnet push transport, and forwards the platforms. The
-coordinator (stored as the entry runtime data) owns the device connection.
-"""
+"""The Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -28,14 +23,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> 
     _clear_layout_issues(hass, entry)
 
     host = entry.data[CONF_HOST]
-    # Warm the protocol profile cache off the event loop so constructing the
-    # device (which reads the bundled profile) does no blocking I/O in the loop.
+    # Warm the protocol profile cache off the event loop so constructing the device (which reads
+    # the bundled profile) does no blocking I/O in the loop.
     await hass.async_add_executor_job(load_profile)
     coordinator = DenonAvrCoordinator(hass, entry, host)
 
-    # async_setup starts the telnet transport; if anything after that fails we
-    # must stop it, otherwise the reconnecting task would leak (unload is not
-    # called for a failed setup and runtime_data is never assigned).
     try:
         await coordinator.async_setup()
         await coordinator.async_config_entry_first_refresh()
@@ -49,9 +41,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> 
     entry.runtime_data = coordinator
     registry = er.async_get(hass)
     coordinator.known_keys = _registered_keys(registry, entry, coordinator)
-    # Register the main receiver device up front so the logical sub-devices
-    # (Audio/Video/Speakers/…) can link to it by id via `via_device_id`; the old
-    # `via_device` identifier tuple is deprecated (removed in HA 2027.8.0).
     _register_main_device(hass, entry, coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -121,9 +110,8 @@ def _add_new_entities(coordinator: DenonAvrCoordinator) -> None:
 
 @callback
 def _enable_used_entities(hass: HomeAssistant, entry: DenonAvrConfigEntry, coordinator) -> None:
-    """Re-enable entities the integration disabled earlier once the receiver's
-    setup uses them (e.g. a second subwoofer switched on). Entities the user
-    disabled are never touched; nothing is ever disabled or removed here."""
+    """Re-enable entities the integration disabled earlier once the receiver's setup uses them
+    (e.g. a second subwoofer switched on)."""
 
     registry = er.async_get(hass)
     prefix = f"{_identifier(coordinator)}_"
@@ -151,8 +139,8 @@ def _clear_layout_issues(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> Non
 async def async_unload_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> bool:
     """Unload a config entry and stop the telnet transport."""
 
-    # First stop adding entities: a push during the platform unload must not
-    # add to a platform that is being torn down.
+    # First stop adding entities: a push during the platform unload must not add to a platform
+    # that is being torn down.
     entry.runtime_data.platforms.clear()
     # Then no further layout writes: a running apply or restore stops by itself.
     entry.runtime_data.device.speaker_layout.stop()

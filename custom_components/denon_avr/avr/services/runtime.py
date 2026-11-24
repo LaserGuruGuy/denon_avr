@@ -11,13 +11,7 @@ UPDATE_DEBOUNCE = 0.1
 
 
 class BackgroundTasks:
-    """Fire-and-forget coroutines with strong references, cancellable as a group.
-
-    asyncio holds only a weak reference to bare tasks, so a task started without
-    keeping its reference can be garbage collected before it runs. Tracking it
-    here (and discarding on completion) keeps it alive and lets stop cancel
-    anything still pending.
-    """
+    """Fire-and-forget coroutines with strong references, cancellable as a group."""
 
     def __init__(self) -> None:
         self.pending: set[asyncio.Task] = set()

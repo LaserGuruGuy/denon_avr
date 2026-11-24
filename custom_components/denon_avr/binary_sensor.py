@@ -1,9 +1,4 @@
-"""Binary sensor platform for the Denon AVR integration.
-
-Exposes the telnet connectivity as a diagnostic connectivity binary sensor. It
-reports the raw link state and therefore stays functional even when the other
-entities are unavailable because the link is down.
-"""
+"""Binary sensor platform for the Denon AVR integration."""
 
 from __future__ import annotations
 

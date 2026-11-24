@@ -1,11 +1,4 @@
-"""Number platform for the Denon AVR integration.
-
-Creates adjustable number entities for the level style controls the receiver
-advertises (bass, treble, subwoofer level, LFE), the sleep timer, and one per
-configured channel volume trim. Ranges come from the receiver where it publishes
-them; only where it does not (LFE, sleep timer) does the profile supply a
-protocol defined range.
-"""
+"""Number platform for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -27,8 +20,8 @@ from .helpers import control_sub_device
 # The control kinds that map to a number entity.
 _NUMBER_KINDS = {"level", "signed_int", "minutes", "integer", "centered"}
 
-# Map the profile's plain wire unit tokens to the canonical Home Assistant unit
-# constants (the profile stays HA-independent; this HA layer does the mapping).
+# Map the profile's plain wire unit tokens to the canonical Home Assistant unit constants (the
+# profile stays HA-independent; this HA layer does the mapping).
 _UNIT_TOKENS = {"ms": UnitOfTime.MILLISECONDS, "m": UnitOfLength.METERS}
 
 
@@ -66,9 +59,6 @@ class DenonAvrNumber(DenonAvrEntity, NumberEntity):
         if spec.kind == "minutes":
             self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         elif spec.kind == "integer":
-            # A plain integer control uses whatever unit the profile gives (or
-            # none), for example milliseconds for the audio delay, surfaced as the
-            # canonical HA unit constant where known.
             unit = spec.get("unit")
             self._attr_native_unit_of_measurement = _UNIT_TOKENS.get(unit, unit)
         elif spec.kind == "centered":
@@ -108,8 +98,8 @@ class DenonAvrChannelTrim(DenonAvrEntity, NumberEntity):
             coordinator, f"number_channel_trim_{code}", sub_device="speakers"
         )
         self._code = code
-        # Channels the receiver has not configured are registered but disabled by
-        # default; the user can still enable them from the UI.
+        # Channels the receiver has not configured are registered but disabled by default; the
+        # user can still enable them from the UI.
         self._attr_entity_registry_enabled_default = enabled
         discovery = coordinator.device.discovery
         self._attr_name = f"{discovery.channel_name(code)} Trim"
@@ -171,12 +161,7 @@ def _resolve_bounds(device, spec: ControlSpec):
 
 
 class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
-    """One manual graphic-EQ band gain in dB, shown as a slider (fader).
-
-    The value applies to the channel currently picked by the EQ Channel select
-    (or to all/LR depending on the speaker-selection mode). Read and written via
-    the setup config API; the range comes from the fixed graphic-EQ grammar.
-    """
+    """One manual graphic-EQ band gain in dB, shown as a slider (fader)."""
 
     _web_backed = True   # setup web interface, not telnet
     _eq_gated = True
@@ -189,8 +174,6 @@ class DenonAvrEqBand(DenonAvrEntity, NumberEntity):
         grammar = coordinator.device.graphic_eq.grammar
         self._tag = eq_band_tag(grammar, label)
         super().__init__(coordinator, f"number_eq_{self._tag}", sub_device="eq")
-        # The device is already named "... Graphic EQ", so the band name is just
-        # the frequency (avoids a doubled "Graphic EQ EQ 63 Hz").
         self._attr_name = label
         self._attr_native_min_value = float(grammar.get("min_db", -20.0))
         self._attr_native_max_value = float(grammar.get("max_db", 6.0))

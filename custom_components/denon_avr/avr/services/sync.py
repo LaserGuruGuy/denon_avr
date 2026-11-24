@@ -37,27 +37,17 @@ class StateSync:
         self._sink = sink
         self._tasks = tasks
         self._notify_hook = notify
-        # Data driven coalesced re-query groups (profile 'refresh' section). The
-        # receiver does not push some derived state on every relevant change
-        # (audio format on a mode change, channel/speaker layout on a mode or
-        # source change, the signal dependent sound mode lists), so when a
-        # group's trigger prefix arrives its queries are re-sent after a short
-        # debounce. A group is scheduled at most once until its re-query fires.
+        # Data driven coalesced re-query groups (profile 'refresh' section).
         self._refresh_groups = profile.refresh_groups
         self._refresh_scheduled: set[str] = set()
-        # Web documents have no push: groups may name web sections ("web") to
-        # re-read when a related telnet event arrives. Single flight per section:
-        # a trigger during a running read marks it dirty and it runs once more.
+        # Web documents have no push: groups may name web sections ("web") to re-read when a
+        # related telnet event arrives.
         self._web_refreshers = dict(web_refreshers or {})
         self._web_running: set[str] = set()
         self._web_dirty: set[str] = set()
-        # Trigger prefixes seen since start: the first value of a prefix (None ->
-        # value, e.g. right after connecting) does not run a refresh group, the
-        # resync asks for everything anyway.
         self._seen_triggers: set[str] = set()
-        # Fingerprint of what entities can see; a pushed line that leaves it
-        # unchanged (the periodic signal cluster, list lines before END) does not
-        # notify Home Assistant.
+        # Fingerprint of what entities can see; a pushed line that leaves it unchanged (the
+        # periodic signal cluster, list lines before END) does not notify Home Assistant.
         self._fingerprint = self._snapshot()
         self._expected: list[tuple[str, asyncio.Future]] = []   # awaited answers
         # Diagnostics counters (since start): what the push/refresh machinery did.
@@ -106,9 +96,8 @@ class StateSync:
                 self._fingerprint = snapshot
                 changed = True
                 self._notify()
-        # The receiver pushes OPSMLALL (all groups) when the sound mode context
-        # changes, but never pushes OPSML (the current group's selectable modes).
-        # When an OPSMLALL push completes, re-query OPSML so the list follows.
+        # The receiver pushes OPSMLALL (all groups) when the sound mode context changes, but never
+        # pushes OPSML (the current group's selectable modes).
         all_modes = self._profile.introspection_prefix("sound_mode_list")
         if all_modes and line.startswith(all_modes):
             remainder = line[len(all_modes) :].strip()
@@ -154,12 +143,7 @@ class StateSync:
             await self._sink.async_send(query)
 
     async def refresh_current_sound_modes(self) -> None:
-        """Re-query the current-context mode list after a mode/group change.
-
-        A query sent immediately can race the receiver still switching; the
-        OPSMLALL push handler re-queries once the switch settles, and a delayed
-        query here is a further safety net. Both are best effort.
-        """
+        """Re-query the current-context mode list after a mode/group change."""
 
         query = self._profile.introspection_query("current_sound_modes")
         if not query:
@@ -240,12 +224,7 @@ class StateSync:
         telnet_connected: Callable[[], bool],
         refreshables: Iterable[Callable[[], Awaitable[None]]],
     ) -> None:
-        """HTTP safety-net poll.
-
-        When telnet is connected this only confirms reachability (and reads the
-        HTTP-only volume display mode). When telnet is down it recovers the core
-        zone state so entities do not go blank. Then the web subsystems refresh.
-        """
+        """HTTP safety-net poll."""
 
         self.stats["polls"] += 1
         main_path = self._profile.zones.get(
@@ -253,9 +232,6 @@ class StateSync:
         )
         status = await fetch_status(main_path)
         if status is None:
-            # goform unreachable: still refresh the web sections, so their own
-            # reachability is re-judged (a receiver that is completely offline
-            # must not leave web entities "available" with stale values).
             for refresh in refreshables:
                 await refresh()
             return

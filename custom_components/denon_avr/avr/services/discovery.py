@@ -1,11 +1,4 @@
-"""Discovery service: identity, capabilities and the telnet-introspected setup model.
-
-Reads the goform Deviceinfo document, enriches the identity from the UPnP
-description, discovers the web-config subsystems and fills the user-setup parts
-(sources, speaker configuration, sound modes, quick selects) through a short
-dedicated telnet probe. Every document is fetched through an injected callable,
-so this service has no transport dependency.
-"""
+"""Discovery service: identity, capabilities and the telnet-introspected setup model."""
 
 from __future__ import annotations
 
@@ -46,8 +39,8 @@ class DiscoveryService:
         self._fetch_description = fetch_description
         self._probe = probe
         self._video_config, self._speaker_config = web_subsystems
-        # Deviceinfo derived source list, used only if telnet introspection
-        # yields no sources (see discover / await_ready).
+        # Deviceinfo derived source list, used only if telnet introspection yields no sources (see
+        # discover / await_ready).
         self._fallback_sources: list = []
 
     async def fetch_identity(self) -> DeviceInfo:
@@ -61,8 +54,8 @@ class DiscoveryService:
         return device
 
     def _require_identity(self, device: DeviceInfo) -> None:
-        """A document that does not parse, or names neither a model nor a MAC, is not
-        a receiver's Deviceinfo (another host, a truncated answer): not reachable."""
+        """A document that does not parse, or names neither a model nor a MAC, is not a
+        receiver's Deviceinfo (another host, a truncated answer): not reachable."""
 
         if not device.model_name and not device.mac_address:
             raise ConnectionError(f"No usable Deviceinfo document from {self._host}")
@@ -73,8 +66,8 @@ class DiscoveryService:
         xml_text = await self._fetch_device_info()
         if xml_text is None:
             raise ConnectionError(f"No Deviceinfo response from {self._host}")
-        # Tell the parser which feature blocks to read titles/labels from, using
-        # the feature names the profile associates with its controls.
+        # Tell the parser which feature blocks to read titles/labels from, using the feature names
+        # the profile associates with its controls.
         controls = self._profile.controls.values()
         feature_names = {spec.feature for spec in controls if spec.feature}
         enum_features = {spec.feature for spec in controls if spec.kind == "enum" and spec.feature}
@@ -85,12 +78,12 @@ class DiscoveryService:
             receiver_type=self._profile.receiver_type,
         )
         self._require_identity(discovered.device)
-        # Copy into the shared discovery object so the parser and entities keep
-        # referencing a single instance.
+        # Copy into the shared discovery object so the parser and entities keep referencing a
+        # single instance.
         target = self._discovery
         target.device = discovered.device
-        # Firmware version and serial: the goform document omits them, the UPnP
-        # description carries them.
+        # Firmware version and serial: the goform document omits them, the UPnP description
+        # carries them.
         await self._fetch_version_info()
         target.features = discovered.features
         target.channels = discovered.channels
@@ -102,14 +95,14 @@ class DiscoveryService:
         target.sound_mode_genres = discovered.sound_mode_genres
         target.quick_select_names = dict(discovered.quick_select_names)
         target.subwoofer_max = discovered.subwoofer_max
-        # Video setup availability + values; menus that are present become
-        # discovery features (the telnet picture controls gate on PictureAdjust).
+        # Video setup availability + values; menus that are present become discovery features (the
+        # telnet picture controls gate on PictureAdjust).
         await self._video_config.discover()
         target.features |= self._video_config.feature_flags()
         await self._speaker_config.discover()
         target.features |= self._speaker_config.feature_flags()
-        # The authoritative source list comes from the telnet SSFUN/SSSOD
-        # introspection; keep the Deviceinfo list only as a fallback.
+        # The authoritative source list comes from the telnet SSFUN/SSSOD introspection; keep the
+        # Deviceinfo list only as a fallback.
         self._fallback_sources = discovered.sources
         target.sources = []
         await self._probe_introspection()
@@ -127,12 +120,7 @@ class DiscoveryService:
                 setattr(device, attr, value)
 
     async def _probe_introspection(self) -> None:
-        """Fill the telnet-discovered model over a short-lived connection.
-
-        Separate from the persistent connection so discovery is deterministic at
-        setup time. Complete when the sentinel query has answered and no list
-        that ends with END is still open (the probe deadline still bounds it).
-        """
+        """Fill the telnet-discovered model over a short-lived connection."""
 
         sentinel = self._profile.introspection_sentinel
         queries = commands.introspection_queries(self._profile)
@@ -145,18 +133,10 @@ class DiscoveryService:
 
         if sentinel:
             queries.append(sentinel["query"])
-        # Complete when the sentinel has answered AND no END-terminated list is
-        # still streaming: the sound mode lists stream asynchronously, between
-        # other replies, so answer order alone is not enough.
         await self._probe(queries, on_line, lambda: done[0] and not self._parser.open_lists)
 
     async def await_ready(self, timeout: float) -> None:
-        """Best effort wait until the initial resync populated the state.
-
-        Waits for the core state, the channel calibration list (SSLEV) AND the
-        speaker configuration (SSSPC), which decides which channel entities are
-        enabled by default. Never raises.
-        """
+        """Best effort wait until the initial resync populated the state."""
 
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout

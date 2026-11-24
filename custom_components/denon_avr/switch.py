@@ -1,8 +1,4 @@
-"""Switch platform for the Denon AVR integration.
-
-One switch is created per on/off feature control the receiver advertises (for
-example Tone Control, Dynamic EQ, Loudness Management, Cinema EQ).
-"""
+"""Switch platform for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -42,8 +38,8 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: DenonAvrCoordinator, spec: ControlSpec) -> None:
-        # Route to a logical sub-device (Audio/Video/Speakers/EQ) based on the
-        # control's command group, honouring any explicit profile override.
+        # Route to a logical sub-device (Audio/Video/Speakers/EQ) based on the control's command
+        # group, honouring any explicit profile override.
         sub_device = control_sub_device(spec)
         super().__init__(coordinator, f"switch_{spec.id}", sub_device=sub_device)
         self._spec = spec
@@ -55,12 +51,8 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
 
     @property
     def is_on(self) -> bool:
-        # Treat a not-yet-reported value as off so every toggle renders as a
-        # single slider for a consistent look. A switch left at "unknown"
-        # otherwise shows as a split on/off pair, which looks inconsistent next
-        # to the others. Disconnection is handled by the entity's availability,
-        # not here, so this only affects a control the receiver has not (yet)
-        # reported a value for (e.g. auto lip sync with no active video source).
+        # Treat a not-yet-reported value as off so every toggle renders as a single slider for a
+        # consistent look.
         return bool(self.coordinator.data.values.get(self._spec.id))
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -71,12 +63,7 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
 
 
 class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
-    """An on/off video setup item, backed by the /ajax video controller.
-
-    Its state comes from the receiver via the config API (device.video_config);
-    a grayed-out item (e.g. ARC until HDMI Control is on) reports itself
-    unavailable rather than settable.
-    """
+    """An on/off video setup item, backed by the /ajax video controller."""
 
     _web_backed = True   # setup web interface, not telnet
 

@@ -1,27 +1,4 @@
-"""Locate the receiver's setup web interface (the ``/ajax`` config endpoint).
-
-Receiver generations serve the setup interface on different endpoints (for example
-HTTPS 10443 on older firmware, plain HTTP 11080 on the newer "Web Control" app).
-Both put an nginx front on port 80/443 that redirects ``/`` to the real
-interface, so following that redirect is the generic, model-independent way to
-find it.
-
-Rules:
-* A redirect is followed only to the SAME host over http/https, at most
-  ``MAX_HOPS`` times (``http://h/`` -> ``https://h/`` -> ``https://h:10443`` is a
-  normal nginx chain). A redirect to any other host is never followed.
-* The front ports (80/443) are never the result: their ``/ajax`` answers 403.
-  Ports of the receiver's other services (telnet, HEOS, JSON, goform, UPnP) are
-  refused, so a stray redirect can never send HTTP into the telnet session.
-* The target must answer ``GET /`` with 200 before it is accepted.
-* Fallback for firmware without the front: the known endpoints in
-  ``FALLBACK_CANDIDATES``.
-* Both fronts, and then all candidates, are probed concurrently with a short
-  per-request timeout, and the whole discovery has a time budget, so a receiver
-  without a web interface delays setup by at most ``DISCOVERY_BUDGET`` seconds.
-
-No state; every failure returns None.
-"""
+"""Locate the receiver's setup web interface (the ``/ajax`` config endpoint)."""
 
 from __future__ import annotations
 

@@ -1,9 +1,4 @@
-"""Select platform for the Denon AVR integration.
-
-One select entity is created per enum control the receiver advertises (for
-example Dynamic Compression, Dynamic Volume, MultEQ, Restorer). The option
-labels come from the receiver; the wire values come from the profile.
-"""
+"""Select platform for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -86,9 +81,6 @@ class DenonAvrSelect(DenonAvrEntity, SelectEntity):
         value = self.coordinator.data.values.get(self._spec.id)
         if value is None:
             return None
-        # Map the wire value back to its display label; return None (rather than
-        # an unknown string) when the device reports a value outside our options,
-        # so Home Assistant does not log an "invalid current option" warning.
         return self._value_to_label.get(str(value))
 
     async def async_select_option(self, option: str) -> None:
@@ -98,13 +90,7 @@ class DenonAvrSelect(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrSoundModeGroupSelect(DenonAvrEntity, SelectEntity):
-    """Selects which sound mode genre group to browse (Movie/Music/Game/Pure).
-
-    The groups and their names come from the receiver. This select follows the
-    receiver's active group by default; picking a different group lets the user
-    browse that group's modes in the companion sound mode select, without
-    changing anything on the receiver until a mode is actually chosen.
-    """
+    """Selects which sound mode genre group to browse (Movie/Music/Game/Pure)."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_sound_mode_group")
@@ -125,8 +111,8 @@ class DenonAvrSoundModeGroupSelect(DenonAvrEntity, SelectEntity):
         return self._genres.get(code) if code else None
 
     async def async_select_option(self, option: str) -> None:
-        # Selecting a group switches the receiver to that genre; the receiver
-        # then reports the resolved mode, which updates the sound mode select.
+        # Selecting a group switches the receiver to that genre; the receiver then reports the
+        # resolved mode, which updates the sound mode select.
         for code, display in self._genres.items():
             if display == option:
                 await self.coordinator.device.async_select_sound_mode_group(code)
@@ -134,14 +120,7 @@ class DenonAvrSoundModeGroupSelect(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrSoundModeSelect(DenonAvrEntity, SelectEntity):
-    """Lists and selects the sound modes within the active genre group.
-
-    The modes come from the receiver (OPSMLALL) for the currently active group.
-    Selecting a mode sends the wire token (a deterministic profile override when
-    it differs, else the upper-cased name), which may differ from what the
-    receiver reports back as the active mode (expected on Denon, for example
-    'Dolby Audio - Dolby Surround').
-    """
+    """Lists and selects the sound modes within the active genre group."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "select_sound_mode")
@@ -149,9 +128,8 @@ class DenonAvrSoundModeSelect(DenonAvrEntity, SelectEntity):
 
     @property
     def options(self) -> list[str]:
-        # The receiver's current-context list (OPSML) is authoritative: it holds
-        # exactly what the active group offers now, including modes OPSMLALL omits
-        # such as Auto. Fall back to the static per genre group if unavailable.
+        # The receiver's current-context list (OPSML) is authoritative: it holds exactly what the
+        # active group offers now, including modes OPSMLALL omits such as Auto.
         discovery = self.coordinator.device.discovery
         if discovery.current_sound_modes:
             return list(discovery.current_sound_modes)
@@ -168,12 +146,7 @@ class DenonAvrSoundModeSelect(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
-    """A select entity for one speaker group's crossover frequency.
-
-    The allowed frequencies are a discrete, non-uniform Denon protocol set (from
-    the profile), so this is a select rather than a stepped number. Values are
-    shown with their 'Hz' unit; the receiver reports the current value per group.
-    """
+    """A select entity for one speaker group's crossover frequency."""
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -200,8 +173,6 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
 
     @property
     def _values(self) -> list[int]:
-        # The receiver's own grid when it reports one (incl. 0 = Full Range),
-        # else the profile constant; re-evaluated so it follows the device.
         return crossover_values(self.coordinator.device, self._group)
 
     @property
@@ -210,8 +181,8 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        # In "All" crossover speaker-selection mode the single All crossover
-        # applies, so the per-group ones are inactive.
+        # In "All" crossover speaker-selection mode the single All crossover applies, so the
+        # per-group ones are inactive.
         return (
             super().available
             and self.coordinator.data.values.get("crossover_speaker_selection") != "ALL"
@@ -220,8 +191,8 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         hertz = self.coordinator.data.crossovers.get(self._group)
-        # Only report a value the receiver actually offers, so Home Assistant
-        # never logs an "invalid current option" warning.
+        # Only report a value the receiver actually offers, so Home Assistant never logs an
+        # "invalid current option" warning.
         return self._format(hertz) if hertz in self._values else None
 
     async def async_select_option(self, option: str) -> None:
@@ -230,12 +201,7 @@ class DenonAvrCrossover(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrCrossoverSpeakerSelection(DenonAvrEntity, SelectEntity):
-    """Crossover speaker selection: All (one shared crossover) or Individual.
-
-    This gates the crossover controls: in "All" the single All Crossover applies
-    and the per-group crossovers go unavailable; in "Individual" the per-group
-    ones apply and All Crossover goes unavailable.
-    """
+    """Crossover speaker selection."""
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -244,8 +210,8 @@ class DenonAvrCrossoverSpeakerSelection(DenonAvrEntity, SelectEntity):
             coordinator, "select_crossover_speaker_selection", sub_device="speakers"
         )
         self._attr_translation_key = "crossover_speaker_selection"
-        # Wire tokens -> labels come from the profile grammar (kept out of this
-        # HA layer like every other enum's tokens).
+        # Wire tokens -> labels come from the profile grammar (kept out of this HA layer like
+        # every other enum's tokens).
         self._labels = coordinator.device.profile.crossover.get(
             "speaker_selection", {"IDV": "Individual", "ALL": "All"}
         )
@@ -299,13 +265,7 @@ class DenonAvrCrossoverAll(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
-    """A select entity for one speaker group's size (Large/Small).
-
-    The size is a fixed two-value protocol enum (like the receiver's other enum
-    controls); the wire tokens and labels come from the profile. The current
-    value is read over telnet (SSSPC); groups the receiver reports as absent map
-    to no option and are disabled by default.
-    """
+    """A select entity for one speaker group's size (Large/Small)."""
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -331,8 +291,8 @@ class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        # Only where the receiver reports a size: newer firmware reports presence
-        # (YES/NO) instead, so the entity stays (never removed) but is unavailable.
+        # Only where the receiver reports a size: newer firmware reports presence (YES/NO)
+        # instead, so the entity stays (never removed) but is unavailable.
         token = self.coordinator.data.speaker_sizes.get(self._group)
         return super().available and is_size_token(self.coordinator.device, token)
 
@@ -349,12 +309,7 @@ class DenonAvrSpeakerSize(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrSubwooferCount(DenonAvrEntity, SelectEntity):
-    """Number of subwoofers the receiver is configured for.
-
-    A telnet count group in the SSSPC speaker config (SSSPCSWF <n>SP), settable
-    like a speaker size. The options follow the receiver: up to the number of
-    subwoofers it supports, and "None" with the absent token it uses itself.
-    """
+    """Number of subwoofers the receiver is configured for."""
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -384,11 +339,7 @@ class DenonAvrSubwooferCount(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrQuickSelect(DenonAvrEntity, SelectEntity):
-    """Recall the receiver's main zone quick select presets.
-
-    The preset names are discovered from the receiver (SSQSNZMA); the currently
-    recalled preset is reported by MSQUICK (0 means none/modified).
-    """
+    """Recall the receiver's main zone quick select presets."""
 
     _attr_entity_category = EntityCategory.CONFIG
 
@@ -449,13 +400,7 @@ class DenonAvrEqSpeakerSelection(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
-    """Graphic-EQ channel being read and adjusted.
-
-    Each channel has its own curve, read via the config API's channel index
-    (opt1); switching the channel loads that channel's own bands. The available
-    channels and their labels depend on the speaker-selection mode (one shared
-    curve in 'All', L/R pairs, or individual channels in 'Each').
-    """
+    """Graphic-EQ channel being read and adjusted."""
 
     _web_backed = True   # setup web interface, not telnet
     _eq_gated = True
@@ -484,8 +429,8 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
         for i, label in options:
             if i == index:
                 return label
-        # eq_channel not in the current mode's list (e.g. just after a mode
-        # switch): show the first channel rather than an unknown state.
+        # eq_channel not in the current mode's list (e.g. just after a mode switch): show the
+        # first channel rather than an unknown state.
         return options[0][1] if options else None
 
     async def async_select_option(self, option: str) -> None:
@@ -497,12 +442,7 @@ class DenonAvrEqChannel(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
-    """A multi-option video setup item, backed by the /ajax video controller.
-
-    Its options and current value come from the receiver via the config API
-    (device.video_config); a grayed-out item (e.g. Pass Through Source until
-    HDMI Pass Through is on) reports itself unavailable rather than settable.
-    """
+    """A multi-option video setup item, backed by the /ajax video controller."""
 
     _web_backed = True   # setup web interface, not telnet
 
@@ -546,12 +486,7 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
 
 
 class _CollectionSelect(DenonAvrEntity, SelectEntity):
-    """A per-input setting from a setup web collection (e.g. 4K/8K format, HDCP).
-
-    Options are stable keys (translated via ``entity.select.<key>.state``); the
-    allowed options come per input from the receiver. Writes go through the
-    library, which refuses anything the receiver does not allow for that input.
-    """
+    """A per-input setting from a setup web collection (e.g. 4K/8K format, HDCP)."""
 
     _attr_entity_category = EntityCategory.CONFIG
     _web_backed = True
@@ -598,8 +533,8 @@ class _CollectionSelect(DenonAvrEntity, SelectEntity):
             self._collection, item.slot, wire
         )
         if not accepted:
-            # The library refuses what the receiver does not allow for this input
-            # now; tell the user instead of failing silently.
+            # The library refuses what the receiver does not allow for this input now; tell the
+            # user instead of failing silently.
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
                 translation_key="input_option_refused",
@@ -608,8 +543,7 @@ class _CollectionSelect(DenonAvrEntity, SelectEntity):
 
 
 class DenonAvrInputSetting(_CollectionSelect):
-    """One input's setting, on the Inputs sub-device. The name follows the input's
-    name on the receiver ({input} placeholder), the identity its slot."""
+    """One input's setting, on the Inputs sub-device."""
 
     def __init__(self, coordinator: DenonAvrCoordinator, collection: str, slot: str) -> None:
         super().__init__(coordinator, f"select_input_{slot}_{collection}", collection, "inputs")
@@ -625,8 +559,8 @@ class DenonAvrInputSetting(_CollectionSelect):
         return item.name if item is not None and item.name else f"#{self._slot_id}"
 
     def _handle_coordinator_update(self) -> None:
-        # Follow a rename on the receiver: assigning the placeholder attribute
-        # invalidates Home Assistant's cached entity name.
+        # Follow a rename on the receiver: assigning the placeholder attribute invalidates Home
+        # Assistant's cached entity name.
         name = self._input_name()
         if self._attr_translation_placeholders.get("input") != name:
             self._attr_translation_placeholders = {"input": name}
@@ -650,13 +584,8 @@ class DenonAvrCurrentInputSetting(_CollectionSelect):
 
 
 class DenonAvrSpeakerLayoutAssign(DenonAvrEntity, SelectEntity):
-    """Speaker layout assign mode (Web Control), STAGED: choosing an option only
-    prepares it; nothing is written until "Apply speaker layout" is pressed.
-
-    The options are the modes this receiver allows (its own list), shown with
-    the translated amplifier-mode keys. While a change is staged the select
-    shows the staged mode and the ``pending`` attribute says so.
-    """
+    """Speaker layout assign mode (Web Control), STAGED: choosing an option only prepares it;
+    nothing is written until "Apply speaker layout" is pressed."""
 
     _attr_entity_category = EntityCategory.CONFIG
     _unrecorded_attributes = frozenset({"changed_positions"})
@@ -669,8 +598,8 @@ class DenonAvrSpeakerLayoutAssign(DenonAvrEntity, SelectEntity):
 
     def _key(self, mode: str) -> str:
         key = self._keys.get(mode, f"mode_{mode}")
-        # Two ids with the same key in this receiver's list (e.g. 12 and 18 both
-        # "11_1ch"): fall back to the raw id so every option stays distinct.
+        # Two ids with the same key in this receiver's list (e.g. 12 and 18 both "11_1ch"): fall
+        # back to the raw id so every option stays distinct.
         item = self._item()
         if item is not None and sum(1 for m in item.options if self._keys.get(m) == key) > 1:
             return f"mode_{mode}"
@@ -705,8 +634,8 @@ class DenonAvrSpeakerLayoutAssign(DenonAvrEntity, SelectEntity):
         return {
             "pending": pending is not None,
             "receiver_mode": self._key(item.value) if item is not None and item.value else None,
-            # After a layout change the room correction (Audyssey / Dirac) must be
-            # measured again (owner's manual).
+            # After a layout change the room correction (Audyssey / Dirac) must be measured again
+            # (owner's manual).
             "remeasure_room_correction": True,
             # Layout positions that differ from before the first apply ("item <n>" of the
             # receiver's layout); going back to a mode does not restore them.

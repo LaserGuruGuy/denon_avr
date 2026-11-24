@@ -1,24 +1,4 @@
-"""Length-framed JSON control transport (port 1256) for the client library.
-
-This is a separate, opt-in transport from the telnet control channel. It speaks
-the receiver's length-framed binary/JSON protocol on TCP port 1256, which is the
-way to read and write the manual speaker setup (amp assignment, speaker
-size/crossover, distances) and the room-correction calibration filters. The
-receiver has no push on this port and entering a calibration session interrupts
-playback, so this module is used only for those setup operations and never for
-live state monitoring; that stays on telnet (see device.py / telnet.py).
-
-Wire framing (reverse engineered, big-endian on the wire):
-
-    marker(1, 'T' outgoing) | total_length(u16) | current_segment(u8) |
-    total_segments(u8) | command(10 ASCII) | 0x00 | data_length(u16) |
-    data(data_length, JSON ASCII) | checksum(u8)
-
-`total_length` is the full packet size; a packet with no data is 19 bytes. The
-checksum is the sum of every byte before it, modulo 256. Large payloads are split
-into segments numbered by `current_segment`/`total_segments` (0 total segments
-means a single, unsegmented packet); segments may arrive out of order.
-"""
+"""Length-framed JSON control transport (port 1256) for the client library."""
 
 from __future__ import annotations
 
@@ -34,9 +14,8 @@ _PORT = 1256
 
 # Every command token is exactly this many ASCII bytes on the wire.
 COMMAND_LEN = 10
-# Framing bytes excluding the command field and the data payload: marker(1) +
-# total_length(2) + current_segment(1) + total_segments(1) + command null(1) +
-# data_length(2) + checksum(1).
+# Framing bytes excluding the command field and the data payload: marker(1) + total_length(2) +
+# current_segment(1) + total_segments(1) + command null(1) + data_length(2) + checksum(1).
 HEADER_OVERHEAD = 9
 _MARKER_TX = ord("T")
 
@@ -74,18 +53,12 @@ class Message:
 
 
 class FrameDecoder:
-    """Turns a byte stream into complete messages, reassembling segments.
-
-    Feed raw bytes as they arrive; `feed` returns any messages that completed.
-    Partial frames are buffered until enough bytes arrive, and multi segment
-    payloads are held until every segment has been seen (segments may be out of
-    order).
-    """
+    """Turns a byte stream into complete messages, reassembling segments."""
 
     def __init__(self) -> None:
         self._buffer = bytearray()
-        # command -> {segment_index: data} while a multi segment transfer is in
-        # flight, plus the expected total, so out of order segments reassemble.
+        # command -> {segment_index: data} while a multi segment transfer is in flight, plus the
+        # expected total, so out of order segments reassemble.
         self._pending: dict[str, dict[int, bytes]] = {}
 
     def feed(self, chunk: bytes) -> list[Message]:
@@ -146,11 +119,7 @@ class FrameDecoder:
 
 
 class TcpClient:
-    """Minimal async client for the length-framed JSON transport (port 1256).
-
-    Connection and framing only; the session protocol (enter/exit) and the
-    device info/status JSON schemas are layered on top in a later step.
-    """
+    """Minimal async client for the length-framed JSON transport (port 1256)."""
 
     def __init__(
         self,
@@ -167,8 +136,8 @@ class TcpClient:
         self._read_task: asyncio.Task | None = None
         # Pending query waiters keyed by command, resolved by the read loop.
         self._pending: dict[str, list[asyncio.Future]] = {}
-        # Waiters for the next inbound message of any command (used for SET acks,
-        # which may come back as an echo, ACK or NACK).
+        # Waiters for the next inbound message of any command (used for SET acks, which may come
+        # back as an echo, ACK or NACK).
         self._any_waiters: list[asyncio.Future] = []
 
     async def connect(self, timeout: float = 5.0) -> None:
@@ -186,12 +155,7 @@ class TcpClient:
     async def async_query(
         self, command: str, data: bytes = b"", timeout: float = 5.0
     ) -> dict:
-        """Send a command and return the parsed JSON of the matching response.
-
-        Reading receiver info (GET_AVRINF) and speaker/amp setup (GET_AVRSTS)
-        does not need a session, so this is non disruptive; only the actual
-        calibration measurement enters a session.
-        """
+        """Send a command and return the parsed JSON of the matching response."""
 
         loop = asyncio.get_running_loop()
         future: asyncio.Future = loop.create_future()
@@ -222,13 +186,7 @@ class TcpClient:
     async def async_set(
         self, command: str, payload: dict | None = None, timeout: float = 5.0
     ) -> "Message | None":
-        """Send a SET_* command with a JSON payload and return the ack message.
-
-        The receiver acknowledges with an echo, ACK or NACK, so this waits for
-        the next inbound message rather than one keyed to `command`. Returns None
-        on timeout. Writing setup (amp assignment, distances, crossover) does not
-        require a session; only the calibration measurement does.
-        """
+        """Send a SET_* command with a JSON payload and return the ack message."""
 
         data = b""
         if payload is not None:

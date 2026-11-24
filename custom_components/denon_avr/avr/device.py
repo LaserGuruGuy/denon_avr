@@ -1,11 +1,4 @@
-"""DenonAvrDevice: the public facade and composition root of the client library.
-
-Wires the transports (transport/) into the services (services/) through their
-ports, owns the lifecycle and exposes the stable public API the Home Assistant
-layer uses. It contains no protocol grammar (protocol/) and no subsystem
-behaviour (services/); besides wiring it only derives a few identity and volume
-properties from discovery.
-"""
+"""DenonAvrDevice: the public facade and composition root of the client library."""
 
 from __future__ import annotations
 
@@ -69,8 +62,7 @@ class DenonAvrDevice:
             lambda control_id: self._state.values.get(control_id),
         )
 
-        # The persistent telnet connection is the CommandSink. Its callbacks are
-        # bound late because the services that handle them need the sink first.
+        # The persistent telnet connection is the CommandSink.
         self._telnet = TelnetClient(
             host,
             on_line=lambda line: self._sync.handle_line(line),
@@ -112,7 +104,6 @@ class DenonAvrDevice:
             (self._video_config, self._speaker_config),
         )
         # Auxiliary HEOS channel for network now-playing media and album art.
-        # Isolated from control: if it never connects, only now-playing is absent.
         self._heos = HeosClient(host, on_update=self._sync.handle_now_playing)
 
     # Public properties ----------------------------------------------------
@@ -144,8 +135,8 @@ class DenonAvrDevice:
     def profile(self) -> ProtocolProfile:
         return self._profile
 
-    # Master volume scale, preferring the values the receiver published in its
-    # Volume block and falling back to the protocol defaults from the profile.
+    # Master volume scale, preferring the values the receiver published in its Volume block and
+    # falling back to the protocol defaults from the profile.
     @property
     def volume_reference(self) -> float:
         return self._discovery.volume.get("reference", self._profile.volume_reference)
@@ -179,17 +170,14 @@ class DenonAvrDevice:
 
     @property
     def web_reachable(self) -> bool | None:
-        """Whether the setup web interface answered its last request (None: not tried).
-
-        Web-backed entities follow this instead of the telnet link, so they stay
-        usable when only telnet is down, and turn unavailable when only the web is."""
+        """Whether the setup web interface answered its last request (None: not tried)."""
 
         return self._webconfig.reachable
 
     @property
     def stats(self) -> dict[str, object]:
-        """Diagnostics counters of the push/refresh machinery and the web documents
-        (no payloads, no host)."""
+        """Diagnostics counters of the push/refresh machinery and the web documents (no payloads,
+        no host)."""
 
         return {**self._sync.stats, "web_last_status": dict(self._webconfig.last_status)}
 
@@ -204,8 +192,8 @@ class DenonAvrDevice:
 
     @property
     def speaker_layout(self) -> StagedChanges:
-        """Staged edits of the Web Control speaker layout assign mode; nothing is
-        written until ``async_apply`` (after the user confirmed)."""
+        """Staged edits of the Web Control speaker layout assign mode; nothing is written until
+        ``async_apply`` (after the user confirmed)."""
 
         return self._speaker_layout
 
@@ -271,8 +259,8 @@ class DenonAvrDevice:
         await self._sync.async_reconcile(
             self._goform.async_get_status,
             lambda: self._telnet.connected,
-            # Through the single-flight path, so a poll and an event trigger never
-            # read the same section twice.
+            # Through the single-flight path, so a poll and an event trigger never read the same
+            # section twice.
             tuple(partial(self._sync.refresh_web, s) for s in ("graphic_eq", "video", "speakers")),
         )
 
@@ -287,12 +275,7 @@ class DenonAvrDevice:
         return self._state.values.get(control_id)
 
     async def _refresh_section(self, section: WebConfigSectionController) -> None:
-        """Re-read a web section; menus that appear become features too.
-
-        The web interface may be found only after setup, and menus follow the
-        user's setup. Features are only ever added (silence is not absence); the
-        telnet controls of a new one are queried, so their entities get a value.
-        """
+        """Re-read a web section; menus that appear become features too."""
 
         await section.refresh()
         new = section.feature_flags() - self._discovery.features

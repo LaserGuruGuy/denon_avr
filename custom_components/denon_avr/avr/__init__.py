@@ -1,9 +1,4 @@
-"""HA-free client library for Denon/Marantz receivers.
-
-This module is the ONLY import surface for the Home Assistant layer. Layers:
-transport/ (I/O per wire protocol) -> protocol/ (pure grammar) -> services/
-(subsystems over ports) -> device.py (facade and composition root).
-"""
+"""HA-free client library for Denon/Marantz receivers."""
 
 from __future__ import annotations
 

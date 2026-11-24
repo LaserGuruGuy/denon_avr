@@ -1,10 +1,4 @@
-"""Config flow for the Denon AVR integration.
-
-The user only provides the receiver's IP address. The flow validates it by
-fetching the Deviceinfo document, then uses the discovered MAC address as the
-unique id and the discovered model name as the entry title. Nothing about the
-device is entered by hand.
-"""
+"""Config flow for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -126,8 +120,8 @@ class DenonAvrConfigFlow(ConfigFlow, domain=DOMAIN):
             except ConnectionError:
                 errors["base"] = "cannot_connect"
             else:
-                # Make sure the new address still points at the same receiver, so
-                # a typo cannot silently rebind the entry to a different device.
+                # Make sure the new address still points at the same receiver, so a typo cannot
+                # silently rebind the entry to a different device.
                 if entry.unique_id and not mac:
                     errors["base"] = "cannot_connect"     # identity not confirmed
                 else:

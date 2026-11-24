@@ -1,10 +1,4 @@
-"""The UPnP/AIOS description transport (port 60006) for the client library.
-
-The receiver's UPnP (AIOS) device description carries the firmware version and
-serial number, which the goform Deviceinfo document omits. It is read once at
-setup. This module owns its own port and path; it does no parsing (the caller
-parses the returned XML), it only fetches.
-"""
+"""The UPnP/AIOS description transport (port 60006) for the client library."""
 
 from __future__ import annotations
 

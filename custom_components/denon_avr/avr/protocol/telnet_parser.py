@@ -1,9 +1,4 @@
-"""Telnet event parser.
-
-TelnetParser turns incoming telnet lines into updates of the Discovery (for the
-SS introspection responses) and the volatile AvrState. Decoding of values is
-driven by the protocol profile so the wire grammar stays in one place.
-"""
+"""Telnet event parser."""
 
 from __future__ import annotations
 
@@ -27,20 +22,14 @@ class TelnetParser:
     def __init__(self, profile: ProtocolProfile, discovery: Discovery) -> None:
         self._profile = profile
         self._discovery = discovery
-        # Accumulators for the OPSML (current context) and OPSMLALL (all groups)
-        # responses; each is swapped into discovery when its 'END' line arrives,
-        # so the published lists are always a clean, complete single response.
         self._opsml_pending: list[str] = []
         self._opsmlall_pending: list[str] = []
-        # Per genre group accumulator (MOV/MUS/GAM/PUR -> modes), rebuilt each
-        # OPSMLALL cycle so a signal change cannot leave a group with a mode the
-        # receiver no longer offers.
+        # Per genre group accumulator (MOV/MUS/GAM/PUR -> modes), rebuilt each OPSMLALL cycle so a
+        # signal change cannot leave a group with a mode the receiver no longer offers.
         self._opsmlall_groups_pending: dict[str, list[str]] = {}
         # SSSPC: per group {kind: value} (last value of each kind wins).
         self._spc_kinds: dict[str, dict[str, str]] = {}
         self._spc_last_group: str | None = None
-        # Lists that end with an END line and have started but not ended yet
-        # (longest prefix first: OPSMLALL before OPSML).
         self._terminated = sorted(
             (spec["prefix"] for spec in profile.introspection.values() if spec.get("terminated") and spec.get("prefix")),
             key=len,
@@ -59,14 +48,8 @@ class TelnetParser:
         # OPSML / OPSMLALL accumulate (index, name) to judge completeness on END.
         self._opsml_indices: list[int] = []
         self._opsmlall_indices: list[int] = []
-        # Precompute the generic feature and read only matchers, longest prefix
-        # first so that specific tokens win over shorter ones.
-        # Feature controls decode generically from their prefix. Core enum/on-off
-        # settings that have no FuncName gate (volume scale/limit, muting level,
-        # all-zone stereo, subwoofer mode) decode the same way, so they join the
-        # generic matcher instead of each needing a bespoke dispatch branch. The
-        # overloaded core controls (power/volume/mute/source/sound mode) keep
-        # their explicit handling and are excluded here (kind or zone bound).
+        # Precompute the generic feature and read only matchers, longest prefix first so that
+        # specific tokens win over shorter ones.
         self._feature_matchers = sorted(
             (
                 (spec.prefix, spec)
@@ -98,8 +81,7 @@ class TelnetParser:
         return frozenset(self._open_lists)
 
     def understands(self, line: str) -> bool:
-        """True when this parser models the line's command (whether or not it changed
-        anything); False for commands it does not know or deliberately does not model yet."""
+        """True when this parser models the line's command (whether or not it changed anything)."""
 
         if not line.startswith(self._known_prefixes):
             return False
@@ -130,9 +112,7 @@ class TelnetParser:
             _LOGGER.debug("Ignoring unparsable line %r: %s", line, err)
             return False
 
-    # Dispatch order matters because several prefixes overlap. The core zone
-    # controls and the overloaded/list style responses are handled explicitly;
-    # everything else is decoded generically from the profile.
+    # Dispatch order matters because several prefixes overlap.
     def _dispatch(self, line: str, state: AvrState) -> bool:
         if line.startswith("PW"):
             return self._set_system_power(line[2:], state)
@@ -192,9 +172,6 @@ class TelnetParser:
             return self._set_quick_select_name(line[8:])
         if line.startswith("SSSPC"):
             return self._set_speaker_config(line[5:], state)
-        # SSSWM (subwoofer mode), MNZST (all-zone stereo) and SSVCTZMA* (volume
-        # scale/limit, muting level) are core settings with no FuncName gate;
-        # they now decode through the generic feature matcher below.
         if line.startswith("OPSMLALL"):
             return self._set_sound_mode_list(line[8:], state=state)
         if line.startswith("OPSML"):
@@ -210,10 +187,6 @@ class TelnetParser:
         for prefix, spec in self._feature_matchers:
             if line.startswith(prefix):
                 remainder = line[len(prefix):]
-                # A control with a short, overloaded prefix (e.g. picture mode
-                # 'PV', shared with the video-adjust tokens PVBR/PVCN/...) opts
-                # into exact matching: it only claims the line when the value is
-                # one of its known enum tokens, so it never swallows a sibling.
                 if spec.get("exact_enum") and remainder.strip() not in spec.values:
                     continue
                 return self._set_feature(spec, remainder, state)
@@ -240,15 +213,12 @@ class TelnetParser:
 
     def _set_sound_mode(self, remainder: str, state: AvrState) -> bool:
         remainder = remainder.strip()
-        # MS is also the prefix for quick select and smart select echoes; those
-        # are not sound modes, so ignore them here.
+        # MS is also the prefix for quick select and smart select echoes; those are not sound
+        # modes, so ignore them here.
         if remainder.startswith(("QUICK", "SMART")):
             return False
         # This is the active mode's wire token (for example "DOLBY AUDIO-DSUR").
         state.values["sound_mode"] = remainder
-        # All Zone Stereo is reflected as a sound mode ("ALL ZONE STEREO"), so
-        # mirror it here to give the All Zone Stereo switch a known on/off state
-        # (its own MNZST '?' query returns nothing; MS? is answered on resync).
         state.values["all_zone_stereo"] = remainder == "ALL ZONE STEREO"
         return True
 
@@ -265,15 +235,7 @@ class TelnetParser:
         return list(existing) + [name for name in new if name not in existing]
 
     def _set_sound_mode_list(self, remainder: str, state: AvrState) -> bool:
-        """Parse an OPSMLALL entry (all genre groups) into the flat mode set.
-
-        Entries look like 'OPSMLALL MOV071Virtual': a 3 letter genre code, a
-        running entry number (07), a one digit flag and the display name. Entry
-        number 1 starts a new response. On END the response REPLACES the lists
-        only when it is complete (numbers 1..n without gap); a partial one (the
-        connection started mid-stream, a line was lost) is MERGED so nothing the
-        receiver offers is dropped. The selected mode comes from OPSML.
-        """
+        """Parse an OPSMLALL entry (all genre groups) into the flat mode set."""
 
         remainder = remainder.strip()
         if remainder.startswith(self._profile.list_terminator):
@@ -313,13 +275,7 @@ class TelnetParser:
         return True
 
     def _set_current_sound_mode(self, remainder: str, state: AvrState) -> bool:
-        """Parse an OPSML entry (modes selectable in the CURRENT context/group).
-
-        Entries look like '011Direct': a running entry number (01), the
-        "selected" flag digit and the name. As for OPSMLALL: entry number 1
-        starts a new response; END replaces the list only when it is complete,
-        otherwise merges.
-        """
+        """Parse an OPSML entry (modes selectable in the CURRENT context/group)."""
 
         remainder = remainder.strip()
         if remainder.startswith(self._profile.list_terminator):
@@ -344,8 +300,8 @@ class TelnetParser:
         self._opsml_indices.append(index)
         if name not in self._opsml_pending:
             self._opsml_pending.append(name)
-        # The trailing digit is the "currently selected" flag; this is the mode
-        # the user selected, which can differ from the resolved MS mode.
+        # The trailing digit is the "currently selected" flag; this is the mode the user selected,
+        # which can differ from the resolved MS mode.
         if digits and digits[-1] == "1":
             state.values["sound_mode_display"] = name
         return True
@@ -365,12 +321,7 @@ class TelnetParser:
         return True
 
     def _set_distance(self, remainder: str, target: dict[str, float]) -> bool:
-        """Parse an 'SSSDE<CODE> <value>' speaker distance line into `target`.
-
-        The value is the distance times the profile divisor (e.g. '0310' at
-        divisor 100 is 3.10 m). The 'STP' unit line and the 'END' terminator are
-        ignored.
-        """
+        """Parse an 'SSSDE<CODE> <value>' speaker distance line into `target`."""
 
         remainder = remainder.strip()
         if not remainder or remainder.startswith(self._profile.list_terminator):
@@ -386,13 +337,7 @@ class TelnetParser:
         return True
 
     def _set_crossover(self, remainder: str, state: AvrState) -> bool:
-        """Parse an 'SSCFR...' crossover line.
-
-        Handles the per group 'SSCFR<GROUP> <Hz>' values (into state.crossovers),
-        the speaker-selection mode 'SSCFR IDV'/'SSCFR ALL' and the 'SSCFRALL <Hz>'
-        aggregate value (into state.values, driving the crossover speaker-
-        selection and All-crossover selects). The 'END' terminator is ignored.
-        """
+        """Parse an 'SSCFR...' crossover line."""
 
         remainder = remainder.strip()
         if not remainder or remainder.startswith(self._profile.list_terminator):
@@ -438,8 +383,8 @@ class TelnetParser:
                 zone.volume_raw = value
                 return True
             return False
-        # Zone sub-commands (channel volume, tone, sleep, quick select ...) are
-        # not a source; they are not modelled yet (profile zones.sub_commands).
+        # Zone sub-commands (channel volume, tone, sleep, quick select ...) are not a source; they
+        # are not modelled yet (profile zones.sub_commands).
         if remainder.startswith(tuple(self._profile.zones.get("sub_commands", []))):
             return False
         # Anything else is the zone's source code.
@@ -502,19 +447,7 @@ class TelnetParser:
         return True
 
     def _set_speaker_config(self, remainder: str, state: AvrState) -> bool:
-        """One SSSPC line: '<GROUP> <value>'. There is no END line on any generation.
-
-        Each value is classified (presence / size / count / other, profile
-        ``speakers.tokens``). Consecutive lines of one group form its record
-        (e.g. 'SBK NO' + 'SBK 2SP'); a new run for that group replaces the record,
-        keeping the count if the run has none. So a push or a repeated response
-        overwrites instead of accumulating.
-
-        Silence is not absence: a group the receiver stops mentioning is KEPT. A
-        group only becomes absent through an explicit absent token (NO / NON). A
-        response can be cut off, or a group can be silent in the current setup,
-        and that must never remove a real speaker group.
-        """
+        """One SSSPC line."""
 
         remainder = remainder.strip()
         if not remainder or remainder.startswith(self._profile.list_terminator):
@@ -524,16 +457,13 @@ class TelnetParser:
         if not group or not value:
             return False
         if group != self._spc_last_group:
-            # A new run of lines for this group replaces its record (so 'NON'
-            # followed later by '1SP' is not stuck as absent); the count is kept
-            # when the new run does not mention one.
             previous = self._spc_kinds.get(group, {})
             self._spc_kinds[group] = {"count": previous["count"]} if "count" in previous else {}
             self._spc_last_group = group
         kinds = self._spc_kinds[group]
         kinds[self._speaker_token_kind(value)] = value
-        # discovery.speaker_config keeps the group's current values (one per
-        # kind); state.speaker_sizes keeps the latest value for the live selects.
+        # discovery.speaker_config keeps the group's current values (one per kind);
+        # state.speaker_sizes keeps the latest value for the live selects.
         self._discovery.speaker_config[group] = set(kinds.values())
         state.speaker_sizes[group] = value
         self._recompute_configured_channels()
@@ -550,13 +480,7 @@ class TelnetParser:
         return "other"
 
     def _recompute_configured_channels(self) -> None:
-        """Derive the configured channel codes from the SSSPC speaker config.
-
-        A group is present unless an explicit token says absent: its presence line
-        (NO on newer firmware) or, without one, its size (NON on older firmware). Count groups contribute the channel list of their
-        reported count. The maps come from the profile (protocol grammar); which
-        groups are present comes entirely from the receiver.
-        """
+        """Derive the configured channel codes from the SSSPC speaker config."""
 
         speakers = self._profile.speakers
         tokens = speakers.get("tokens", {})
@@ -567,8 +491,8 @@ class TelnetParser:
 
         configured: set[str] = set()
         for group, kinds in self._spc_kinds.items():
-            # Absent only by an explicit token: the presence line (YES/NO), or the
-            # size when there is no presence line (NON on older firmware).
+            # Absent only by an explicit token: the presence line (YES/NO), or the size when there
+            # is no presence line (NON on older firmware).
             if kinds.get("presence", kinds.get("size")) in absent:
                 continue
             if group in count_groups:

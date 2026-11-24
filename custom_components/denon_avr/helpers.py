@@ -1,9 +1,4 @@
-"""Naming and option helpers shared by the entity platforms.
-
-These functions turn the profile control specs and the device published metadata
-into the display names and option lists the entities need. Names always prefer
-what the receiver published; a humanised id is only a last resort.
-"""
+"""Naming and option helpers shared by the entity platforms."""
 
 from __future__ import annotations
 
@@ -16,11 +11,7 @@ def humanize(text: str) -> str:
     return text.replace("_", " ").replace(":", "").strip().title()
 
 
-# Protocol command group -> HA sub-device card. Presentation only: this mirrors
-# the receiver's own setup menus (Audio / Video / Speakers) so a large control
-# set is split across cohesive device pages instead of crowding one device.
-# Groups absent here (power, volume, source, system) keep their entities on the
-# main receiver device with the daily-use playback controls.
+# Protocol command group -> HA sub-device card.
 _GROUP_SUB_DEVICE: dict[str, str] = {
     "audio": "audio",
     "audyssey": "audio",
@@ -30,20 +21,12 @@ _GROUP_SUB_DEVICE: dict[str, str] = {
     "speaker": "speakers",
 }
 
-# Controls whose card differs from their command group's default. All Zone Stereo
-# is a whole-house playback toggle (its state is derived from the sound mode), so
-# it stays with the playback controls on the main device rather than the Audio
-# settings card.
+# Controls whose card differs from their command group's default.
 _MAIN_DEVICE_CONTROLS = {"all_zone_stereo"}
 
 
 def control_sub_device(spec: ControlSpec) -> str | None:
-    """Return the sub-device card an entity for this control belongs on.
-
-    None means the main receiver device. Resolution order: an explicit profile
-    ``subdevice`` wins (e.g. the graphic EQ on/off lives with the EQ bands), then
-    a per-control exception, then the control's command group.
-    """
+    """Return the sub-device card an entity for this control belongs on."""
 
     explicit = spec.get("subdevice")
     if explicit is not None:
@@ -66,15 +49,7 @@ def control_name(discovery: Discovery, spec: ControlSpec) -> str:
 
 
 def group_name(discovery: Discovery, channels: list[str]) -> str:
-    """Return a display name for a speaker group from its channel names.
-
-    A group's crossover applies to a speaker pair (or single). The receiver
-    names the individual channels ('Front L', 'Front R'), so derive the group
-    label from those: for a pair, drop the trailing side token to get the shared
-    base ('Front'); for a single channel, use its name. Prefer the channels the
-    receiver actually configured (they carry real names), falling back to the
-    protocol channel codes only when none are configured.
-    """
+    """Return a display name for a speaker group from its channel names."""
 
     configured = {ch.code for ch in discovery.channels}
     codes = [c for c in channels if c in configured] or channels
@@ -92,17 +67,11 @@ def group_name(discovery: Discovery, channels: list[str]) -> str:
 def enum_options(discovery: Discovery, spec: ControlSpec) -> tuple[
     list[str], dict[str, str], dict[str, str]
 ]:
-    """Build the option list and label/value maps for an enum control.
-
-    The wire values come from the profile in canonical order; the display labels
-    come from the device in the same order. When the counts differ (a model with
-    a different option set) the wire tokens are used as labels so a mismatch can
-    never send a wrong command.
-    """
+    """Build the option list and label/value maps for an enum control."""
 
     values = spec.values
-    # Prefer the device-published labels; then any profile-provided labels (for
-    # controls the device does not describe); finally a humanised wire token.
+    # Prefer the device-published labels; then any profile-provided labels (for controls the
+    # device does not describe); finally a humanised wire token.
     labels = discovery.option_labels.get(spec.feature or "", [])
     if not (labels and len(labels) == len(values)):
         labels = spec.get("labels") or []
@@ -120,13 +89,9 @@ FULL_RANGE = "Full Range"
 
 
 def crossover_values(device, group: str | None = None) -> list[int]:
-    """The crossover frequencies to offer: the receiver's own list (setup web
-    document, e.g. including 0 = Full Range and 70 Hz) when it reports one,
-    otherwise the profile's protocol constant.
-
-    Full Range (0) per the owner's manual: the front group may use it; any other
-    group only while the front group is Full Range (or when it is its current
-    value already)."""
+    """The crossover frequencies to offer: the receiver's own list (setup web document, e.g.
+    including 0 = Full Range and 70 Hz) when it reports one, otherwise the profile's protocol
+    constant."""
 
     reported = device.speaker_config.value_list("crossover")
     if reported:
@@ -150,9 +115,9 @@ def crossover_from_label(label: str) -> int:
 
 
 def _absent_token_of_generation(device) -> str | None:
-    """The absent token this receiver's speaker grammar uses, judged from the front
-    group (always reported): a presence token (YES/NO) means the presence
-    generation ('NO'), a size token (LAR/SMA) the size generation ('NON')."""
+    """The absent token this receiver's speaker grammar uses, judged from the front group (always
+    reported): a presence token (YES/NO) means the presence generation ('NO'), a size token
+    (LAR/SMA) the size generation ('NON')."""
 
     speakers = device.profile.speakers
     tokens = speakers.get("tokens", {})
@@ -165,13 +130,7 @@ def _absent_token_of_generation(device) -> str | None:
 
 
 def subwoofer_count_options(device) -> dict[str, str]:
-    """Wire token -> label for the number of subwoofers, derived from the receiver.
-
-    The counts run up to what the receiver supports (Deviceinfo SubwooferNum,
-    else the profile's count map). "None" uses the absent token of the
-    receiver's speaker grammar generation (NO with presence tokens, NON with
-    size tokens); when that is not known yet, "None" is not offered.
-    """
+    """Wire token -> label for the number of subwoofers, derived from the receiver."""
 
     speakers = device.profile.speakers
     by_count = speakers.get("count_groups", {}).get("SWF", {}).get("by_count", {})
@@ -186,8 +145,7 @@ def subwoofer_count_options(device) -> dict[str, str]:
 
 
 def is_size_token(device, token: str | None) -> bool:
-    """True when the receiver reports a speaker SIZE (older firmware: LAR/SMA/NON);
-    newer firmware reports presence (YES/NO) instead, where a size select does not apply."""
+    """True when the receiver reports a speaker SIZE (older firmware."""
 
     return token in device.profile.speakers.get("tokens", {}).get("size", [])
 
@@ -197,8 +155,8 @@ def _speakers_grammar(device) -> dict:
 
 
 def amp_mode(device) -> tuple[str | None, str | None]:
-    """(assign mode id, stable key) as the receiver reports it: the Web Control
-    speaker layout (item 1) or the legacy Amp Assign field; (None, None) if unknown."""
+    """(assign mode id, stable key) as the receiver reports it: the Web Control speaker layout
+    (item 1) or the legacy Amp Assign field."""
 
     speakers = device.speaker_config
     item = speakers.collection("speaker_layout_assign").get("1")
@@ -223,8 +181,8 @@ def _subwoofer_count(device) -> int:
 
 
 def has_subwoofer_setup(device) -> bool:
-    """Capability: the receiver reports its subwoofer mode/layout (telnet SSSPCSWM /
-    SSSPCSWL, telnet first) or offers the Web Control speaker layout."""
+    """Capability: the receiver reports its subwoofer mode/layout (telnet SSSPCSWM / SSSPCSWL,
+    telnet first) or offers the Web Control speaker layout."""
 
     telnet = _speakers_grammar(device).get("subwoofer_setup", {}).get("telnet", {})
     sizes = device.state.speaker_sizes
@@ -232,9 +190,8 @@ def has_subwoofer_setup(device) -> bool:
 
 
 def subwoofer_setup(device, which: str) -> str | None:
-    """Stable key of the subwoofer mode ("mode") or layout ("layout"), or None
-    while it does not apply (the manual: mode only with 2+ subwoofers, layout only
-    in Directional mode). Telnet first, the Web Control document second."""
+    """Stable key of the subwoofer mode ("mode") or layout ("layout"), or None while it does not
+    apply (the manual: mode only with 2+ subwoofers, layout only in Directional mode)."""
 
     spec = _speakers_grammar(device).get("subwoofer_setup", {})
     telnet = spec.get("telnet", {})
@@ -267,9 +224,8 @@ def option_key(device, collection_id: str, option: str) -> str:
 
 
 def current_input_slot(device, collection_id: str, zone_id: str = "main") -> str | None:
-    """The receiver's input slot of the zone's current source, telnet first:
-    the SI code -> its name (SSFUN) -> the per-input item with that name. None
-    when it cannot be decided unambiguously (unknown, or duplicate names)."""
+    """The receiver's input slot of the zone's current source, telnet first: the SI code -> its
+    name (SSFUN) -> the per-input item with that name."""
 
     code = device.state.zone(zone_id).source
     if not code:

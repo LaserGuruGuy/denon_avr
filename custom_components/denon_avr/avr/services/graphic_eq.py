@@ -21,14 +21,7 @@ from ..protocol.eq_doc import (
 
 
 class GraphicEqController:
-    """Owns the manual graphic-EQ subsystem: read, per-channel edit and apply.
-
-    Keeps the EQ cohesive and off the device's transport-orchestration surface.
-    It talks only to the setup config transport (get/set) and reports changes
-    through an ``on_update`` callback; band edits are staged locally and written
-    as one full block by ``apply`` (the receiver rejects a partial block). All
-    calls are best effort and no-ops when the receiver has no graphic EQ.
-    """
+    """Owns the manual graphic-EQ subsystem: read, per-channel edit and apply."""
 
     def __init__(
         self,
@@ -46,8 +39,7 @@ class GraphicEqController:
         self._channel = 0
         # The channel the bands in ``state`` were read for; None = not read (yet).
         self._read_channel: int | None = None
-        # The receiver's own availability of the graphic EQ menu (audio
-        # listSetupMenu), e.g. grayed while a room correction is active.
+        # grayed while a room correction is active.
         self.availability: Availability | None = None
 
     @property
@@ -60,8 +52,8 @@ class GraphicEqController:
 
     @property
     def settable(self) -> bool:
-        """True unless the receiver reports the EQ menu as not settable now
-        (unknown availability keeps the previous behaviour: settable)."""
+        """True unless the receiver reports the EQ menu as not settable now (unknown availability
+        keeps the previous behaviour: settable)."""
 
         return self.availability is None or self.availability.settable
 
@@ -99,8 +91,7 @@ class GraphicEqController:
             self._on_update()
 
     async def refresh(self) -> bool:
-        """Read the selected channel's curve into state (non-disruptive). False when
-        the receiver did not give it."""
+        """Read the selected channel's curve into state (non-disruptive)."""
 
         if not self.supported:
             return False
@@ -113,9 +104,6 @@ class GraphicEqController:
         if xml is None:
             return False
         new_state = parse(xml, self._grammar)
-        # Only notify on an actual change: this runs on every reconcile poll, so
-        # an unconditional callback would write HA state every interval for no
-        # reason (GraphicEqState is a dataclass, so equality is a value compare).
         if new_state != self.state:
             self.state = new_state
             self._on_update()
@@ -138,9 +126,7 @@ class GraphicEqController:
         self._on_update()
 
     async def apply(self) -> bool:
-        """Write the whole block. Refused (False, edits kept) unless every band of THIS
-        channel was read: a missing band would be written as 0 dB, flattening the
-        curve, and another channel's curve would be copied onto this one."""
+        """Write the whole block."""
 
         if not self._pending:
             return True

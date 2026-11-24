@@ -5,9 +5,7 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 
 
-# UPnP description local tag name -> the DeviceInfo attribute it fills. The AVR
-# firmware and serial go on the device card; the AIOS (HEOS network module)
-# version and build revision are captured for diagnostics.
+# UPnP description local tag name -> the DeviceInfo attribute it fills.
 _UPNP_TAGS: dict[str, str] = {
     "manufacturer": "manufacturer",
     "serialNumber": "serial_number",
@@ -18,12 +16,7 @@ _UPNP_TAGS: dict[str, str] = {
 
 
 def parse_upnp_description(xml_text: str) -> dict[str, str]:
-    """Extract identity/version fields from a UPnP device description.
-
-    The document is namespaced and contains several sub devices, and the Denon
-    firmware tag is in a vendor namespace, so match on the local tag name and
-    take the first non empty value per field. Returns {} on any parse error.
-    """
+    """Extract identity/version fields from a UPnP device description."""
 
     try:
         root = ET.fromstring(xml_text)

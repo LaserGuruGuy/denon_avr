@@ -1,17 +1,4 @@
-"""The goform HTTP transport (port 8080) for the Denon AVR client library.
-
-The goform HTTP API is used for two things only:
-
-* Discovery: fetch the Deviceinfo XML once at setup so the receiver can describe
-  its identity and capabilities.
-* Reconciliation: poll the compact StatusLite endpoints so the integration can
-  confirm the receiver is reachable and recover core state if the telnet push
-  channel is temporarily down.
-
-The heavy lifting (control and real time updates) is done over telnet; this is
-the stateless safety net. This module owns its own port and discovery path; no
-other transport shares them.
-"""
+"""The goform HTTP transport (port 8080) for the Denon AVR client library."""
 
 from __future__ import annotations
 
@@ -41,11 +28,7 @@ class GoformClient:
         return await self._get(_DEVICEINFO_PATH)
 
     async def async_get_status(self, path: str) -> dict[str, object] | None:
-        """Fetch and parse the StatusLite snapshot at the given path.
-
-        Returns a dict with any of the keys 'power', 'source', 'volume_db' and
-        'muted', or None when the endpoint is unavailable.
-        """
+        """Fetch and parse the StatusLite snapshot at the given path."""
 
         text = await self._get(path)
         if text is None:

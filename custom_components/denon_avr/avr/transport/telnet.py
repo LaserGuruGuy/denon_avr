@@ -1,22 +1,4 @@
-"""Asynchronous telnet transport (port 23) for the Denon AVR client library.
-
-This module owns the raw telnet socket only. It knows nothing about the protocol
-grammar; it just delivers received lines to a callback and serialises outgoing
-commands. Robustness features:
-
-* A single background manager task keeps the connection up and reconnects with
-  exponential backoff after any failure.
-* Outgoing commands go through a queue and are written with a small fixed gap,
-  because the receiver drops commands that arrive too quickly.
-* A keepalive probe is sent when the link is idle so a silently dropped socket
-  is detected quickly.
-* On every (re)connection a callback is invoked so the owner can resynchronise
-  the full state.
-
-A one-shot `async_probe` helper is also provided for deterministic discovery: it
-opens a short-lived connection, sends queries, and feeds the replies to a
-callback, entirely separate from the persistent connection above.
-"""
+"""Asynchronous telnet transport (port 23) for the Denon AVR client library."""
 
 from __future__ import annotations
 
@@ -53,14 +35,7 @@ async def async_probe(
     port: int = DEFAULT_PORT,
     deadline: float = 3.0,
 ) -> None:
-    """Open a short-lived telnet connection to run discovery queries.
-
-    Sends every query, then feeds each received line to `on_line` until
-    `is_complete()` returns True or `deadline` seconds pass, then closes. This is
-    separate from the persistent connection so discovery is deterministic at
-    setup time. It never raises; on any failure it simply returns and the
-    persistent resync fills the model slightly later.
-    """
+    """Open a short-lived telnet connection to run discovery queries."""
 
     try:
         reader, writer = await asyncio.wait_for(
@@ -175,8 +150,8 @@ class TelnetClient:
             except (OSError, asyncio.TimeoutError) as err:
                 _LOGGER.debug("Telnet connection to %s failed: %s", self._host, err)
             finally:
-                # Only a peer that really answered resets the backoff: one that
-                # accepts and closes at once (session limit) is not hammered.
+                # Only a peer that really answered resets the backoff: one that accepts and closes
+                # at once (session limit) is not hammered.
                 if self._received:
                     backoff = RECONNECT_BACKOFF_MIN
                 await self._set_connected(False)
@@ -200,8 +175,8 @@ class TelnetClient:
         # Commands left from a broken session are not replayed minutes later.
         while not self._queue.empty():
             self._queue.get_nowait()
-        # "Connected" is the socket; entities become available with the first line,
-        # so a peer that accepts but stays silent does not make them flap.
+        # "Connected" is the socket; entities become available with the first line, so a peer that
+        # accepts but stays silent does not make them flap.
         self._connected = True
         _LOGGER.debug("Telnet connected to %s:%s", self._host, self._port)
         # Let the owner resynchronise the full state on (re)connect.
@@ -262,7 +237,6 @@ class TelnetClient:
                 raise ConnectionError("Telnet stream closed")
             except asyncio.LimitOverrunError as err:
                 # The oversized data stays in the buffer, so retrying would spin.
-                # Treat it as a broken stream and let the manager reconnect.
                 raise ConnectionError("Telnet line exceeded read buffer") from err
             self._last_received = asyncio.get_running_loop().time()
             self._probe_sent = None
@@ -294,12 +268,7 @@ class TelnetClient:
             await asyncio.sleep(COMMAND_SPACING)
 
     async def _keepalive_loop(self) -> None:
-        """Probe an idle link, and give it up when the probes stay unanswered.
-
-        This judges the LINK (a pulled plug keeps a TCP session "open" for many
-        minutes), never a control: any received line counts as an answer. The wait
-        starts when the probe was really written, and one missed probe is allowed.
-        """
+        """Probe an idle link, and give it up when the probes stay unanswered."""
 
         loop = asyncio.get_running_loop()
         while True:

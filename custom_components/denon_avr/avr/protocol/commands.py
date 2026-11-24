@@ -1,10 +1,4 @@
-"""Pure telnet command builders: (profile, arguments) -> wire string.
-
-No I/O, no state: every token comes from the protocol profile, every receiver-
-specific value (zone index, source code, channel code, group) is passed in by the
-caller from discovery. A builder returns None when the profile has no grammar for
-the command, so the caller simply sends nothing (the 1.1.2 behaviour).
-"""
+"""Pure telnet command builders."""
 
 from __future__ import annotations
 
@@ -191,8 +185,8 @@ def resync_queries(profile: ProtocolProfile, discovery: Discovery) -> list[str]:
         if query and query not in queries:
             queries.append(query)
 
-    # Introspection first so the source and channel lists (which entities
-    # are built from) arrive as early as possible after connecting.
+    # Introspection first so the source and channel lists (which entities are built from) arrive
+    # as early as possible after connecting.
     for spec in profile.introspection.values():
         add(spec.get("query"))
     # Core controls (main zone) are always present.
@@ -206,9 +200,7 @@ def resync_queries(profile: ProtocolProfile, discovery: Discovery) -> list[str]:
     # Read only audio information.
     for spec in profile.readonly.values():
         add(spec.get("query"))
-    # Feature controls, only those the receiver advertises. Some controls have
-    # several queries (a list query and a read query, e.g. channel calibration
-    # via SSLEV plus live trims via CV); send all of them.
+    # Feature controls, only those the receiver advertises.
     for spec in profile.feature_controls():
         if spec.feature and discovery.supports(spec.feature):
             add(spec.query)

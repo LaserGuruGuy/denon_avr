@@ -1,9 +1,4 @@
-"""Diagnostics support for the Denon AVR integration.
-
-Dumps the discovery model and the current state so issues can be debugged
-without direct access to the receiver. No credentials are involved; the MAC
-address is redacted as a courtesy.
-"""
+"""Diagnostics support for the Denon AVR integration."""
 
 from __future__ import annotations
 

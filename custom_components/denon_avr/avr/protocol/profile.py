@@ -1,9 +1,4 @@
-"""Loader and typed accessor for the external protocol profile.
-
-The profile (protocol_profile.json) is the single place that holds the fixed
-Denon telnet wire grammar. This module loads it once and exposes convenient
-lookups. It contains engine logic only, never device configuration.
-"""
+"""Loader and typed accessor for the external protocol profile."""
 
 from __future__ import annotations
 
@@ -37,13 +32,7 @@ class ControlSpec:
 
     @property
     def group(self) -> str | None:
-        """The command family this control belongs to.
-
-        One of the profile's command groups (power, volume, source, surround,
-        audyssey, tone, audio, speaker, video, system). Purely a classification
-        for organising the growing control set; it does not affect the wire
-        protocol.
-        """
+        """The command family this control belongs to."""
 
         return self._data.get("group")
 
@@ -104,17 +93,15 @@ class ProtocolProfile:
         self.introspection: dict[str, dict[str, Any]] = raw.get("introspection", {})
         self.readonly: dict[str, dict[str, Any]] = raw.get("readonly", {})
         self.refresh: dict[str, Any] = raw.get("refresh", {})
-        # Receiver-type classification (device hw_version), by CommApiVers /
-        # ModelName patterns, matching the official denonavr library. Not a Gen
-        # code map; see the section's own doc.
+        # Receiver-type classification (device hw_version), by CommApiVers / ModelName patterns,
+        # matching the official denonavr library.
         self.receiver_type: dict[str, str] = raw.get("receiver_type", {})
         self.controls: dict[str, ControlSpec] = {
             control_id: ControlSpec(control_id, data)
             for control_id, data in raw.get("controls", {}).items()
         }
 
-    # Grammar helpers. These read the numeric protocol facts from the profile so
-    # that even the reference points are data driven.
+    # Grammar helpers.
     @property
     def line_terminator(self) -> str:
         return self.grammar.get("line_terminator", "\r")
@@ -152,13 +139,7 @@ class ProtocolProfile:
         return self.grammar.get("crossover", {})
 
     def group_channels(self, group: str) -> list[str]:
-        """Return the channel codes that make up a speaker group.
-
-        Groups map to a fixed pair/single of channels (protocol grammar). The
-        count groups (subwoofer, surround back) have one channel list per count;
-        all possible members are returned so the group can be named/matched for
-        whatever count the receiver reports.
-        """
+        """Return the channel codes that make up a speaker group."""
 
         groups = self.speakers.get("groups", {})
         if group in groups:
@@ -181,14 +162,7 @@ class ProtocolProfile:
 
     @property
     def refresh_groups(self) -> dict[str, dict[str, Any]]:
-        """Coalesced re-query groups keyed by id.
-
-        Each group has 'queries' (commands to re-send), 'on' (line prefixes
-        whose arrival schedules the re-query) and 'debounce' (seconds). This
-        keeps derived state the receiver does not push on every relevant change
-        (audio format, channel/speaker layout, signal-dependent mode lists) in
-        sync, fully data driven from the profile's refresh section.
-        """
+        """Coalesced re-query groups keyed by id."""
 
         return self.refresh.get("groups", {})
 

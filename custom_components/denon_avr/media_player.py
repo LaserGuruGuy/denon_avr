@@ -1,9 +1,4 @@
-"""Media player platform for the Denon AVR integration.
-
-One media player entity is created per discovered zone. The main zone also
-exposes the sound mode; additional zones do not. The selectable source list and
-the sound mode list are both built from what the receiver reports.
-"""
+"""Media player platform for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -21,9 +16,7 @@ from .avr import ZoneDescriptor
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity, setup_catalogue_platform
 
-# An icon-style picture of the selected input, shown when there is no album art
-# to display. Keyed by the receiver's wire source code (what the state holds);
-# a keyword fallback matches the display name too so renamed sources still map.
+# An icon-style picture of the selected input, shown when there is no album art to display.
 _SOURCE_ICONS = {
     "TV": "mdi:television",
     "CD": "mdi:disc",
@@ -84,8 +77,8 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
     def __init__(self, coordinator: DenonAvrCoordinator, zone: ZoneDescriptor) -> None:
         super().__init__(coordinator, f"media_player_{zone.id}")
         self._zone = zone
-        # The main zone is the primary device entity (no own name); additional
-        # zones carry the discovered zone name.
+        # The main zone is the primary device entity (no own name); additional zones carry the
+        # discovered zone name.
         self._attr_name = None if zone.is_main else zone.name
 
         features = (
@@ -96,8 +89,8 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
             | MediaPlayerEntityFeature.VOLUME_MUTE
             | MediaPlayerEntityFeature.SELECT_SOURCE
         )
-        # Only the main zone carries the surround / sound mode and the network
-        # transport controls (HEOS drives the whole receiver, i.e. the main zone).
+        # Only the main zone carries the surround / sound mode and the network transport controls
+        # (HEOS drives the whole receiver, i.e. the main zone).
         if zone.is_main:
             features |= (
                 MediaPlayerEntityFeature.SELECT_SOUND_MODE
@@ -130,8 +123,8 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
             return None
         if not power:
             return MediaPlayerState.OFF
-        # When a network source is playing, reflect the transport state so the
-        # card shows play/pause; otherwise the receiver is simply on.
+        # When a network source is playing, reflect the transport state so the card shows
+        # play/pause; otherwise the receiver is simply on.
         now = self._now_playing
         if now and now.active:
             return (
@@ -165,14 +158,7 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
 
     @property
     def icon(self) -> str | None:
-        """Icon-style picture of the selected input.
-
-        HA shows the album art (media image) when one is available; when there
-        is none - a hardware input, or an idle network source - the entity icon
-        reflects the selected input instead. Match the wire code first, then
-        fall back to a keyword match on the display name so a renamed source
-        (e.g. "Chromecast" on the NET input) still gets a sensible icon.
-        """
+        """Icon-style picture of the selected input."""
 
         code = self._zone_state.source
         if not code:
@@ -194,8 +180,8 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
     def sound_mode(self) -> str | None:
         if not self._zone.is_main:
             return None
-        # Prefer the receiver's display name for the active mode; fall back to
-        # the raw wire token when the display name is not known yet.
+        # Prefer the receiver's display name for the active mode; fall back to the raw wire token
+        # when the display name is not known yet.
         values = self.coordinator.data.values
         return values.get("sound_mode_display") or values.get("sound_mode")
 
@@ -203,10 +189,6 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
     def sound_mode_list(self) -> list[str] | None:
         if not self._zone.is_main:
             return None
-        # All modes the receiver currently offers across groups (OPSMLALL), in
-        # the receiver's own order, plus any current-context extras (e.g. Auto)
-        # and the active mode. Not sorted, to keep a sensible order. The set is
-        # signal dependent: the receiver only lists modes valid for the signal.
         discovery = self._device.discovery
         modes = list(discovery.all_sound_modes)
         for mode in discovery.current_sound_modes:
@@ -267,8 +249,8 @@ class DenonAvrMediaPlayer(DenonAvrEntity, MediaPlayerEntity):
         if self._zone.is_main:
             await self._device.async_volume_step(self._zone.id, up=False)
         else:
-            # Additional zones have no dedicated up/down command, so step by one
-            # device volume step on the raw scale.
+            # Additional zones have no dedicated up/down command, so step by one device volume
+            # step on the raw scale.
             await self._step_zone_volume(up=False)
 
     async def _step_zone_volume(self, up: bool) -> None:

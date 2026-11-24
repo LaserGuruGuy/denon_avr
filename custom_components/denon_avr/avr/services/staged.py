@@ -1,12 +1,4 @@
-"""Staged edits to a setup web collection (speaker layout): prepare, apply, restore.
-
-Nothing reaches the receiver until ``async_apply``. An apply also resets other
-choices on the receiver that going back does NOT restore (measured: other layout
-positions, front speaker A/B), so the state before the FIRST apply is kept as a
-restore point. ``async_restore`` puts it back, but never over a choice that was made
-after the apply, never into another speaker preset, and never position by position
-while the mode itself is not back. One operation at a time.
-"""
+"""Staged edits to a setup web collection (speaker layout): prepare, apply, restore."""
 
 from __future__ import annotations
 
@@ -33,8 +25,7 @@ class _Snapshot:
 
 @dataclass(frozen=True)
 class RestoreResult:
-    """Outcome: ``left`` could not be restored, ``newer`` was changed after the apply
-    and left alone, ``refused`` says why nothing was done (unavailable / stale)."""
+    """Outcome."""
 
     left: tuple[str, ...] = ()
     newer: tuple[str, ...] = ()
@@ -156,8 +147,7 @@ class StagedChanges:
         )
 
     async def _guard(self) -> str | None:
-        """Why the restore point may not be used now: None = same preset, "stale" =
-        another one, "unavailable" = the receiver does not say (asked twice)."""
+        """Why the restore point may not be used now."""
 
         known = {
             k: self._before.guards.get(k) if self._before.guards.get(k) is not None
@@ -215,8 +205,7 @@ class StagedChanges:
     # Apply -----------------------------------------------------------------
 
     async def async_apply(self) -> dict[str, bool]:
-        """Write every staged item, then verify it. Returns slot -> accepted. Nothing is
-        written (and the change stays staged) when the state before cannot be read."""
+        """Write every staged item, then verify it."""
 
         if self.busy:
             return {slot: False for slot in self._pending}
@@ -282,8 +271,8 @@ class StagedChanges:
                     result = await self._restore(self._before)
             except TimeoutError:
                 result = RestoreResult(left=("timeout",))
-            # A refusal keeps the restore point: the preset may be switched back, the
-            # receiver may answer again. Discard gives it up.
+            # A refusal keeps the restore point: the preset may be switched back, the receiver may
+            # answer again.
             if result.refused is None and not result.left:
                 self._forget()
             elif result.refused is None and await self._read():

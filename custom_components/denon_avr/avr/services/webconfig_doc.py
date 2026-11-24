@@ -1,13 +1,4 @@
-"""Setup web interface section controller (``/ajax/<section>/{get,set}_config``).
-
-One instance per section the profile describes (``grammar.video_web``,
-``grammar.speakers_web``): settings without a telnet token (HDMI setup/CEC, ARC,
-pass through, OSD, 4K and TV format; amp assign). It reads the section's
-availability map plus each advertised menu, exposes value / editability / options
-per control and writes a single field back, all through the ConfigDocumentPort.
-The document grammar is in protocol.webdoc; this module only orchestrates. All
-calls are best effort and no-ops when the receiver has no such section.
-"""
+"""Setup web interface section controller (``/ajax/<section>/{get,set}_config``)."""
 
 from __future__ import annotations
 
@@ -70,12 +61,7 @@ class WebConfigSectionController:
     # Discovery / availability -------------------------------------------
 
     def feature_flags(self) -> set[str]:
-        """Feature names to inject into discovery for the menus that are present.
-
-        Lets telnet controls gated on a menu (the picture controls, gated on
-        ``PictureAdjust``) be created at platform-setup time, reusing the normal
-        feature gating instead of a bespoke code path.
-        """
+        """Feature names to inject into discovery for the menus that are present."""
 
         return {
             name
@@ -89,14 +75,13 @@ class WebConfigSectionController:
         return dict(self._avail)
 
     def _menu_present(self, root_tag: str) -> bool:
-        # Without an availability map (section has none / not read yet) every
-        # menu is read (the 1.1.2 behaviour); otherwise only those reported present.
+        # Without an availability map (section has none / not read yet) every menu is read (the
+        # 1.1.2 behaviour); otherwise only those reported present.
         return not self._avail or self._avail.get(root_tag, _ABSENT).present
 
     def _reported_present(self, root_tag: str) -> bool:
-        """Strict gate for collections and value lists: only what the receiver
-        actually reported as present. A section that declares an availability map
-        whose read failed reads none of them (no 500s on receivers without them)."""
+        """Strict gate for collections and value lists: only what the receiver actually reported
+        as present."""
 
         if "availability_type" not in self._grammar:
             return True
@@ -107,8 +92,8 @@ class WebConfigSectionController:
 
         if not self.supported:
             return
-        # Some sections (e.g. speakers amp-assign) have no listSetupMenu; only
-        # read the availability map when the grammar declares one.
+        # Some sections (e.g. speakers amp-assign) have no listSetupMenu; only read the
+        # availability map when the grammar declares one.
         if "availability_type" in self._grammar:
             await self._read_availability()
         await self._read_menus(read_value_lists=True)
@@ -119,14 +104,14 @@ class WebConfigSectionController:
         if not self.supported:
             return
         previous = (self._avail, self._fields, self._collections, self._value_lists)
-        # Re-read the availability map too: menus appear, gray out or disappear
-        # with the user's setup, and the entities must follow that live.
+        # Re-read the availability map too: menus appear, gray out or disappear with the user's
+        # setup, and the entities must follow that live.
         if "availability_type" in self._grammar:
             await self._read_availability()
         # Value lists are a fixed capability: re-read only when availability changed.
         await self._read_menus(read_value_lists=self._avail != previous[0])
-        # This runs on every reconcile poll; only notify when a value actually
-        # changed so we do not write HA state each interval for no reason.
+        # This runs on every reconcile poll; only notify when a value actually changed so we do
+        # not write HA state each interval for no reason.
         if (self._avail, self._fields, self._collections, self._value_lists) != previous:
             self._on_update()
 
@@ -149,8 +134,8 @@ class WebConfigSectionController:
 
         fields: dict[str, dict[str, Any]] = {}
         for type_id, root_tag in self._grammar.get("menus", {}).items():
-            # Only fetch a menu the receiver advertises, to avoid the HTTP 500 an
-            # absent menu returns.
+            # Only fetch a menu the receiver advertises, to avoid the HTTP 500 an absent menu
+            # returns.
             if not self._menu_present(root_tag):
                 continue
             root = await doc(int(type_id))
@@ -158,8 +143,8 @@ class WebConfigSectionController:
                 if str(control["type"]) != str(type_id):
                     continue
                 if root is None:
-                    # Transient read failure: keep the last known field (silence
-                    # is not absence) instead of making the control disappear.
+                    # Transient read failure: keep the last known field (silence is not absence)
+                    # instead of making the control disappear.
                     if control["id"] in self._fields:
                         fields[control["id"]] = self._fields[control["id"]]
                     continue
@@ -216,9 +201,7 @@ class WebConfigSectionController:
     # Write --------------------------------------------------------------
 
     async def async_set(self, control_id: str, wire: str) -> bool:
-        """Write one setting. False when it is unknown, or not accepted and the
-        receiver does not show it afterwards either (an answer can get lost while
-        the write was applied)."""
+        """Write one setting."""
 
         control = self._control(control_id)
         if not self.supported or control is None:
@@ -231,8 +214,8 @@ class WebConfigSectionController:
         return ok or self.value(control_id) == wire
 
     async def _settle(self) -> None:
-        """The receiver shows a written value only a moment after it accepted the
-        write (0.3 s measured), so wait before reading it back."""
+        """The receiver shows a written value only a moment after it accepted the write (0.3 s
+        measured), so wait before reading it back."""
 
         delay = float(self._grammar.get("write_settle_seconds", 0))
         if delay:
@@ -277,10 +260,7 @@ class WebConfigSectionController:
     async def async_set_item(
         self, collection_id: str, slot: str, option: str, *, staged_apply: bool = False
     ) -> bool:
-        """Write one item's option. Refused (False, nothing sent) unless the receiver
-        reports the item as settable and allows that option for it. Collections
-        declared ``writable: "staged"`` (speaker layout) are only written by an
-        explicit, confirmed apply (``staged_apply=True``)."""
+        """Write one item's option."""
 
         spec = self.collection_spec(collection_id)
         item = self._collections.get(collection_id, {}).get(slot)
@@ -305,7 +285,6 @@ class WebConfigSectionController:
         return self._grammar.get("value_lists", [])
 
     def value_list(self, list_id: str) -> tuple[str, ...] | None:
-        """The values the receiver offers for a setting; None when it does not say
-        (the caller then falls back to the profile's protocol constant)."""
+        """The values the receiver offers for a setting."""
 
         return self._value_lists.get(list_id)

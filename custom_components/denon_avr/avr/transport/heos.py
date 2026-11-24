@@ -1,17 +1,4 @@
-"""HEOS CLI transport (port 1255) for now-playing media and album art.
-
-The goform now-playing endpoints are disabled on HEOS-era firmware (they answer
-403), so the receiver's network now-playing metadata - track/artist/album, the
-transport state and a real album-art image URL - is read from the HEOS command
-line interface instead. This transport owns that TCP socket only; it parses the
-newline-delimited JSON messages and hands a plain snapshot dict to a callback.
-
-It is strictly auxiliary: any failure here leaves core telnet control untouched,
-so every error is swallowed and simply results in no now-playing data. The
-connection registers for HEOS change events and re-queries on the ones that
-matter (now-playing changed, transport state changed), ignoring the
-once-a-second progress events.
-"""
+"""HEOS CLI transport (port 1255) for now-playing media and album art."""
 
 from __future__ import annotations
 

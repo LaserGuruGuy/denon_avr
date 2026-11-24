@@ -1,10 +1,4 @@
-"""Parser for the goform Deviceinfo document.
-
-parse_device_info turns the HTTP Deviceinfo XML into a Discovery object with the
-device identity, the advertised features, the channel list (codes plus display
-names), the option labels for enum controls and the numeric metadata for level
-controls. All of this is device published.
-"""
+"""Parser for the goform Deviceinfo document."""
 
 from __future__ import annotations
 
@@ -39,17 +33,7 @@ def parse_device_info(
     enum_features: set[str] | None = None,
     receiver_type: dict[str, str] | None = None,
 ) -> Discovery:
-    """Parse the Deviceinfo XML into a Discovery object.
-
-    `feature_names` is the set of receiver feature names (from the profile) whose
-    display title and, for those also in `enum_features`, option labels should be
-    read. Passing them keeps the wire grammar in the profile while the titles,
-    labels, ranges and everything else come from the document.
-
-    The parser is deliberately tolerant: any missing node simply leaves the
-    corresponding piece of information unset. Nothing here is hardcoded per
-    model; every name, range and option comes from the document.
-    """
+    """Parse the Deviceinfo XML into a Discovery object."""
 
     discovery = Discovery()
     try:
@@ -59,15 +43,10 @@ def parse_device_info(
         return discovery
 
     device = discovery.device
-    # Some models report a region-variant marker '*' in the name; strip it, as
-    # the official integration does, so the model reads cleanly.
+    # Some models report a region-variant marker '*' in the name; strip it, as the official
+    # integration does, so the model reads cleanly.
     device.model_name = (root.findtext("ModelName") or "").strip().replace("*", "") or None
     device.mac_address = _format_mac(root.findtext("MacAddress"))
-    # Classify the receiver type (the device's hardware version) the way the
-    # official library does: an AVR-X family device reached over the 8080
-    # interface is "avr-x-2016", otherwise "avr". A device is AVR-X when its
-    # CommApiVers OR its ModelName matches the library's patterns. This is read
-    # from the equipment and works for any model (no per-model table).
     if receiver_type:
         commapi = (root.findtext("CommApiVers") or "").strip()
         model = device.model_name or ""
@@ -82,8 +61,7 @@ def parse_device_info(
     if zones_text and zones_text.strip().isdigit():
         device.zone_count = max(1, int(zones_text.strip()))
 
-    # Build the zone list from the discovered count. The main zone (index 1)
-    # uses the core control tokens; additional zones use the 'Z<index>' prefix.
+    # Build the zone list from the discovered count.
     discovery.zones.append(
         ZoneDescriptor(id="main", index=1, name=None, is_main=True)
     )
@@ -99,15 +77,15 @@ def parse_device_info(
         if node.text and node.text.strip()
     }
 
-    # Channel list with codes, display names and per channel dB ranges, all
-    # read from the receiver's Channel Level section.
+    # Channel list with codes, display names and per channel dB ranges, all read from the
+    # receiver's Channel Level section.
     for ch in root.iter("Ch"):
         code = (ch.findtext("Name") or "").strip()
         name = (ch.findtext("DispName") or "").strip()
         if not code:
             continue
-        # The receiver includes a synthetic "Reset" entry with a zero range;
-        # skip anything that is not a real, adjustable channel.
+        # The receiver includes a synthetic "Reset" entry with a zero range; skip anything that is
+        # not a real, adjustable channel.
         min_range = ch.findtext("MinRange")
         max_range = ch.findtext("MaxRange")
         if name.lower() == "reset" or min_range == max_range:
@@ -125,10 +103,7 @@ def parse_device_info(
             if meta:
                 discovery.numeric_meta[feature] = meta
 
-    # Titles, option labels and numeric ranges for feature controls. For each
-    # feature the profile knows, locate the matching block and read what the
-    # receiver publishes: the title (first DispName), the ordered option labels
-    # (for enum controls) and the numeric range (for level controls).
+    # Titles, option labels and numeric ranges for feature controls.
     enum_features = enum_features or set()
     for feature in feature_names or ():
         block = root.find(f".//{feature}")
@@ -161,9 +136,8 @@ def parse_device_info(
     if sub_count and sub_count.strip().isdigit():
         discovery.subwoofer_max = int(sub_count.strip())
 
-    # Sound mode genre names (Movie/Music/Game/Pure), read from the receiver's
-    # SoundMode genre list. Keyed by the first three upper case letters so they
-    # can be correlated with the 3 letter genre codes used by OPSMLALL.
+    # Sound mode genre names (Movie/Music/Game/Pure), read from the receiver's SoundMode genre
+    # list.
     genre_list = root.find(".//SoundMode/Genre/List")
     if genre_list is not None:
         for value in genre_list.findall("Value"):
@@ -171,8 +145,8 @@ def parse_device_info(
             if disp:
                 discovery.sound_mode_genres[disp[:3].upper()] = disp.title()
 
-    # Master volume scale, read from the receiver's Volume block: the absolute
-    # maximum, the step, and the reference (the absolute value shown as 0.0 dB).
+    # Master volume scale, read from the receiver's Volume block: the absolute maximum, the step,
+    # and the reference (the absolute value shown as 0.0 dB).
     volume = root.find(".//Volume")
     if volume is not None:
         scale: dict[str, float] = {}
@@ -193,8 +167,8 @@ def parse_device_info(
         if scale:
             discovery.volume = scale
 
-    # Fallback source list from the InputSource tree (used only when the telnet
-    # SSFUN/SSSOD introspection is unavailable). The path leaf is the name.
+    # Fallback source list from the InputSource tree (used only when the telnet SSFUN/SSSOD
+    # introspection is unavailable).
     for source in root.iter("Source"):
         path = source.findtext("SourcePath") or ""
         leaf = path.rsplit("/", 1)[-1].strip()
@@ -216,13 +190,7 @@ def _num(element: ET.Element, tag: str) -> float | None:
 
 
 def _to_db_range(low: float, high: float, default: float, step: float) -> dict[str, float]:
-    """Convert a raw min/max/default/step to a dB range around the default.
-
-    The receiver expresses levels as a raw value where the default is 0 dB and
-    each raw unit is `step` dB, so the dB offset is (raw - default) * step. This
-    matches both the tone control scale (0..12, default 6, step 1 -> +/- 6 dB)
-    and the channel/subwoofer scale (0..48, default 24, step 0.5 -> +/- 12 dB).
-    """
+    """Convert a raw min/max/default/step to a dB range around the default."""
 
     return {
         "min": (low - default) * step,

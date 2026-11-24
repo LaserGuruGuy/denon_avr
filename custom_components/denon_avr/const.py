@@ -1,9 +1,4 @@
-"""Constants for the Denon AVR integration.
-
-Only Home Assistant level constants live here. All protocol grammar is in
-avr/protocol/protocol_profile.json and all device specific configuration is discovered
-from the receiver at runtime.
-"""
+"""Constants for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -13,9 +8,6 @@ from homeassistant.const import CONF_HOST, Platform
 
 DOMAIN = "denon_avr"
 
-# CONF_HOST (the receiver address, == homeassistant.const.CONF_HOST) is imported
-# above and re-exported here so the rest of the integration keeps a single import
-# site; everything else about the device is discovered at runtime.
 
 
 # Platforms this integration provides.
@@ -29,7 +21,5 @@ PLATFORMS: list[Platform] = [
     Platform.BUTTON,
 ]
 
-# How often the HTTP reconciliation poll runs. Real time updates arrive over
-# telnet push; this poll only confirms reachability and recovers state when the
-# push channel is temporarily down.
+# How often the HTTP reconciliation poll runs.
 RECONCILE_INTERVAL = timedelta(seconds=60)

@@ -1,9 +1,4 @@
-"""Sensor platform for the Denon AVR integration.
-
-Creates read only sensors from what the receiver reports: the audio input
-information (sample rate, decoder, format, signal), the current sound mode, and
-the per channel calibration levels. Which sensors exist depends on the device.
-"""
+"""Sensor platform for the Denon AVR integration."""
 
 from __future__ import annotations
 
@@ -97,18 +92,13 @@ class DenonAvrVolumeSensor(DenonAvrEntity, SensorEntity):
         raw = self.coordinator.data.zone("main").volume_raw
         if raw is None:
             return None
-        # Show the level relative to the reference, matching the receiver's
-        # relative (dB) display, for example -38.0 dB.
+        # Show the level relative to the reference, matching the receiver's relative (dB) display,
+        # for example -38.0 dB.
         return round(raw - self.coordinator.device.volume_reference, 1)
 
 
 class _EnumKeySensor(DenonAvrEntity, SensorEntity):
-    """A read-only enum sensor whose state is a stable, translated key.
-
-    The options are the profile's known keys plus, if the receiver reports an
-    id the profile does not know yet, that ``mode_<id>`` / ``option_<id>`` key,
-    so an unknown value is shown instead of dropped (silence is not absence).
-    """
+    """A read-only enum sensor whose state is a stable, translated key."""
 
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -171,8 +161,7 @@ class DenonAvrChannelsSensor(DenonAvrEntity, SensorEntity):
 
 
 class DenonAvrAmpModeSensor(_EnumKeySensor):
-    """The amplifier assign mode, incl. 'preamplifier' (the internal amplifiers off,
-    the receiver used only as a pre-amplifier). Read-only."""
+    """The amplifier assign mode, incl."""
 
     def __init__(self, coordinator: DenonAvrCoordinator) -> None:
         super().__init__(coordinator, "sensor_amp_mode", sub_device="speakers")
@@ -191,8 +180,7 @@ class DenonAvrAmpModeSensor(_EnumKeySensor):
 
 
 class DenonAvrSubwooferSetupSensor(_EnumKeySensor):
-    """Web Control subwoofer mode (Standard / Directional) or layout. Unavailable
-    while the receiver hides it (e.g. with a single subwoofer); never removed."""
+    """Web Control subwoofer mode (Standard / Directional) or layout."""
 
     def __init__(self, coordinator: DenonAvrCoordinator, which: str) -> None:
         super().__init__(coordinator, f"sensor_subwoofer_{which}", sub_device="speakers")
