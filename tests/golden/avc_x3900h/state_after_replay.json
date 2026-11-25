@@ -114,7 +114,7 @@
  "speaker_sizes": {
   "CEN": "YES",
   "FRO": "YES",
-  "SBK": "2SP",
+  "SBK": "NO",
   "SUA": "YES",
   "SWF": "1SP",
   "SWL": "2LR",

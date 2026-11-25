@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+from collections import deque
 from collections.abc import Awaitable, Callable, Iterable, Mapping
 
 from ..models import AvrState, Discovery, NowPlaying
@@ -14,6 +16,11 @@ from .runtime import BackgroundTasks
 
 # Delay of the safety-net OPSML re-query after a sound mode change.
 _SOUND_MODES_RECHECK = 0.8
+
+_LOGGER = logging.getLogger(__name__)
+
+MAX_RUNS = 15
+RUN_WINDOW = 60.0
 
 
 class StateSync:
@@ -46,6 +53,8 @@ class StateSync:
         self._web_running: set[str] = set()
         self._web_dirty: set[str] = set()
         self._seen_triggers: set[str] = set()
+        self._runs: dict[str, deque[float]] = {}
+        self._braked: set[str] = set()
         self._unmodelled: dict[tuple[str, str], str] = {}
         self._again: dict[str, asyncio.TimerHandle] = {}
         # Fingerprint of what entities can see; a pushed line that leaves it unchanged (the
@@ -177,6 +186,8 @@ class StateSync:
         group = self._refresh_groups.get(group_id)
         if not group:
             return
+        if self._too_often(group_id):
+            return
         self._refresh_scheduled.add(group_id)
         groups = self.stats["refresh_groups"]
         groups[group_id] = groups.get(group_id, 0) + 1
@@ -188,7 +199,6 @@ class StateSync:
         async def _refresh() -> None:
             try:
                 await asyncio.sleep(debounce)
-                self._refresh_scheduled.discard(group_id)
                 for query in queries:
                     await self._sink.async_send(query)
                 for section in web_sections:
@@ -197,9 +207,23 @@ class StateSync:
                     self._schedule_again(group_id, queries, again)
             except asyncio.CancelledError:
                 pass
+            finally:
                 self._refresh_scheduled.discard(group_id)
 
         self._tasks.create(_refresh())
+
+    def _too_often(self, group_id: str) -> bool:
+        """Brake for a group that keeps triggering itself."""
+
+        now = asyncio.get_running_loop().time()
+        runs = self._runs.setdefault(group_id, deque(maxlen=MAX_RUNS))
+        if len(runs) == MAX_RUNS and now - runs[0] < RUN_WINDOW:
+            if group_id not in self._braked:
+                self._braked.add(group_id)
+                _LOGGER.warning("Refresh group %s runs too often; slowing it down", group_id)
+            return True
+        runs.append(now)
+        return False
 
     def _schedule_again(self, group_id: str, queries: list[str], delay: float) -> None:
         """One more read after a handshake; a newer trigger restarts the wait."""

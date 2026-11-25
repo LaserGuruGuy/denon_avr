@@ -203,3 +203,53 @@ async def test_hardware_type_does_not_depend_on_the_model_name():
     for model in ("AVC-X3900H", "SR5015", "Something new"):
         xml = f"<Device_Info><CommApiVers>0400</CommApiVers><ModelName>{model}</ModelName></Device_Info>"
         assert parse_device_info(xml, interface_type="avr-x-2016").device.hardware_type == "avr-x-2016"
+
+
+@pytest.mark.parametrize("fixture", ["avc_x3900h", "avr_x3600h"])
+async def test_lines_pushed_by_a_web_read_do_not_loop(make_device, fixture):
+    """Reading the speakers web document makes the receiver push its SSSPC lines again."""
+
+    import asyncio
+
+    dev, _session, telnet, fx = make_device(fixture)
+    await dev.async_discover()
+    await dev.async_start()
+    for rec in fx.telnet_corpus:
+        telnet.feed(rec["line"])
+    lines = [r["line"] for r in fx.telnet_corpus if r["line"].startswith("SSSPC")]
+    assert any(x.endswith("2SP") for x in lines)
+    real = dev._webconfig.async_get
+
+    async def get(section, type_id, extra=None):
+        if section == "speakers":
+            asyncio.get_running_loop().call_later(0.01, lambda: [telnet.feed(x) for x in lines])
+        return await real(section, type_id, extra)
+
+    dev._webconfig.async_get = get
+    await dev._sync.refresh_web("speakers")
+    await _settle(telnet)
+    before = dict(dev._sync.stats["refresh_groups"])
+    fired = []
+    dev.register_update_callback(lambda: fired.append(1))
+    await dev._sync.refresh_web("speakers")
+    await _settle(telnet)
+    assert dev._sync.stats["refresh_groups"] == before and fired == []
+    await dev.async_stop()
+
+
+async def test_a_group_that_keeps_triggering_itself_is_braked(make_device, monkeypatch, caplog):
+    import avr.services.sync as sync_module
+
+    dev, _session, telnet, fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    monkeypatch.setattr(sync_module, "MAX_RUNS", 3)
+    dev._sync._runs.clear()
+    counter = iter(range(1000))
+    for _ in range(12):
+        telnet.feed(f"SSPAAMOD X{next(counter)}")         # always new text, never modelled
+        for group in list(dev._sync._refresh_scheduled):
+            dev._sync._refresh_scheduled.discard(group)
+    assert dev._sync.stats["refresh_groups"].get("front_speaker", 0) == 3
+    assert sum("runs too often" in r.message for r in caplog.records) == 1
+    await dev.async_stop()

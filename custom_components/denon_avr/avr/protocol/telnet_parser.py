@@ -461,11 +461,12 @@ class TelnetParser:
             self._spc_kinds[group] = {"count": previous["count"]} if "count" in previous else {}
             self._spc_last_group = group
         kinds = self._spc_kinds[group]
-        kinds[self._speaker_token_kind(value)] = value
-        # discovery.speaker_config keeps the group's current values (one per kind);
-        # state.speaker_sizes keeps the latest value for the live selects.
+        kind = self._speaker_token_kind(value)
+        kinds[kind] = value
         self._discovery.speaker_config[group] = set(kinds.values())
-        state.speaker_sizes[group] = value
+        # The count that follows a size or presence line must not make the value flap.
+        if kind != "count" or not {"size", "presence"} & set(kinds):
+            state.speaker_sizes[group] = value
         self._recompute_configured_channels()
         return True
 
