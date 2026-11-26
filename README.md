@@ -245,10 +245,6 @@ Protocol behavior was verified live against the following.
 | Home Assistant Core | 2026.11.3 |
 | Python              | 3.14.10 |
 
-The receiver's interfaces can change with other firmware versions. The integration
-reads what the receiver reports instead of assuming a model, but behaviour was only
-verified with the versions above.
-
 Other Denon/Marantz HEOS generation receivers should work as the integration
 adapts to whatever the device reports, but only these receivers have been
 exercised end to end. Marantz receivers speak the same protocol and are discovered too, but
