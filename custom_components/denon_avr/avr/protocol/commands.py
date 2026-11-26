@@ -200,6 +200,8 @@ def resync_queries(profile: ProtocolProfile, discovery: Discovery) -> list[str]:
     # Read only audio information.
     for spec in profile.readonly.values():
         add(spec.get("query"))
+    for key in ("hdmi_setup", "audio_menu_status"):
+        add(profile.grammar.get(key, {}).get("query"))
     # Feature controls, only those the receiver advertises.
     for spec in profile.feature_controls():
         if spec.feature and discovery.supports(spec.feature):

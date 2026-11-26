@@ -33,6 +33,8 @@
  "OPINFINS ?",
  "OPINFASP ?",
  "SYSMI ?",
+ "SSHOS ?",
+ "SSAUDSTS ?",
  "PSBAS ?",
  "PSTRE ?",
  "PSTONE CTRL ?",

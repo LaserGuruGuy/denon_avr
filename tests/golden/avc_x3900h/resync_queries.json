@@ -33,6 +33,8 @@
  "OPINFINS ?",
  "OPINFASP ?",
  "SYSMI ?",
+ "SSHOS ?",
+ "SSAUDSTS ?",
  "SPPR ?",
  "PSBAS ?",
  "PSTRE ?",

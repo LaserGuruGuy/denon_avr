@@ -354,3 +354,13 @@ async def test_web_echo_lines_are_known_and_quiet(make_device, fixture):
     assert dev._sync.stats["lines_unknown"] == unknown
     assert dev._sync.stats["refresh_groups"] == before
     await dev.async_stop()
+
+
+@pytest.mark.parametrize("fixture", ["avc_x3900h", "avr_x3600h"])
+async def test_hdmi_setup_and_audio_menu_are_asked_on_connect(make_device, fixture):
+    """The AVR-X3600H only pushes SSHOS on a change, so ask for it on connect."""
+
+    dev, _session, telnet, _fx = make_device(fixture)
+    await dev.async_discover()
+    queries = dev._sync.resync_queries()
+    assert "SSHOS ?" in queries and "SSAUDSTS ?" in queries
