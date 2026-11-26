@@ -147,10 +147,18 @@ the sub‑device its setting belongs to.
   mode info, sound mode, volume (dB), amplifier mode, effect speakers, the
   subwoofer directional mode and layout (with two or more subwoofers), video and HDR
   in and out (as the receiver words it; `---` = none; HDR values not tested on
-  hardware), the active input channels and speakers (e.g. 5.1.4; `+n` counts positions without a
+  hardware), colour space and pixel depth in and out, the active input channels and speakers (e.g. 5.1.4; `+n` counts positions without a
   known name, object audio shows its bed), and how each
   speaker position is connected (Web Control generation).
 - **Binary sensor**: telnet connectivity.
+- **HDMI setup**: an item the receiver grays out (for example HDMI Pass Through while
+  HDMI Control is on) is shown read-only with the value its menu shows; the attributes
+  `settable` and `own_setting` tell whether it can be changed now and what the
+  receiver itself has stored.
+- **Device card**: Model ID is the receiver's interface type, Firmware includes the
+  DTS decoder version and Hardware the network module with the protocol version
+  (CommApi). They are read again when the receiver comes back, for example after a
+  firmware update.
 
 Per channel trims and distances, and per group crossovers and sizes, for
 speakers the receiver has **not** configured are registered but disabled by
@@ -221,13 +229,25 @@ from an English AVR‑X3600H, so replace them with your own.
 
 Protocol behavior was verified live against the following.
 
-| Component                    | Version |
-|------------------------------|---------|
-| Receiver                     | Denon AVR-X3600H, AVC-X3900H |
-| Receiver hardware generation | `avr-x-2016` |
-| Receiver firmware            | AVR-X3600H 3.139.173, AVC-X3900H 3.139.175 |
-| Home Assistant Core          | 2026.11.3 |
-| Python                       | 3.14.10 |
+| Component                    | AVR-X3600H | AVC-X3900H |
+|------------------------------|------------|------------|
+| Interface type               | `avr-x-2016` | `avr-x-2016` |
+| Firmware                     | 3.139.173 | 3.139.175 |
+| Firmware build               | 2400-9173-2171-9031 | 5300-1084-C071-9631 |
+| DTS decoder                  | 3.90.50.82 | 4.30.10.15 |
+| Network module               | Aios 4.025 | Aios 6.5V |
+| CommApiVers                  | 0301 | 0301 |
+| DeviceInfoVers               | 0001 | 0001 |
+| Gen / capability version     | 0002 / 4 | 0002 / 4 |
+
+| Component           | Version |
+|---------------------|---------|
+| Home Assistant Core | 2026.11.3 |
+| Python              | 3.14.10 |
+
+The receiver's interfaces can change with other firmware versions. The integration
+reads what the receiver reports instead of assuming a model, but behaviour was only
+verified with the versions above.
 
 Other Denon/Marantz HEOS generation receivers should work as the integration
 adapts to whatever the device reports, but only these receivers have been
