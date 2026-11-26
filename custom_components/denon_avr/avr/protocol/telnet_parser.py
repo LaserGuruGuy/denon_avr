@@ -43,6 +43,7 @@ class TelnetParser:
         for spec in profile.readonly.values():
             known.update(spec.get("also_understood", ()))
         known.update(spec.get("prefix", "") for spec in profile.introspection.values())
+        known.update(profile.grammar.get("web_echoes", {}).get("prefixes", ()))
         known.discard("")
         self._known_prefixes = tuple(sorted(known, key=len, reverse=True))
         # OPSML / OPSMLALL accumulate (index, name) to judge completeness on END.

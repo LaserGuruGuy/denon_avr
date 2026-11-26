@@ -35,6 +35,7 @@
     "PUR": "PURE DIRECT"
   },
   "grammar": {
+    "web_echoes": {"prefixes": ["SSHOS", "SSAUDSTS"], "doc": "Lines the receiver pushes when its web setup pages are read (HDMI setup, audio status). Known, not modelled."},
     "line_terminator": "\r",
     "list_terminator": "END",
     "no_signal_token": "NON",

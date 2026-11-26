@@ -253,3 +253,21 @@ async def test_a_group_that_keeps_triggering_itself_is_braked(make_device, monke
     assert dev._sync.stats["refresh_groups"].get("front_speaker", 0) == 3
     assert sum("runs too often" in r.message for r in caplog.records) == 1
     await dev.async_stop()
+
+
+@pytest.mark.parametrize("fixture", ["avc_x3900h", "avr_x3600h"])
+async def test_web_echo_lines_are_known_and_quiet(make_device, fixture):
+    dev, _session, telnet, _fx = make_device(fixture)
+    await dev.async_discover()
+    await dev.async_start()
+    lines = ["SSAUDSTS 0212102012100000", "SSHOSCON ON", "SSHOSRSS POS", "SSHOSCONPOF ALL", "SSHOSCONSTS LAS",
+             "SSHOSPAS OFF", "SSHOSTAS ON", "SSHOSCONARC ON", "SSHOSCONPSV OFF", "SSHOS END"]
+    before = dict(dev._sync.stats["refresh_groups"])
+    unknown = dev._sync.stats["lines_unknown"]
+    for _ in range(3):
+        for line in lines:
+            telnet.feed(line)
+        await _settle(telnet)
+    assert dev._sync.stats["lines_unknown"] == unknown
+    assert dev._sync.stats["refresh_groups"] == before
+    await dev.async_stop()
