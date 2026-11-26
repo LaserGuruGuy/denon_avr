@@ -40,6 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> 
 
     entry.runtime_data = coordinator
     registry = er.async_get(hass)
+    _remove_retired_entities(registry, entry, coordinator)
     coordinator.known_keys = _registered_keys(registry, entry, coordinator)
     _register_main_device(hass, entry, coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -83,6 +84,22 @@ def _register_main_device(
 def _identifier(coordinator: DenonAvrCoordinator) -> str:
     info = coordinator.device.discovery.device
     return catalog.device_identifier(info.mac_address, info.serial_number, coordinator.device.host)
+
+
+RETIRED_KEYS = ("sensor_network_module",)
+
+
+def _remove_retired_entities(registry: er.EntityRegistry, entry: DenonAvrConfigEntry, coordinator) -> None:
+    """Entities a newer version shows elsewhere (the network module is on the device card)."""
+
+    for key in RETIRED_KEYS:
+        entity_id = registry.async_get_entity_id(_platform_of(key), DOMAIN, f"{_identifier(coordinator)}_{key}")
+        if entity_id:
+            registry.async_remove(entity_id)
+
+
+def _platform_of(key: str) -> str:
+    return key.split("_", 1)[0]
 
 
 def _registered_keys(registry: er.EntityRegistry, entry: DenonAvrConfigEntry, coordinator) -> set[str]:

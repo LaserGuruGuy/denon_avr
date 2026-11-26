@@ -27,7 +27,6 @@ async def async_setup_entry(
 
     coordinator = entry.runtime_data
     factories = {
-        "network_module": lambda e: DenonAvrNetworkModuleSensor(coordinator),
         "speaker_connection": lambda e: DenonAvrSpeakerConnectionSensor(coordinator, e.params["slot"]),
         "readonly": lambda e: _readonly_class(coordinator.device.profile.readonly[e.params["control_id"]])(
             coordinator, e.params["control_id"]
@@ -136,20 +135,6 @@ class DenonAvrCodeSensor(_EnumKeySensor):
     @property
     def extra_state_attributes(self) -> dict[str, str | None]:
         return {"code": self._code}
-
-
-class DenonAvrNetworkModuleSensor(DenonAvrEntity, SensorEntity):
-    """The network (HEOS) module type the receiver reports."""
-
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_translation_key = "network_module"
-
-    def __init__(self, coordinator: DenonAvrCoordinator) -> None:
-        super().__init__(coordinator, "sensor_network_module")
-
-    @property
-    def native_value(self) -> str | None:
-        return self.coordinator.device.discovery.device.versions.get("moduleType")
 
 
 class DenonAvrChannelsSensor(DenonAvrEntity, SensorEntity):

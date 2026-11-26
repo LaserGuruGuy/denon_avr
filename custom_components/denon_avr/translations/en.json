@@ -224,9 +224,6 @@
           "speaker_and_preout": "Speaker and pre-out",
           "preout_only": "Pre-out only"
         }
-      },
-      "network_module": {
-        "name": "Network Module"
       }
     },
     "select": {

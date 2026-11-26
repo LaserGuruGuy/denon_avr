@@ -27,12 +27,14 @@ class DeviceInfo:
 
     @property
     def hardware_label(self) -> str | None:
-        """The interface type with the reported protocol version."""
+        """The interface type with the reported protocol version and network module."""
 
         api = self.versions.get("CommApiVers")
-        if self.hardware_type and api:
-            return f"{self.hardware_type} (CommApi {api})"
-        return self.hardware_type or api
+        label = f"{self.hardware_type} (CommApi {api})" if self.hardware_type and api else self.hardware_type or api
+        module = self.versions.get("moduleType")
+        if label and module:
+            return f"{label} · {module}"
+        return label or module
 
 
 @dataclass
