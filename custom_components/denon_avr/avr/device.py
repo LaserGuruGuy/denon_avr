@@ -9,7 +9,7 @@ import aiohttp
 
 from .models import AvrState, DeviceInfo, Discovery
 from .protocol.profile import ProtocolProfile, load_profile
-from .protocol.telnet_parser import TelnetParser
+from .protocol.telnet_parser import TelnetParser, hdmi_setup_key
 from .services.control import ControlService
 from .services.discovery import DiscoveryService
 from .services.graphic_eq import GraphicEqController
@@ -130,6 +130,14 @@ class DenonAvrDevice:
     @property
     def available(self) -> bool:
         return self._available
+
+    def own_setting(self, control_id: str) -> str | None:
+        """The receiver's own stored value of a setup item (telnet), also while the menu shows an imposed one."""
+
+        items = self.profile.grammar.get("hdmi_setup", {}).get("items", {})
+        code = next((c for c, cid in items.items() if cid == control_id), None)
+        value = self.state.values.get(hdmi_setup_key(code)) if code else None
+        return value.lower() if value else None
 
     @property
     def profile(self) -> ProtocolProfile:

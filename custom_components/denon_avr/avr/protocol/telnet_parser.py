@@ -16,6 +16,12 @@ from .profile import ProtocolProfile
 _LOGGER = logging.getLogger(__name__)
 
 
+
+def hdmi_setup_key(code: str) -> str:
+    """State key of one SSHOS item."""
+
+    return f"hdmi_setup_{code}"
+
 class TelnetParser:
     """Stateful parser that applies telnet lines to a Discovery and AvrState."""
 
@@ -214,7 +220,7 @@ class TelnetParser:
         item, _, value = remainder.strip().partition(" ")
         if not item or item == self._profile.list_terminator:
             return False
-        return self._set_value(state, f"hdmi_setup_{item}", value.strip())
+        return self._set_value(state, hdmi_setup_key(item), value.strip())
 
     def _set_system_power(self, remainder: str, state: AvrState) -> bool:
         state.system_power = remainder.strip() == "ON"

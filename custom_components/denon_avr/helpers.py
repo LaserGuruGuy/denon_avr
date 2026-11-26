@@ -241,9 +241,7 @@ def web_setting_attributes(device, controller, control_id: str) -> dict[str, obj
     """Whether a shown setup item can be changed now, and its own stored setting from telnet."""
 
     attributes: dict[str, object] = {"settable": controller.available(control_id)}
-    items = device.profile.grammar.get("hdmi_setup", {}).get("items", {})
-    item = next((code for code, cid in items.items() if cid == control_id), None)
-    own = device.state.values.get(f"hdmi_setup_{item}") if item else None
+    own = device.own_setting(control_id)
     if own:
-        attributes["own_setting"] = own.lower()
+        attributes["own_setting"] = own
     return attributes
