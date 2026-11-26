@@ -124,13 +124,17 @@ def encode_control_value(profile: ProtocolProfile, spec: ControlSpec, value: obj
     return str(value)
 
 
-def control(profile: ProtocolProfile, control_id: str, value: object) -> str | None:
+def control(profile: ProtocolProfile, control_id: str, value: object, reported: str | None = None) -> str | None:
+    """``reported`` is the token as the receiver last wrote it; a numeric enum keeps its width."""
+
     spec = profile.control(control_id)
     if spec is None:
         return None
     argument = encode_control_value(profile, spec, value)
     if argument is None:
         return None
+    if spec.get("numeric") and argument.isdigit() and reported and reported.isdigit():
+        argument = str(int(argument)).zfill(len(reported))
     return f"{spec.prefix}{argument}"
 
 

@@ -169,6 +169,9 @@
   "volume_scale": "REL"
  },
  "volume_display": null,
+ "wire_forms": {
+  "volume_limit": "060"
+ },
  "zones": {
   "main": {
    "muted": false,

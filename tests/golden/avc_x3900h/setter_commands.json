@@ -333,7 +333,7 @@
   "VSVPMMOVI"
  ],
  "control:volume_limit='080'": [
-  "SSVCTZMALIM 080"
+  "SSVCTZMALIM 80"
  ],
  "control:volume_limit='OFF'": [
   "SSVCTZMALIM OFF"

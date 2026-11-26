@@ -652,6 +652,7 @@
       "kind": "enum",
       "query": "SSVCTZMA ?",
       "prefix": "SSVCTZMALIM ",
+      "numeric": true,
       "values": ["OFF", "060", "070", "080"],
       "labels": ["Off", "-20 dB", "-10 dB", "0 dB"],
       "name": "Volume Limit",

@@ -165,10 +165,13 @@
   "treble": 0.0,
   "video_mode": "AUTO",
   "video_select": "BD",
-  "volume_limit": "70",
+  "volume_limit": "070",
   "volume_scale": "REL"
  },
  "volume_display": null,
+ "wire_forms": {
+  "volume_limit": "70"
+ },
  "zones": {
   "main": {
    "muted": false,

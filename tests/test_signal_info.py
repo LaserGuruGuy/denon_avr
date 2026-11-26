@@ -364,3 +364,18 @@ async def test_hdmi_setup_and_audio_menu_are_asked_on_connect(make_device, fixtu
     await dev.async_discover()
     queries = dev._sync.resync_queries()
     assert "SSHOS ?" in queries and "SSAUDSTS ?" in queries
+
+
+@pytest.mark.parametrize(("token", "write"), [("70", "SSVCTZMALIM 60"), ("070", "SSVCTZMALIM 060")])
+async def test_numeric_enum_follows_the_receivers_spelling(make_device, token, write):
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    telnet.feed(f"SSVCTZMALIM {token}")
+    await _settle(telnet)
+    assert dev.state.values["volume_limit"] == "070"
+    telnet.sent.clear()
+    await dev.async_set_control("volume_limit", "060")
+    await _settle(telnet)
+    assert write in telnet.sent
+    await dev.async_stop()

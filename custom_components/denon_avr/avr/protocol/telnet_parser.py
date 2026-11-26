@@ -17,6 +17,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 
+
+def canonical_enum(spec, token: str) -> str:
+    """The profile's spelling of a numeric enum token ('70' -> '070')."""
+
+    if spec.get("numeric") and token.isdigit():
+        return next((v for v in spec.get("values", []) if v.isdigit() and int(v) == int(token)), token)
+    return token
+
 def hdmi_setup_key(code: str) -> str:
     """State key of one SSHOS item."""
 
@@ -559,7 +567,9 @@ class TelnetParser:
         if kind == "onoff":
             state.values[spec.id] = remainder == spec.get("on", "ON")
         elif kind == "enum":
-            state.values[spec.id] = remainder
+            state.values[spec.id] = canonical_enum(spec, remainder)
+            if spec.get("numeric"):
+                state.wire_forms[spec.id] = remainder
         elif kind == "level":
             value = decode_half_step(remainder)
             if value is None:
