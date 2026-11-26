@@ -224,6 +224,66 @@
           "speaker_and_preout": "Speaker and pre-out",
           "preout_only": "Pre-out only"
         }
+      },
+      "color_space_input": {
+        "name": "Color Space Input",
+        "state": {
+          "no_or_unknown_signal": "No or unknown signal",
+          "ycbcr_422": "YCbCr 4:2:2",
+          "ycbcr_444": "YCbCr 4:4:4",
+          "rgb": "RGB",
+          "ycbcr_420": "YCbCr 4:2:0",
+          "ycbcr_422_bt2020": "YCbCr 4:2:2 (BT.2020)"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "color_space_output": {
+        "name": "Color Space Output",
+        "state": {
+          "no_or_unknown_signal": "No or unknown signal",
+          "ycbcr_422": "YCbCr 4:2:2",
+          "ycbcr_444": "YCbCr 4:4:4",
+          "rgb": "RGB",
+          "ycbcr_420": "YCbCr 4:2:0",
+          "ycbcr_422_bt2020": "YCbCr 4:2:2 (BT.2020)"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "pixel_depth_input": {
+        "name": "Pixel Depth Input",
+        "state": {
+          "no_or_unknown_signal": "No or unknown signal",
+          "bit_8": "8-bit",
+          "bit_10": "10-bit",
+          "bit_12": "12-bit"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "pixel_depth_output": {
+        "name": "Pixel Depth Output",
+        "state": {
+          "no_or_unknown_signal": "No or unknown signal",
+          "bit_8": "8-bit",
+          "bit_10": "10-bit",
+          "bit_12": "12-bit"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
       }
     },
     "select": {

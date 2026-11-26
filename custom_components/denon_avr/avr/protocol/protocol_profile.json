@@ -35,7 +35,7 @@
     "PUR": "PURE DIRECT"
   },
   "grammar": {
-    "status_strings": {"option_status": {"query": "OPSTS ?", "prefix": "OPSTS "}, "video_resolution": {"query": "SSINFSIGRES ?", "prefix": "SSINFSIGRES "}, "video_color_space": {"query": "SSINFSIGCOS ?", "prefix": "SSINFSIGCOS "}, "video_pixel_depth": {"query": "SSINFSIGPIX ?", "prefix": "SSINFSIGPIX "}, "doc": "Kept as reported for diagnostics: their digits are not identified yet (OPSTS: 32 digits; COS/PIX: two digit codes). SSINFSIGRES repeats SYSDV (I<input>/O<output> resolution)."},
+    "status_strings": {"option_status": {"query": "OPSTS ?", "prefix": "OPSTS "}, "video_resolution": {"query": "SSINFSIGRES ?", "prefix": "SSINFSIGRES "}, "doc": "Kept as reported for diagnostics: OPSTS (32 digits) is not identified yet; SSINFSIGRES repeats SYSDV (I<input>/O<output> resolution)."},
     "hdmi_setup": {"query": "SSHOS ?", "prefix": "SSHOS", "items": {"CON": "hdmi_control", "CONARC": "arc", "TAS": "tv_audio_switching", "CONPOF": "hdmi_power_off_control", "CONPSV": "hdmi_power_saving", "CONSTS": "pass_through_source", "RSS": "rc_select", "PAS": "hdmi_pass_through", "SMN": "smart_menu"}, "doc": "HDMI Setup as stored by the receiver, one line per item, ended by 'SSHOS END'; pushed on a change and with every read of the video web pages. A grayed item shows the value HDMI Control imposes in the menu; this line keeps the item's own setting (verified live: HDMI Pass Through OFF while the menu shows On under HDMI Control). IPM/IPS/SHP (AVR-X3600H) are kept but not yet identified."},
     "audio_menu_status": {"query": "SSAUDSTS ?", "prefix": "SSAUDSTS ", "items": ["CenterLevelAdjust", "SubwooferLevelAdjust", "BassSync", "SurroundParameter", "Restorer", "AudioDelay", "Volume", "BilingualMode", "Audyssey", "GraphicEQ", "DiracLive", "DACFilter"], "doc": "One digit per Audio setup menu item: web display minus 1 (0 hidden, 1 grayed, 2 settable), in this order (GraphicEQ before DiracLive, unlike the web document); the last digits are spare. Pushed when it changes, for example with the sound mode."},
     "line_terminator": "\r",
@@ -329,6 +329,10 @@
     "video_input": {"kind": "passthrough", "name": "Video Input", "query": "SYSDV ?", "prefix": "SYSDVIN", "also_understood": ["SYSDV END"], "doc": "Video input signal as the receiver words it (1080p60 on one firmware, 1080p:60Hz on another); --- = none through the receiver."},
     "video_output": {"kind": "passthrough", "name": "Video Output", "query": "SYSDV ?", "prefix": "SYSDVOUT", "doc": "Video output signal, as the receiver words it."},
     "hdr_input": {"kind": "passthrough", "name": "HDR Input", "query": "SSINFSIGHDR ?", "prefix": "SSINFSIGHDR I", "doc": "HDR of the input signal, as the receiver words it; --- = none. Only --- seen on hardware so far."},
+    "color_space_input": {"kind": "digit", "digit": 0, "name": "Color Space Input", "query": "SSINFSIGCOS ?", "prefix": "SSINFSIGCOS ", "unknown_key": "code", "value_keys": {"0": "no_or_unknown_signal", "1": "ycbcr_422", "2": "ycbcr_444", "3": "rgb", "8": "ycbcr_420", "9": "ycbcr_422_bt2020"}, "doc": "Two digits, input then output."},
+    "color_space_output": {"kind": "digit", "digit": 1, "name": "Color Space Output", "query": "SSINFSIGCOS ?", "prefix": "SSINFSIGCOS ", "unknown_key": "code", "value_keys": {"0": "no_or_unknown_signal", "1": "ycbcr_422", "2": "ycbcr_444", "3": "rgb", "8": "ycbcr_420", "9": "ycbcr_422_bt2020"}, "doc": "Second digit of SSINFSIGCOS."},
+    "pixel_depth_input": {"kind": "digit", "digit": 0, "name": "Pixel Depth Input", "query": "SSINFSIGPIX ?", "prefix": "SSINFSIGPIX ", "unknown_key": "code", "value_keys": {"0": "no_or_unknown_signal", "1": "bit_8", "2": "bit_10", "3": "bit_12"}, "doc": "Two digits, input then output."},
+    "pixel_depth_output": {"kind": "digit", "digit": 1, "name": "Pixel Depth Output", "query": "SSINFSIGPIX ?", "prefix": "SSINFSIGPIX ", "unknown_key": "code", "value_keys": {"0": "no_or_unknown_signal", "1": "bit_8", "2": "bit_10", "3": "bit_12"}, "doc": "Second digit of SSINFSIGPIX."},
     "hdr_output": {"kind": "passthrough", "name": "HDR Output", "query": "SSINFSIGHDR ?", "prefix": "SSINFSIGHDR O", "doc": "HDR of the output signal, as the receiver words it."},
     "input_channels": {"kind": "channels", "name": "Input Channels", "query": "OPINFINS ?", "prefix": "OPINFINS", "positions": {"0": "FL", "1": "FR", "2": "C", "3": "LFE", "4": "SL", "5": "SR", "6": "SBL", "7": "SBR", "8": "SB"}, "lfe": ["LFE"], "height": [], "doc": "Channels of the input signal; pushed. Positions verified against stereo and 5.1 signals; object audio shows its bed (7.1)."},
     "active_speakers": {"kind": "channels", "name": "Active Speakers", "query": "OPINFASP ?", "prefix": "OPINFASP", "positions": {"0": "FL", "1": "FR", "2": "C", "3": "SW", "4": "SL", "5": "SR", "6": "SBL", "7": "SBR", "8": "SB", "9": "FHL", "10": "FHR", "15": "RHL", "16": "RHR"}, "lfe": ["SW"], "height": ["FHL", "FHR", "RHL", "RHR"], "doc": "Speakers that play now; pushed. Positions 0-8, 9/10 and 15/16 verified against known setups; others are counted and shown by number."},
@@ -341,7 +345,7 @@
     }
   },
   "refresh": {
-    "poll": {"doc": "Asked with the reconcile poll while the main zone is on: not (reliably) pushed, and no other line announces a change.", "queries": ["SYSDV ?", "SSINFSIGHDR ?"]},
+    "poll": {"doc": "Asked with the reconcile poll while the main zone is on: not (reliably) pushed, and no other line announces a change.", "queries": ["SYSDV ?", "SSINFSIGHDR ?", "SSINFSIGCOS ?", "SSINFSIGPIX ?"]},
     "doc": "Coalesced re-query groups. When a pushed line's prefix matches an entry in 'on', that group's 'queries' are re-sent after 'debounce' seconds; a burst of matching events collapses into a single re-query. This keeps derived state the receiver does not push on every relevant change in sync: the sound mode lists follow a signal change; the audio information (format/decoder/rate/mode) and the channel/speaker layout follow a sound mode or source change, which the receiver reports (MS/SI) but without re-sending the dependent state.",
     "groups": {
       "sound_mode_lists": {
@@ -349,7 +353,7 @@
         "on": ["SSINFAISSIG", "SSINFAISFSV", "SSINFAISFOR", "SYSDA"],
         "debounce": 1.0
       },
-      "video_info": {"doc": "Video and HDR signal info: re-read on a source, power or signal change, and once more after an HDMI handshake. Never on its own answers.", "on": ["SI", "ZM", "SSINFAISSIG"], "queries": ["SYSDV ?", "SSINFSIGHDR ?"], "debounce": 2.0, "again": 8.0},
+      "video_info": {"doc": "Video and HDR signal info: re-read on a source, power or signal change, and once more after an HDMI handshake. Never on its own answers.", "on": ["SI", "ZM", "SSINFAISSIG"], "queries": ["SYSDV ?", "SSINFSIGHDR ?", "SSINFSIGCOS ?", "SSINFSIGPIX ?"], "debounce": 2.0, "again": 8.0},
       "audio_info": {
         "queries": ["SSINFAISSIG ?", "SSINFAISFSV ?", "SSINFAISFOR ?", "SYSDA ?", "SYSMI ?"],
         "on": ["MS", "SI"],

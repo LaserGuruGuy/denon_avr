@@ -592,6 +592,13 @@ class TelnetParser:
         self, control_id: str, spec: dict, remainder: str, state: AvrState
     ) -> bool:
         kind = spec.get("kind", "passthrough")
+        if kind == "digit":
+            token = remainder.strip()
+            for other_id, other in self._profile.readonly.items():
+                if other.get("prefix") == spec.get("prefix") and other.get("kind") == "digit":
+                    position = int(other.get("digit", 0))
+                    state.readonly[other_id] = token[position] if len(token) > position and token.isdigit() else None
+            return True
         if kind == "sample_rate":
             token = remainder.strip()
             state.readonly[control_id] = (

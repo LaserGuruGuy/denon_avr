@@ -412,6 +412,7 @@ async def test_quick_select_names_from_blocks_and_zone2_sleep(make_device):
     assert dev.discovery.quick_select_names[2] == "Movie night"
     assert dev.state.values["zone2_sleep_timer"] == 30
     assert dev.state.values["option_status"] == "0000000000000022002000200020"
-    assert dev.state.values["video_color_space"] == "03"
+    assert dev.state.readonly["color_space_input"] == "0" and dev.state.readonly["color_space_output"] == "3"
+    assert dev.state.readonly["pixel_depth_output"] == "1"
     assert dev._sync.stats["lines_unknown"] == unknown
     await dev.async_stop()

@@ -1079,6 +1079,34 @@
  },
  {
   "enabled": true,
+  "key": "sensor_color_space_input",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_color_space_output",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_pixel_depth_input",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "sensor_pixel_depth_output",
+  "kind": "readonly",
+  "platform": "sensor",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
   "key": "sensor_hdr_output",
   "kind": "readonly",
   "platform": "sensor",

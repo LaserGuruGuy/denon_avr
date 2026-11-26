@@ -224,6 +224,66 @@
           "speaker_and_preout": "Luidspreker en pre-out",
           "preout_only": "Alleen pre-out"
         }
+      },
+      "color_space_input": {
+        "name": "Kleurruimte ingang",
+        "state": {
+          "no_or_unknown_signal": "Geen of onbekend signaal",
+          "ycbcr_422": "YCbCr 4:2:2",
+          "ycbcr_444": "YCbCr 4:4:4",
+          "rgb": "RGB",
+          "ycbcr_420": "YCbCr 4:2:0",
+          "ycbcr_422_bt2020": "YCbCr 4:2:2 (BT.2020)"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "color_space_output": {
+        "name": "Kleurruimte uitgang",
+        "state": {
+          "no_or_unknown_signal": "Geen of onbekend signaal",
+          "ycbcr_422": "YCbCr 4:2:2",
+          "ycbcr_444": "YCbCr 4:4:4",
+          "rgb": "RGB",
+          "ycbcr_420": "YCbCr 4:2:0",
+          "ycbcr_422_bt2020": "YCbCr 4:2:2 (BT.2020)"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "pixel_depth_input": {
+        "name": "Bitdiepte ingang",
+        "state": {
+          "no_or_unknown_signal": "Geen of onbekend signaal",
+          "bit_8": "8-bit",
+          "bit_10": "10-bit",
+          "bit_12": "12-bit"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "pixel_depth_output": {
+        "name": "Bitdiepte uitgang",
+        "state": {
+          "no_or_unknown_signal": "Geen of onbekend signaal",
+          "bit_8": "8-bit",
+          "bit_10": "10-bit",
+          "bit_12": "12-bit"
+        },
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
       }
     },
     "select": {
