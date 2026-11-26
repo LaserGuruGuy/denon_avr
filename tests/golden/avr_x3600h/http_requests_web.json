@@ -36,6 +36,11 @@
  {
   "ssl": false,
   "timeout_total": 8.0,
+  "url": "https://192.0.2.10:10443/ajax/general/get_config?type=12"
+ },
+ {
+  "ssl": false,
+  "timeout_total": 8.0,
   "url": "https://192.0.2.10:10443/ajax/video/get_config?type=1"
  },
  {

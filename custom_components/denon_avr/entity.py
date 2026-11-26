@@ -77,7 +77,7 @@ class DenonAvrEntity(CoordinatorEntity[DenonAvrCoordinator]):
             manufacturer=device_info.manufacturer or "Denon",
             model=device_info.model_name,
             name=device_info.model_name or "Denon AVR",
-            sw_version=device_info.firmware_version,
+            sw_version=device_info.firmware_label,
             model_id=device_info.hardware_type,
             hw_version=device_info.hardware_label,
             serial_number=device_info.serial_number,

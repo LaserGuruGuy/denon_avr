@@ -228,3 +228,15 @@ def parse_value_list(spec: dict[str, Any], root: ET.Element) -> tuple[str, ...] 
     if container is None:
         return None
     return tuple((item.text or "").strip() for item in container if (item.text or "").strip())
+
+
+def parse_firmware_information(xml_text: str) -> dict[str, str]:
+    """Firmware build code and DTS decoder version from the Information page."""
+
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return {}
+    fields = {"firmware_build": "Firmware/Version", "dts_version": "Firmware/DTSVersion"}
+    found = {key: (root.findtext(path) or "").strip() for key, path in fields.items()}
+    return {key: value for key, value in found.items() if value}

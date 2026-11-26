@@ -159,6 +159,8 @@
   "Auto"
  ],
  "device": {
+  "dts_version": "4.30.10.15",
+  "firmware_build": "5300-1084-C071-9631",
   "firmware_revision": "1793367809",
   "firmware_version": "3.139.174",
   "hardware_type": "avr-x-2016",

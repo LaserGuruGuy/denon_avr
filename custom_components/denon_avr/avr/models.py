@@ -21,9 +21,19 @@ class DeviceInfo:
     # (they describe the streaming module, not the AVR).
     network_module_version: str | None = None
     firmware_revision: str | None = None
+    firmware_build: str | None = None
+    dts_version: str | None = None
     # As reported: DeviceInfoVers, CommApiVers, Gen, BrandCode, capability_version, moduleType.
     versions: dict[str, str] = field(default_factory=dict)
     zone_count: int = 1
+
+    @property
+    def firmware_label(self) -> str | None:
+        """The firmware version with the DTS decoder version, e.g. '3.139.173 · DTS 3.90.50.82'."""
+
+        if self.firmware_version and self.dts_version:
+            return f"{self.firmware_version} · DTS {self.dts_version}"
+        return self.firmware_version
 
     @property
     def hardware_label(self) -> str | None:

@@ -130,6 +130,8 @@
   "Virtual"
  ],
  "device": {
+  "dts_version": "3.90.50.82",
+  "firmware_build": "2400-9173-2171-9031",
   "firmware_revision": "1783925966",
   "firmware_version": "3.139.173",
   "hardware_type": "avr-x-2016",

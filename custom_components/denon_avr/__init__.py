@@ -49,6 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: DenonAvrConfigEntry) -> 
     def _follow_setup() -> None:
         _add_new_entities(coordinator)
         _enable_used_entities(hass, entry, coordinator)
+        _follow_versions(hass, entry, coordinator)
 
     _follow_setup()
     entry.async_on_unload(coordinator.async_add_listener(_follow_setup))
@@ -73,7 +74,7 @@ def _register_main_device(
         manufacturer=device.manufacturer or "Denon",
         model=device.model_name,
         name=device.model_name or "Denon AVR",
-        sw_version=device.firmware_version,
+        sw_version=device.firmware_label,
         model_id=device.hardware_type,
         hw_version=device.hardware_label,
         serial_number=device.serial_number,
@@ -124,6 +125,19 @@ def _add_new_entities(coordinator: DenonAvrCoordinator) -> None:
         if new:
             _LOGGER.debug("Adding %d new %s entities: %s", len(new), platform, [e.key for e in new])
             async_add_entities(catalogue_entities(coordinator, platform, factories, new))
+
+
+@callback
+def _follow_versions(hass: HomeAssistant, entry: DenonAvrConfigEntry, coordinator) -> None:
+    """Keep the device cards current after a firmware update of the receiver."""
+
+    info = coordinator.device.discovery.device
+    wanted = {"sw_version": info.firmware_label, "hw_version": info.hardware_label, "model_id": info.hardware_type}
+    registry = dr.async_get(hass)
+    for device_entry in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        changes = {key: value for key, value in wanted.items() if value and getattr(device_entry, key) != value}
+        if changes:
+            registry.async_update_device(device_entry.id, **changes)
 
 
 @callback

@@ -11,6 +11,7 @@ from ..protocol.deviceinfo import parse_device_info
 from ..protocol.profile import ProtocolProfile
 from ..protocol.telnet_parser import TelnetParser
 from ..protocol.upnp import parse_upnp_description, parse_upnp_versions
+from ..protocol.webdoc import parse_firmware_information
 from .webconfig_doc import WebConfigSectionController
 
 TextFetch = Callable[[], Awaitable[str | None]]
@@ -29,6 +30,7 @@ class DiscoveryService:
         fetch_description: TextFetch,
         probe: Probe,
         web_subsystems: tuple[WebConfigSectionController, WebConfigSectionController],
+        fetch_information: TextFetch | None = None,
     ) -> None:
         self._host = host
         self._profile = profile
@@ -39,6 +41,7 @@ class DiscoveryService:
         self._fetch_description = fetch_description
         self._probe = probe
         self._video_config, self._speaker_config = web_subsystems
+        self._fetch_information = fetch_information
         # Deviceinfo derived source list, used only if telnet introspection yields no sources (see
         # discover / await_ready).
         self._fallback_sources: list = []
@@ -85,6 +88,7 @@ class DiscoveryService:
         # Firmware version and serial: the goform document omits them, the UPnP description
         # carries them.
         await self._fetch_version_info()
+        await self._fetch_firmware_information()
         target.features = discovered.features
         target.channels = discovered.channels
         target.zones = discovered.zones
@@ -107,6 +111,32 @@ class DiscoveryService:
         target.sources = []
         await self._probe_introspection()
         return target
+
+    async def refresh_versions(self) -> bool:
+        """Read the version sources again; True when anything changed."""
+
+        device = self._discovery.device
+        before = (device.firmware_version, device.firmware_build, device.dts_version, dict(device.versions))
+        xml_text = await self._fetch_description()
+        if xml_text:
+            for attr, value in parse_upnp_description(xml_text).items():
+                if attr == "firmware_version" and value:
+                    device.firmware_version = value
+            device.versions.update(parse_upnp_versions(xml_text))
+        await self._fetch_firmware_information()
+        return before != (device.firmware_version, device.firmware_build, device.dts_version, dict(device.versions))
+
+    async def _fetch_firmware_information(self) -> None:
+        """Best effort, from the setup web interface."""
+
+        if self._fetch_information is None:
+            return
+        xml_text = await self._fetch_information()
+        if not xml_text:
+            return
+        device = self._discovery.device
+        for attr, value in parse_firmware_information(xml_text).items():
+            setattr(device, attr, value)
 
     async def _fetch_version_info(self) -> None:
         """Best effort; a missing field is left unset rather than guessed."""

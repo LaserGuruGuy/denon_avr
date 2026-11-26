@@ -38,6 +38,7 @@ class DenonAvrDevice:
         self._available = False
         self._notifier = UpdateNotifier()
         self._tasks = BackgroundTasks()
+        self._connected_once = False
         notify = self._notifier.schedule
         grammar = self._profile.grammar
 
@@ -66,7 +67,7 @@ class DenonAvrDevice:
         self._telnet = TelnetClient(
             host,
             on_line=lambda line: self._sync.handle_line(line),
-            on_connected=lambda: self._sync.resynchronise(),
+            on_connected=self._on_connected,
             on_availability=self._handle_availability,
         )
         parser = TelnetParser(self._profile, self._discovery)
@@ -104,6 +105,7 @@ class DenonAvrDevice:
             self._upnp.async_get_description,
             partial(async_probe, host),
             (self._video_config, self._speaker_config),
+            self._fetch_information,
         )
         # Auxiliary HEOS channel for network now-playing media and album art.
         self._heos = HeosClient(host, on_update=self._sync.handle_now_playing)
@@ -132,6 +134,12 @@ class DenonAvrDevice:
     @property
     def available(self) -> bool:
         return self._available
+
+    async def _fetch_information(self) -> str | None:
+        page = self._profile.grammar.get("information", {})
+        if not page:
+            return None
+        return await self._webconfig.async_get(page["section"], int(page["type"]))
 
     def own_setting(self, control_id: str) -> str | None:
         """The receiver's own stored value of a setup item (telnet), also while the menu shows an imposed one."""
@@ -240,7 +248,20 @@ class DenonAvrDevice:
     async def async_discover(self) -> Discovery:
         """Populate the discovery model; raises ConnectionError when unreachable."""
 
-        return await self._discovery_service.discover()
+        discovery = await self._discovery_service.discover()
+        self._connected_once = False
+        return discovery
+
+    async def _on_connected(self) -> None:
+        # A reconnect may follow a firmware update (the receiver restarts): read the versions again.
+        if self._connected_once:
+            self._tasks.create(self._refresh_versions())
+        self._connected_once = True
+        await self._sync.resynchronise()
+
+    async def _refresh_versions(self) -> None:
+        if await self._discovery_service.refresh_versions():
+            self._notifier.schedule()
 
     async def async_start(self) -> None:
         """Start the telnet transport (which triggers the first resync)."""
