@@ -15,4 +15,5 @@ async def test_reported_versions(make_device, fixture, module):
         "DeviceInfoVers": "0001", "CommApiVers": "0301", "Gen": "0002", "BrandCode": "0",
         "capability_version": "4", "moduleType": module,
     }
-    assert dev.discovery.device.hardware_label == f"avr-x-2016 (CommApi 0301) · {module}"
+    assert dev.discovery.device.hardware_type == "avr-x-2016"
+    assert dev.discovery.device.hardware_label == f"{module} (CommApi 0301)"

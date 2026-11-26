@@ -74,6 +74,7 @@ def _register_main_device(
         model=device.model_name,
         name=device.model_name or "Denon AVR",
         sw_version=device.firmware_version,
+        model_id=device.hardware_type,
         hw_version=device.hardware_label,
         serial_number=device.serial_number,
         configuration_url=coordinator.device.configuration_url or f"http://{coordinator.device.host}/",
