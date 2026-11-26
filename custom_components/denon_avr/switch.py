@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .avr import ControlSpec
 from .const import DOMAIN
+from .helpers import web_setting_attributes
 from .coordinator import DenonAvrConfigEntry, DenonAvrCoordinator
 from .entity import DenonAvrEntity, setup_catalogue_platform
 from .helpers import control_sub_device
@@ -82,11 +83,15 @@ class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
 
     @property
     def available(self) -> bool:
-        return super().available and self._video.available(self._id)
+        return super().available and self._video.present(self._id)
 
     @property
     def is_on(self) -> bool:
         return self._video.value(self._id) == self._on
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        return web_setting_attributes(self.coordinator.device, self._video, self._id)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self._set(self._on)
@@ -95,5 +100,7 @@ class DenonAvrVideoSwitch(DenonAvrEntity, SwitchEntity):
         await self._set(self._off)
 
     async def _set(self, wire: str) -> None:
+        if not self._video.available(self._id):
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_locked")
         if not await self._video.async_set(self._id, wire):
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_not_applied")

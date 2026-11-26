@@ -598,6 +598,9 @@
     "speaker_layout_not_applied": {
       "message": "The receiver did not confirm the speaker layout change. If it changed anything, Restore speaker layout puts it back."
     },
+    "web_setting_locked": {
+      "message": "Grayed out on the receiver: it cannot be changed now (for example while HDMI Control is on)."
+    },
     "web_setting_not_applied": {
       "message": "The receiver did not confirm the setting."
     },

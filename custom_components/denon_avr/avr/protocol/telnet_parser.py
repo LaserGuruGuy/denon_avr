@@ -43,7 +43,7 @@ class TelnetParser:
         for spec in profile.readonly.values():
             known.update(spec.get("also_understood", ()))
         known.update(spec.get("prefix", "") for spec in profile.introspection.values())
-        known.update(profile.grammar.get("web_echoes", {}).get("prefixes", ()))
+        known.update(profile.grammar.get(key, {}).get("prefix", "") for key in ("hdmi_setup", "audio_menu_status"))
         known.discard("")
         self._known_prefixes = tuple(sorted(known, key=len, reverse=True))
         # OPSML / OPSMLALL accumulate (index, name) to judge completeness on END.
@@ -192,7 +192,29 @@ class TelnetParser:
                     continue
                 return self._set_feature(spec, remainder, state)
 
+        hdmi = self._profile.grammar.get("hdmi_setup", {})
+        if hdmi.get("prefix") and line.startswith(hdmi["prefix"]):
+            return self._set_hdmi_setup(line[len(hdmi["prefix"]):], state)
+        audio_menu = self._profile.grammar.get("audio_menu_status", {})
+        if audio_menu.get("prefix") and line.startswith(audio_menu["prefix"]):
+            return self._set_value(state, "audio_menu_status", line[len(audio_menu["prefix"]):].strip())
+
         return False
+
+    @staticmethod
+    def _set_value(state: AvrState, key: str, value: str) -> bool:
+        if not value or state.values.get(key) == value:
+            return False
+        state.values[key] = value
+        return True
+
+    def _set_hdmi_setup(self, remainder: str, state: AvrState) -> bool:
+        """One SSHOS line: the item's own stored setting."""
+
+        item, _, value = remainder.strip().partition(" ")
+        if not item or item == self._profile.list_terminator:
+            return False
+        return self._set_value(state, f"hdmi_setup_{item}", value.strip())
 
     def _set_system_power(self, remainder: str, state: AvrState) -> bool:
         state.system_power = remainder.strip() == "ON"

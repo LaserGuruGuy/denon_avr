@@ -23,6 +23,7 @@ from .helpers import (
     group_name,
     is_size_token,
     subwoofer_count_options,
+    web_setting_attributes,
 )
 
 
@@ -466,7 +467,13 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
         return getattr(self.coordinator.device, self._controller_attr)
 
     @property
+    def _shows_grayed(self) -> bool:
+        return self._controller_attr == "video_config"
+
+    @property
     def available(self) -> bool:
+        if self._shows_grayed:
+            return super().available and self._ctrl.present(self._id)
         return super().available and self._ctrl.available(self._id)
 
     @property
@@ -477,7 +484,15 @@ class DenonAvrVideoSelect(DenonAvrEntity, SelectEntity):
     def current_option(self) -> str | None:
         return self._ctrl.options(self._id).get(self._ctrl.value(self._id))
 
+    @property
+    def extra_state_attributes(self) -> dict[str, object] | None:
+        if not self._shows_grayed:
+            return None
+        return web_setting_attributes(self.coordinator.device, self._ctrl, self._id)
+
     async def async_select_option(self, option: str) -> None:
+        if not self._ctrl.available(self._id):
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="web_setting_locked")
         for wire, label in self._ctrl.options(self._id).items():
             if label == option:
                 if not await self._ctrl.async_set(self._id, wire):

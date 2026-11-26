@@ -255,6 +255,89 @@ async def test_a_group_that_keeps_triggering_itself_is_braked(make_device, monke
     await dev.async_stop()
 
 
+
+HDMI_BLOCK = ["SSHOSCON ON", "SSHOSRSS POS", "SSHOSCONPOF ALL", "SSHOSCONSTS LAS", "SSHOSPAS OFF",
+              "SSHOSTAS ON", "SSHOSCONARC ON", "SSHOSCONPSV OFF", "SSHOS END"]
+
+
+@pytest.mark.parametrize("fixture", ["avc_x3900h", "avr_x3600h"])
+async def test_hdmi_setup_and_audio_menu_lines_are_modelled_without_loop(make_device, fixture):
+    """A video web read makes the receiver push SSHOS and SSAUDSTS; only a real change re-reads it."""
+
+    import asyncio
+
+    dev, _session, telnet, _fx = make_device(fixture)
+    await dev.async_discover()
+    await dev.async_start()
+    block = list(HDMI_BLOCK)
+    real = dev._webconfig.async_get
+
+    async def get(section, type_id, extra=None):
+        if section == "video" and type_id == 3:
+            lines = block + ["SSAUDSTS 0212202012100000"]
+            asyncio.get_running_loop().call_later(0.01, lambda: [telnet.feed(x) for x in lines])
+        return await real(section, type_id, extra)
+
+    dev._webconfig.async_get = get
+    unknown = dev._sync.stats["lines_unknown"]
+    await dev._sync.refresh_web("video")
+    await _settle(telnet)
+    assert dev.state.values["hdmi_setup_PAS"] == "OFF"
+    assert dev.state.values["audio_menu_status"] == "0212202012100000"
+    groups = dict(dev._sync.stats["refresh_groups"])
+    for _ in range(3):
+        await dev._sync.refresh_web("video")
+        await _settle(telnet)
+    assert dev._sync.stats["refresh_groups"] == groups
+    block[0] = "SSHOSCON OFF"
+    telnet.feed("SSHOSCON OFF")
+    await _settle(telnet)
+    await asyncio.sleep(1.2)
+    await _settle(telnet)
+    assert dev._sync.stats["refresh_groups"].get("hdmi_setup_web", 0) == groups.get("hdmi_setup_web", 0) + 1
+    telnet.feed("SSAUDSTS 0222102012100000")
+    await _settle(telnet)
+    await asyncio.sleep(1.2)
+    await _settle(telnet)
+    after = dict(dev._sync.stats["refresh_groups"])
+    assert after.get("audio_menu_web", 0) == groups.get("audio_menu_web", 0) + 1
+    await asyncio.sleep(1.5)
+    await _settle(telnet)
+    assert dev._sync.stats["refresh_groups"] == after
+    assert dev._sync.stats["lines_unknown"] == unknown
+    await dev.async_stop()
+
+
+async def test_auto_lip_sync_keeps_its_own_control(make_device):
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    telnet.feed("SSHOSALS ON")
+    await _settle(telnet)
+    assert "hdmi_setup_ALS" not in dev.state.values
+    await dev.async_stop()
+
+
+async def test_grayed_hdmi_item_shows_its_own_setting(make_device):
+    import conftest
+
+    web_setting_attributes = conftest.load_ha_module("helpers").web_setting_attributes
+
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    for line in HDMI_BLOCK:
+        telnet.feed(line)
+    await _settle(telnet)
+    video = dev.video_config
+    await video.refresh()
+    assert video.present("hdmi_pass_through") and not video.available("hdmi_pass_through")
+    assert video.value("hdmi_pass_through") == "1"
+    assert web_setting_attributes(dev, video, "hdmi_pass_through") == {"settable": False, "own_setting": "off"}
+    assert web_setting_attributes(dev, video, "hdmi_control") == {"settable": True, "own_setting": "on"}
+    await dev.async_stop()
+
+
 @pytest.mark.parametrize("fixture", ["avc_x3900h", "avr_x3600h"])
 async def test_web_echo_lines_are_known_and_quiet(make_device, fixture):
     dev, _session, telnet, _fx = make_device(fixture)

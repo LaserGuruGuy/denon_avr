@@ -116,7 +116,7 @@ class StateSync:
                 self._tasks.create(self.query_current_sound_modes())
         # The first modelled line of a prefix answers our own resync.
         hits = {
-            group_id: prefix
+            group_id: line.partition(" ")[0] if group.get("per_item") else prefix
             for group_id, group in self._refresh_groups.items()
             if (prefix := next((p for p in group.get("on") or () if line.startswith(p)), None)) is not None
         }

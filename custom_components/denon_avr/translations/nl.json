@@ -598,6 +598,9 @@
     "speaker_layout_not_applied": {
       "message": "De receiver heeft de indeling niet bevestigd. Is er toch iets gewijzigd, dan zet Luidsprekerindeling herstellen het terug."
     },
+    "web_setting_locked": {
+      "message": "Grijs op de receiver: nu niet te wijzigen (bijvoorbeeld zolang HDMI-bediening aan staat)."
+    },
     "web_setting_not_applied": {
       "message": "De receiver heeft de instelling niet bevestigd."
     },

@@ -235,3 +235,15 @@ def current_input_slot(device, collection_id: str, zone_id: str = "main") -> str
         return None
     matches = [slot for slot, item in device.video_config.collection(collection_id).items() if item.name == name]
     return matches[0] if len(matches) == 1 else None
+
+
+def web_setting_attributes(device, controller, control_id: str) -> dict[str, object]:
+    """Whether a shown setup item can be changed now, and its own stored setting from telnet."""
+
+    attributes: dict[str, object] = {"settable": controller.available(control_id)}
+    items = device.profile.grammar.get("hdmi_setup", {}).get("items", {})
+    item = next((code for code, cid in items.items() if cid == control_id), None)
+    own = device.state.values.get(f"hdmi_setup_{item}") if item else None
+    if own:
+        attributes["own_setting"] = own.lower()
+    return attributes
