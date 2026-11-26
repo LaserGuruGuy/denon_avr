@@ -379,3 +379,39 @@ async def test_numeric_enum_follows_the_receivers_spelling(make_device, token, w
     await _settle(telnet)
     assert write in telnet.sent
     await dev.async_stop()
+
+
+@pytest.mark.parametrize(("line", "control", "value", "write"), [
+    ("SSSWO L+M", "subwoofer_mode", "LFE", "SSSWO LFE"),
+    ("SSSWM L+M", "subwoofer_mode", "LFE", "SSSWM LFE"),
+    ("OPALSSET ON", "auto_lip_sync", False, "OPALSSET OFF"),
+])
+async def test_a_write_follows_the_spelling_the_receiver_answered(make_device, line, control, value, write):
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    telnet.feed(line)
+    await _settle(telnet)
+    assert dev.state.values[control] in ("L+M", True)
+    telnet.sent.clear()
+    await dev.async_set_control(control, value)
+    await _settle(telnet)
+    assert write in telnet.sent
+    await dev.async_stop()
+
+
+async def test_quick_select_names_from_blocks_and_zone2_sleep(make_device):
+    dev, _session, telnet, _fx = make_device("avc_x3900h")
+    await dev.async_discover()
+    await dev.async_start()
+    unknown = dev._sync.stats["lines_unknown"]
+    for line in ["SSQS2QSN Movie night  ", "SSQS2SRC ON", "SSQS2 END", "Z2SLP030", "OPALSDSP ON", "OPALSVAL 000",
+                 "OPSTS 0000000000000022002000200020", "SSINFSIGCOS 03", "SSINFSIGPIX 01", "SSINFSIGRES O1080p60"]:
+        telnet.feed(line)
+    await _settle(telnet)
+    assert dev.discovery.quick_select_names[2] == "Movie night"
+    assert dev.state.values["zone2_sleep_timer"] == 30
+    assert dev.state.values["option_status"] == "0000000000000022002000200020"
+    assert dev.state.values["video_color_space"] == "03"
+    assert dev._sync.stats["lines_unknown"] == unknown
+    await dev.async_stop()

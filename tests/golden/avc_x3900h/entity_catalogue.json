@@ -91,8 +91,36 @@
   "sub_device": "audio"
  },
  {
+  "enabled": false,
+  "key": "number_subwoofer_2_level",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": false,
+  "key": "number_subwoofer_3_level",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
+  "enabled": false,
+  "key": "number_subwoofer_4_level",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": "audio"
+ },
+ {
   "enabled": true,
   "key": "number_sleep_timer",
+  "kind": "control",
+  "platform": "number",
+  "sub_device": null
+ },
+ {
+  "enabled": true,
+  "key": "number_zone2_sleep_timer",
   "kind": "control",
   "platform": "number",
   "sub_device": null

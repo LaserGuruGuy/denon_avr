@@ -92,6 +92,7 @@ class DenonAvrDevice:
             self._sync.refresh_current_sound_modes,
             self.volume_effective_max,
             self._state.wire_forms.get,
+            self._state.wire_prefixes.get,
         )
         self._discovery_service = DiscoveryService(
             host,

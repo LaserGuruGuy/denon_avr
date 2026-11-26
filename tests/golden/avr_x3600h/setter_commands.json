@@ -290,6 +290,33 @@
  "control:speaker_virtualizer=True": [
   "PSSPV ON"
  ],
+ "control:subwoofer_2_level=-2.0": [
+  "PSSWL2 48"
+ ],
+ "control:subwoofer_2_level=0.0": [
+  "PSSWL2 50"
+ ],
+ "control:subwoofer_2_level=1.5": [
+  "PSSWL2 515"
+ ],
+ "control:subwoofer_3_level=-2.0": [
+  "PSSWL3 48"
+ ],
+ "control:subwoofer_3_level=0.0": [
+  "PSSWL3 50"
+ ],
+ "control:subwoofer_3_level=1.5": [
+  "PSSWL3 515"
+ ],
+ "control:subwoofer_4_level=-2.0": [
+  "PSSWL4 48"
+ ],
+ "control:subwoofer_4_level=0.0": [
+  "PSSWL4 50"
+ ],
+ "control:subwoofer_4_level=1.5": [
+  "PSSWL4 515"
+ ],
  "control:subwoofer_level=-2.0": [
   "PSSWL 48"
  ],
@@ -343,6 +370,12 @@
  ],
  "control:volume_scale='REL'": [
   "SSVCTZMADIS REL"
+ ],
+ "control:zone2_sleep_timer=0": [
+  "Z2SLPOFF"
+ ],
+ "control:zone2_sleep_timer=30": [
+  "Z2SLP030"
  ],
  "crossover:ALL=80": [
   "SSCFRALL 080"

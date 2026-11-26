@@ -35,6 +35,7 @@
     "PUR": "PURE DIRECT"
   },
   "grammar": {
+    "status_strings": {"option_status": {"query": "OPSTS ?", "prefix": "OPSTS "}, "video_resolution": {"query": "SSINFSIGRES ?", "prefix": "SSINFSIGRES "}, "video_color_space": {"query": "SSINFSIGCOS ?", "prefix": "SSINFSIGCOS "}, "video_pixel_depth": {"query": "SSINFSIGPIX ?", "prefix": "SSINFSIGPIX "}, "doc": "Kept as reported for diagnostics: their digits are not identified yet (OPSTS: 32 digits; COS/PIX: two digit codes). SSINFSIGRES repeats SYSDV (I<input>/O<output> resolution)."},
     "hdmi_setup": {"query": "SSHOS ?", "prefix": "SSHOS", "items": {"CON": "hdmi_control", "CONARC": "arc", "TAS": "tv_audio_switching", "CONPOF": "hdmi_power_off_control", "CONPSV": "hdmi_power_saving", "CONSTS": "pass_through_source", "RSS": "rc_select", "PAS": "hdmi_pass_through", "SMN": "smart_menu"}, "doc": "HDMI Setup as stored by the receiver, one line per item, ended by 'SSHOS END'; pushed on a change and with every read of the video web pages. A grayed item shows the value HDMI Control imposes in the menu; this line keeps the item's own setting (verified live: HDMI Pass Through OFF while the menu shows On under HDMI Control). IPM/IPS/SHP (AVR-X3600H) are kept but not yet identified."},
     "audio_menu_status": {"query": "SSAUDSTS ?", "prefix": "SSAUDSTS ", "items": ["CenterLevelAdjust", "SubwooferLevelAdjust", "BassSync", "SurroundParameter", "Restorer", "AudioDelay", "Volume", "BilingualMode", "Audyssey", "GraphicEQ", "DiracLive", "DACFilter"], "doc": "One digit per Audio setup menu item: web display minus 1 (0 hidden, 1 grayed, 2 settable), in this order (GraphicEQ before DiracLive, unlike the web document); the last digits are spare. Pushed when it changes, for example with the sound mode."},
     "line_terminator": "\r",
@@ -269,6 +270,12 @@
       "query": "SSQSNZMA ?",
       "prefix": "SSQSNZMA",
       "doc": "Main zone quick select preset names, one per line ('SSQSNZMAQS<n> <name>'), terminated by 'SSQSNZMA END'."
+    },
+    "quick_select_blocks": {
+      "queries": ["SSQS1 ?", "SSQS2 ?", "SSQS3 ?", "SSQS4 ?"],
+      "prefix": "SSQS",
+      "name_item": "QSN",
+      "doc": "Quick select per preset as one block: 'SSQS<n>QSN <name>' then one line per stored item (SRC, VOL, SDM, ...) and 'SSQS<n> END' (AVC-X3900H; the AVR-X3600H answers SSQSNZMA instead). Only the name is used."
     },
     "quick_select": {
       "query": "MSQUICK ?",
@@ -548,9 +555,10 @@
       "kind": "onoff",
       "query": "SSHOSALS ?",
       "prefix": "SSHOSALS ",
+      "variants": [{"query": "OPALS ?", "prefix": "OPALSSET ", "also_understood": ["OPALSDSP", "OPALSVAL"]}],
       "on": "ON",
       "off": "OFF",
-      "doc": "Auto lip sync (automatic A/V delay), token SSHOSALS. Candidate: silent unless a video source is active; gated on the advertised AutoLipSync capability."
+      "doc": "Auto lip sync (automatic A/V delay). SSHOSALS was never answered on the AVR-X3600H or AVC-X3900H; the AVC-X3900H answers 'OPALS ?' with OPALSSET (the setting), OPALSDSP and OPALSVAL (not modelled). Gated on the advertised AutoLipSync capability."
     },
     "dynamic_volume": {
       "group": "audyssey",
@@ -635,6 +643,9 @@
       "prefix": "PSSWL ",
       "doc": "Subwoofer level, half step, 50 == 0 dB. The dB range is discovered from the receiver's SubwooferLevel block."
     },
+    "subwoofer_2_level": {"group": "speaker", "subdevice": "audio", "scope": "feature", "feature": "SubwooferLevel", "kind": "level", "query": "PSSWL ?", "prefix": "PSSWL2 ", "channel": "SW2", "doc": "Level of subwoofer 2, answered with PSSWL ? when it is configured (seen: 'PSSWL2 59')."},
+    "subwoofer_3_level": {"group": "speaker", "subdevice": "audio", "scope": "feature", "feature": "SubwooferLevel", "kind": "level", "query": "PSSWL ?", "prefix": "PSSWL3 ", "channel": "SW3", "doc": "Level of subwoofer 3, as subwoofer 2."},
+    "subwoofer_4_level": {"group": "speaker", "subdevice": "audio", "scope": "feature", "feature": "SubwooferLevel", "kind": "level", "query": "PSSWL ?", "prefix": "PSSWL4 ", "channel": "SW4", "doc": "Level of subwoofer 4, as subwoofer 2."},
     "volume_scale": {
       "group": "volume",
       "scope": "core",
@@ -687,6 +698,7 @@
       "kind": "enum",
       "query": "SSSWM ?",
       "prefix": "SSSWM ",
+      "variants": [{"query": "SSSWO ?", "prefix": "SSSWO "}],
       "values": ["LFE", "L+M"],
       "labels": ["LFE", "LFE + Main"],
       "name": "Subwoofer Mode",
@@ -727,6 +739,7 @@
       "step": 5,
       "doc": "Sleep timer in minutes ('OFF' when disabled). The receiver does not publish a range (its SleepTimer block is empty), so the protocol defined range is given here as a fallback."
     },
+    "zone2_sleep_timer": {"group": "system", "scope": "zone", "zone": "zone2", "kind": "minutes", "query": "Z2SLP?", "prefix": "Z2SLP", "off": "OFF", "min": 0, "max": 120, "step": 5, "doc": "Zone 2 sleep timer, same grammar as the main zone ('Z2SLPOFF', 'Z2SLP120'); answered on both receivers."},
     "eco_mode": {
       "group": "system",
       "scope": "feature",

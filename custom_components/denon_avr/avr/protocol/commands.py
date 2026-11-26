@@ -124,8 +124,10 @@ def encode_control_value(profile: ProtocolProfile, spec: ControlSpec, value: obj
     return str(value)
 
 
-def control(profile: ProtocolProfile, control_id: str, value: object, reported: str | None = None) -> str | None:
-    """``reported`` is the token as the receiver last wrote it; a numeric enum keeps its width."""
+def control(
+    profile: ProtocolProfile, control_id: str, value: object, reported: str | None = None, prefix: str | None = None
+) -> str | None:
+    """``reported``/``prefix``: how the receiver last wrote the item; a write follows that spelling."""
 
     spec = profile.control(control_id)
     if spec is None:
@@ -135,7 +137,7 @@ def control(profile: ProtocolProfile, control_id: str, value: object, reported: 
         return None
     if spec.get("numeric") and argument.isdigit() and reported and reported.isdigit():
         argument = str(int(argument)).zfill(len(reported))
-    return f"{spec.prefix}{argument}"
+    return f"{prefix or spec.prefix}{argument}"
 
 
 def _introspection_prefix(profile: ProtocolProfile, key: str, default: str) -> str:
@@ -177,7 +179,7 @@ def speaker_size(profile: ProtocolProfile, group: str, token: str) -> str:
 
 
 def introspection_queries(profile: ProtocolProfile) -> list[str]:
-    return [spec["query"] for spec in profile.introspection.values() if spec.get("query")]
+    return [query for spec in profile.introspection.values() for query in [spec.get("query"), *spec.get("queries", [])] if query]
 
 
 def resync_queries(profile: ProtocolProfile, discovery: Discovery) -> list[str]:
@@ -191,8 +193,8 @@ def resync_queries(profile: ProtocolProfile, discovery: Discovery) -> list[str]:
 
     # Introspection first so the source and channel lists (which entities are built from) arrive
     # as early as possible after connecting.
-    for spec in profile.introspection.values():
-        add(spec.get("query"))
+    for query in introspection_queries(profile):
+        add(query)
     # Core controls (main zone) are always present.
     for spec in profile.controls_by_scope("core"):
         add(spec.query)
@@ -206,10 +208,21 @@ def resync_queries(profile: ProtocolProfile, discovery: Discovery) -> list[str]:
         add(spec.get("query"))
     for key in ("hdmi_setup", "audio_menu_status"):
         add(profile.grammar.get(key, {}).get("query"))
+    for spec in profile.grammar.get("status_strings", {}).values():
+        if isinstance(spec, dict):
+            add(spec.get("query"))
+    zones = {zone.id for zone in discovery.zones}
+    for spec in profile.zone_controls():
+        if spec.zone in zones:
+            add(spec.query)
     # Feature controls, only those the receiver advertises.
     for spec in profile.feature_controls():
         if spec.feature and discovery.supports(spec.feature):
             add(spec.query)
             add(spec.get("list_query"))
             add(spec.get("read_query"))
+    for spec in profile.controls.values():
+        if spec.scope != "feature" or discovery.supports(spec.feature or ""):
+            for variant in spec.variants:
+                add(variant.get("query"))
     return queries

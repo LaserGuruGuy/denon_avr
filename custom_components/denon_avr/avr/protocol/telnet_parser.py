@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import itertools
+
 import logging
 import re
 
@@ -58,6 +60,12 @@ class TelnetParser:
             known.update(spec.get("also_understood", ()))
         known.update(spec.get("prefix", "") for spec in profile.introspection.values())
         known.update(profile.grammar.get(key, {}).get("prefix", "") for key in ("hdmi_setup", "audio_menu_status"))
+        known.update(spec["prefix"] for spec in self._status_strings(profile).values())
+        known.add(profile.introspection.get("quick_select_blocks", {}).get("prefix", ""))
+        for spec in profile.controls.values():
+            for variant in spec.variants:
+                known.add(variant.get("prefix", ""))
+                known.update(variant.get("also_understood", ()))
         known.discard("")
         self._known_prefixes = tuple(sorted(known, key=len, reverse=True))
         # OPSML / OPSMLALL accumulate (index, name) to judge completeness on END.
@@ -83,6 +91,17 @@ class TelnetParser:
             key=lambda item: len(item[0]),
             reverse=True,
         )
+        self._feature_matchers = sorted(
+            self._feature_matchers
+            + [(variant["prefix"], spec) for _prefix, spec in self._feature_matchers for variant in spec.variants],
+            key=lambda item: len(item[0]),
+            reverse=True,
+        )
+        self._zone_matchers = sorted(
+            ((spec.prefix, spec) for spec in profile.zone_controls() if spec.prefix),
+            key=lambda item: len(item[0]),
+            reverse=True,
+        )
         self._readonly_matchers = sorted(
             profile.readonly.items(),
             key=lambda item: len(item[1].get("prefix", "")),
@@ -98,6 +117,8 @@ class TelnetParser:
     def understands(self, line: str) -> bool:
         """True when this parser models the line's command (whether or not it changed anything)."""
 
+        if any(line.startswith(prefix) for prefix, _spec in self._zone_matchers):
+            return True
         if not line.startswith(self._known_prefixes):
             return False
         # Zone sub-commands (Z2CV..., Z3QUICK1, ...) are deliberately not modelled yet.
@@ -170,6 +191,9 @@ class TelnetParser:
             return self._set_crossover(line[5:], state)
         if line.startswith("CV"):
             return self._set_channel(line[2:], state.channel_trims)
+        for prefix, spec in self._zone_matchers:
+            if line.startswith(prefix):
+                return self._set_feature(spec, line[len(prefix):], state)
         if len(line) >= 2 and line[0] == "Z" and line[1].isdigit():
             return self._set_zone(int(line[1]), line[2:], state)
         if line.startswith("SSFUN"):
@@ -185,6 +209,9 @@ class TelnetParser:
             return False
         if line.startswith("SSQSNZMA"):
             return self._set_quick_select_name(line[8:])
+        blocks = self._profile.introspection.get("quick_select_blocks", {})
+        if blocks.get("prefix") and line.startswith(blocks["prefix"]):
+            return self._set_quick_select_block(line[len(blocks["prefix"]):], blocks.get("name_item", "QSN"))
         if line.startswith("SSSPC"):
             return self._set_speaker_config(line[5:], state)
         if line.startswith("OPSMLALL"):
@@ -204,6 +231,8 @@ class TelnetParser:
                 remainder = line[len(prefix):]
                 if spec.get("exact_enum") and remainder.strip() not in spec.values:
                     continue
+                if spec.variants:
+                    state.wire_prefixes[spec.id] = prefix
                 return self._set_feature(spec, remainder, state)
 
         hdmi = self._profile.grammar.get("hdmi_setup", {})
@@ -212,6 +241,9 @@ class TelnetParser:
         audio_menu = self._profile.grammar.get("audio_menu_status", {})
         if audio_menu.get("prefix") and line.startswith(audio_menu["prefix"]):
             return self._set_value(state, "audio_menu_status", line[len(audio_menu["prefix"]):].strip())
+        for key, spec in self._status_strings(self._profile).items():
+            if line.startswith(spec["prefix"]):
+                return self._set_value(state, key, line[len(spec["prefix"]):].strip())
 
         return False
 
@@ -467,6 +499,20 @@ class TelnetParser:
                 visible=visible if visible is not None else True,
             )
         )
+
+    @staticmethod
+    def _status_strings(profile: ProtocolProfile) -> dict[str, dict]:
+        return {k: v for k, v in profile.grammar.get("status_strings", {}).items() if isinstance(v, dict)}
+
+    def _set_quick_select_block(self, remainder: str, name_item: str) -> bool:
+        """One 'SSQS<n><item> <value>' line; only the name item is used."""
+
+        digits = "".join(itertools.takewhile(str.isdigit, remainder))
+        item, _, value = remainder[len(digits):].partition(" ")
+        if not digits or item != name_item or not value.strip():
+            return False
+        self._discovery.quick_select_names[int(digits)] = value.strip()
+        return True
 
     def _set_quick_select_name(self, remainder: str) -> bool:
         """Parse a 'QS<n> <name>' quick select entry into the discovery model."""

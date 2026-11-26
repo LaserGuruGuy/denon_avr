@@ -242,6 +242,8 @@ class AvrState:
     speaker_sizes: dict[str, str] = field(default_factory=dict)
     # Control id -> the token as the receiver last wrote it (for example '70' or '060').
     wire_forms: dict[str, str] = field(default_factory=dict)
+    # Control id -> the prefix variant the receiver answered with (for example 'SSSWO ').
+    wire_prefixes: dict[str, str] = field(default_factory=dict)
     # Now-playing media for network sources, from the HEOS CLI (see transport).
     now_playing: NowPlaying = field(default_factory=NowPlaying)
     # Manual graphic-EQ state is owned by the device's GraphicEqController, not here, because it

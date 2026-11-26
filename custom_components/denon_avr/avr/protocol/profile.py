@@ -55,6 +55,12 @@ class ControlSpec:
         return self._data.get("prefix", "")
 
     @property
+    def variants(self) -> list[dict[str, Any]]:
+        """Other spellings of the same item that some receivers answer instead (query + prefix)."""
+
+        return list(self._data.get("variants", []))
+
+    @property
     def query(self) -> str | None:
         """The full query string that asks the receiver for the current value."""
 
@@ -195,6 +201,11 @@ class ProtocolProfile:
         """Return all control specs classified under the given command group."""
 
         return [spec for spec in self.controls.values() if spec.group == group]
+
+    def zone_controls(self) -> list[ControlSpec]:
+        """Controls of an additional zone ('zone2', ...)."""
+
+        return [spec for spec in self.controls.values() if spec.scope == "zone" and spec.zone]
 
     def feature_controls(self) -> list[ControlSpec]:
         """Return all control specs that are gated by a receiver feature."""

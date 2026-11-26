@@ -59,7 +59,11 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
     entries: list[EntityEntry] = []
     add = entries.append
 
+    zones = {zone.id for zone in discovery.zones}
+
     def supported(spec) -> bool:
+        if spec.scope == "zone":
+            return spec.zone in zones
         return spec.scope != "feature" or discovery.supports(spec.feature or "")
 
     def group_enabled(group: str) -> bool:
@@ -86,9 +90,15 @@ def build(device, known_keys: frozenset[str] | set[str] = frozenset()) -> list[E
         add(EntityEntry("media_player", "zone", f"media_player_{zone.id}", params={"zone": zone}))
 
     # number -------------------------------------------------------------------
+    channels = channel_codes(device)
     for spec in profile.controls.values():
         if spec.kind in NUMBER_KINDS and supported(spec):
-            add(EntityEntry("number", "control", f"number_{spec.id}", control_sub_device(spec), params={"spec": spec}))
+            channel = spec.get("channel")
+            if channel and channel not in channels:
+                continue
+            enabled = not channel or not configured or channel in configured
+            params = {"spec": spec, **({"channels": [channel]} if channel else {})}
+            add(EntityEntry("number", "control", f"number_{spec.id}", control_sub_device(spec), enabled, params))
     for code in channel_codes(device):
         enabled = (not configured) or code in configured
         params = {"code": code, "channels": [code]}

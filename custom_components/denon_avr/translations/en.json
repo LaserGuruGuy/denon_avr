@@ -542,6 +542,18 @@
       },
       "enhancer": {
         "name": "Enhancer"
+      },
+      "subwoofer_2_level": {
+        "name": "Subwoofer 2 Level"
+      },
+      "subwoofer_3_level": {
+        "name": "Subwoofer 3 Level"
+      },
+      "subwoofer_4_level": {
+        "name": "Subwoofer 4 Level"
+      },
+      "zone2_sleep_timer": {
+        "name": "Zone 2 Sleep Timer"
       }
     },
     "button": {

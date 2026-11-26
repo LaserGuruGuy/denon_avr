@@ -124,6 +124,7 @@
  "values": {
   "all_zone_stereo": false,
   "audio_delay": 0,
+  "auto_lip_sync": true,
   "bass": 0.0,
   "center_spread": false,
   "cinema_eq": false,
@@ -171,6 +172,9 @@
  "volume_display": null,
  "wire_forms": {
   "volume_limit": "70"
+ },
+ "wire_prefixes": {
+  "auto_lip_sync": "OPALSSET "
  },
  "zones": {
   "main": {

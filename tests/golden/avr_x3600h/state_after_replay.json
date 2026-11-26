@@ -172,6 +172,9 @@
  "wire_forms": {
   "volume_limit": "060"
  },
+ "wire_prefixes": {
+  "subwoofer_mode": "SSSWM "
+ },
  "zones": {
   "main": {
    "muted": false,

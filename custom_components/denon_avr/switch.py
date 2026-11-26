@@ -51,10 +51,9 @@ class DenonAvrSwitch(DenonAvrEntity, SwitchEntity):
             self._attr_icon = icon
 
     @property
-    def is_on(self) -> bool:
-        # Treat a not-yet-reported value as off so every toggle renders as a single slider for a
-        # consistent look.
-        return bool(self.coordinator.data.values.get(self._spec.id))
+    def is_on(self) -> bool | None:
+        value = self.coordinator.data.values.get(self._spec.id)
+        return None if value is None else bool(value)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self.coordinator.device.async_set_control(self._spec.id, True)

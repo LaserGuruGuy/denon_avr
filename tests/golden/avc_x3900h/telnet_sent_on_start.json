@@ -7,6 +7,10 @@
  "SSCFR ?",
  "SSSMG ?",
  "SSQSNZMA ?",
+ "SSQS1 ?",
+ "SSQS2 ?",
+ "SSQS3 ?",
+ "SSQS4 ?",
  "MSQUICK ?",
  "OPSMLALL ?",
  "OPSML ?",
@@ -35,6 +39,11 @@
  "SYSMI ?",
  "SSHOS ?",
  "SSAUDSTS ?",
+ "OPSTS ?",
+ "SSINFSIGRES ?",
+ "SSINFSIGCOS ?",
+ "SSINFSIGPIX ?",
+ "Z2SLP?",
  "SPPR ?",
  "PSBAS ?",
  "PSTRE ?",
@@ -68,5 +77,7 @@
  "VSMONI ?",
  "VSAUDIO ?",
  "SD?",
- "CV?"
+ "CV?",
+ "OPALS ?",
+ "SSSWO ?"
 ]

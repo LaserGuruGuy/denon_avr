@@ -21,6 +21,7 @@ class ControlService:
         after_sound_mode_change: Callable[[], Awaitable[None]],
         effective_max: Callable[[str], float],
         reported: Callable[[str], str | None] = lambda _control_id: None,
+        reported_prefix: Callable[[str], str | None] = lambda _control_id: None,
     ) -> None:
         self._profile = profile
         self._discovery = discovery
@@ -28,6 +29,7 @@ class ControlService:
         self._after_sound_mode_change = after_sound_mode_change
         self._effective_max = effective_max
         self._reported = reported
+        self._reported_prefix = reported_prefix
 
     async def _send(self, command: str | None) -> None:
         if command is not None:
@@ -86,7 +88,9 @@ class ControlService:
         await self._after_sound_mode_change()
 
     async def set_control(self, control_id: str, value: object) -> None:
-        await self._send(commands.control(self._profile, control_id, value, self._reported(control_id)))
+        await self._send(
+            commands.control(self._profile, control_id, value, self._reported(control_id), self._reported_prefix(control_id))
+        )
 
     async def set_channel_trim(self, code: str, db: float) -> None:
         await self._send(commands.channel_trim(self._profile, code, db))
